@@ -1,0 +1,104 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}{{ annonce.titre }} - AgriFlow{% endblock %}
+
+{% block front_body %}
+    <section class="section pt-5">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-7">
+                    <div class="agf-detail-image-wrap">
+                        <img
+                            src="{{ asset(visual.image) }}"
+                            alt="{{ visual.alt }}"
+                            class="agf-detail-image"
+                            style="object-position: {{ visual.position }};"
+                        >
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap mb-3">
+                        <span class="badge text-bg-success-subtle text-success">{{ annonce.type.label() }}</span>
+                        <span class="badge text-bg-light">{{ annonce.statut.label() }}</span>
+                        <span class="badge text-bg-light">{{ annonce.categorie }}</span>
+                    </div>
+
+                    <h2 class="mb-3">{{ annonce.titre }}</h2>
+                    <p class="lead text-muted">{{ annonce.description }}</p>
+
+                    <div class="row g-3 mt-4">
+                        <div class="col-md-4">
+                            <div class="agf-info-box">
+                                <span class="small text-muted d-block">Prix</span>
+                                <strong>{{ annonce.prix }} TND / {{ annonce.unitePrix }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="agf-info-box">
+                                <span class="small text-muted d-block">Stock</span>
+                                <strong>{{ annonce.quantiteDisponible }} unité(s)</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="agf-info-box">
+                                <span class="small text-muted d-block">Localisation</span>
+                                <strong>{{ annonce.localisation }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h3 class="h4 mb-3">Envoyer une demande</h3>
+                            <p class="text-muted small">
+                                Choisissez la période et la quantité souhaitée. Le montant final inclut automatiquement la commission de la plateforme.
+                            </p>
+
+                            {{ form_start(reservationForm) }}
+                                {{ form_row(reservationForm.clientId) }}
+                                <div class="row">
+                                    <div class="col-md-6">{{ form_row(reservationForm.dateDebut) }}</div>
+                                    <div class="col-md-6">{{ form_row(reservationForm.dateFin) }}</div>
+                                </div>
+                                {{ form_row(reservationForm.quantite) }}
+                                {{ form_row(reservationForm.message) }}
+                                <button class="btn btn-success w-100">Confirmer la demande</button>
+                            {{ form_end(reservationForm) }}
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h3 class="h5 mb-3">Demandes récentes</h3>
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Client</th>
+                                            <th>Statut</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for reservation in recentReservations %}
+                                            <tr>
+                                                <td>#{{ reservation.clientId }}</td>
+                                                <td>{{ reservation.statut.label() }}</td>
+                                                <td>{{ reservation.prixTotal }} TND</td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="3" class="text-muted">Aucune demande pour le moment.</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
