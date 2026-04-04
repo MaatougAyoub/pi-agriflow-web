@@ -1,0 +1,14 @@
+{{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-6">{{ form_row(form.annonce) }}</div>
+        <div class="col-md-3">{{ form_row(form.clientId) }}</div>
+        <div class="col-md-3">{{ form_row(form.quantite) }}</div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">{{ form_row(form.dateDebut) }}</div>
+        <div class="col-md-4">{{ form_row(form.dateFin) }}</div>
+        <div class="col-md-4">{{ form_row(form.statut) }}</div>
+    </div>
+    {{ form_row(form.message) }}
+    <button class="btn btn-success">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}

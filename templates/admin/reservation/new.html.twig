@@ -1,0 +1,12 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block admin_title %}Nouvelle reservation{% endblock %}
+{% block admin_subtitle %}Enregistrez une nouvelle demande client{% endblock %}
+
+{% block admin_body %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {{ include('admin/reservation/_form.html.twig', {form: form, button_label: 'Ajouter'}) }}
+        </div>
+    </div>
+{% endblock %}
