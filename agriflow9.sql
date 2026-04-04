@@ -1,0 +1,833 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Apr 03, 2026 at 08:01 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `agriflow9`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `annonces`
+--
+
+CREATE TABLE `annonces` (
+  `id` int(11) NOT NULL,
+  `titre` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `type` enum('LOCATION','VENTE') NOT NULL,
+  `statut` enum('DISPONIBLE','RESERVEE','LOUEE','VENDUE','EXPIREE') DEFAULT 'DISPONIBLE',
+  `prix` decimal(10,2) NOT NULL,
+  `unite_prix` varchar(20) DEFAULT 'jour',
+  `categorie` varchar(100) DEFAULT NULL,
+  `marque` varchar(100) DEFAULT NULL,
+  `modele` varchar(100) DEFAULT NULL,
+  `annee_fabrication` int(11) DEFAULT NULL,
+  `localisation` varchar(255) DEFAULT NULL,
+  `latitude` decimal(10,8) DEFAULT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `proprietaire_id` int(11) NOT NULL,
+  `date_debut_disponibilite` date DEFAULT NULL,
+  `date_fin_disponibilite` date DEFAULT NULL,
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
+  `date_modification` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `avec_operateur` tinyint(1) DEFAULT 0,
+  `assurance_incluse` tinyint(1) DEFAULT 0,
+  `caution` decimal(10,2) DEFAULT 0.00,
+  `conditions_location` text DEFAULT NULL,
+  `quantite_disponible` int(11) DEFAULT 0,
+  `unite_quantite` varchar(20) DEFAULT 'kg'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `annonces`
+--
+
+INSERT INTO `annonces` (`id`, `titre`, `description`, `type`, `statut`, `prix`, `unite_prix`, `categorie`, `marque`, `modele`, `annee_fabrication`, `localisation`, `latitude`, `longitude`, `proprietaire_id`, `date_debut_disponibilite`, `date_fin_disponibilite`, `date_creation`, `date_modification`, `avec_operateur`, `assurance_incluse`, `caution`, `conditions_location`, `quantite_disponible`, `unite_quantite`) VALUES
+(19, 'Tracteur John Deere 6120M', 'Tracteur puissant 120 CV, parfait pour les grandes exploitations. Entretien regulier, pneus neufs. Disponible avec ou sans operateur.', 'LOCATION', 'DISPONIBLE', 250.00, 'jour', 'Tracteur', NULL, NULL, NULL, 'Sousse', NULL, NULL, 39, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-03-02 08:51:35', 1, 0, 500.00, NULL, 0, 'piece'),
+(20, 'Engrais NPK 15-15-15 Premium', 'Engrais equilibre haute qualite pour toutes cultures. Sacs de 50kg, livraison possible sur Sousse et environs.', 'VENTE', 'DISPONIBLE', 45.00, 'sac', 'Engrais', NULL, NULL, NULL, 'Sousse', NULL, NULL, 39, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-02-23 12:10:34', 0, 0, 0.00, NULL, 100, 'sac'),
+(21, 'Systeme Irrigation Goutte a Goutte', 'Kit complet irrigation goutte a goutte pour 1 hectare. Tuyaux, goutteurs, filtre et programmateur inclus.', 'VENTE', 'DISPONIBLE', 1200.00, 'unite', 'Irrigation', NULL, NULL, NULL, 'Sousse', NULL, NULL, 39, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-02-23 12:10:34', 0, 0, 0.00, NULL, 5, 'unite'),
+(22, 'Moissonneuse-Batteuse Claas Lexion', 'Moissonneuse-batteuse professionnelle, ideale pour ble et orge. Capacite tremie 9000L.', 'LOCATION', 'DISPONIBLE', 800.00, 'jour', 'Moissonneuse', NULL, NULL, NULL, 'Tunis', NULL, NULL, 70, '2026-03-01', '2026-09-30', '2026-02-23 12:10:34', '2026-03-02 08:51:51', 1, 0, 1000.00, NULL, 2, 'piece'),
+(24, 'Pulverisateur Agricole 600L', 'Pulverisateur traine 600 litres avec rampe 12m. Parfait pour traitement phytosanitaire.', 'LOCATION', 'DISPONIBLE', 120.00, 'jour', 'Outil', NULL, NULL, NULL, 'Tunis', NULL, NULL, 70, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-03-02 08:52:17', 0, 0, 200.00, NULL, 1, 'piece'),
+(25, 'Olives Chemlali Bio - Recolte 2025', 'Olives fraiches variete Chemlali, agriculture biologique. Ideales pour huile ou conserve.', 'VENTE', 'DISPONIBLE', 8.00, 'kg', 'Fruits', NULL, NULL, NULL, 'Sfax', NULL, NULL, 70, '2026-01-01', '2026-03-31', '2026-02-23 12:10:34', '2026-03-02 08:52:30', 0, 0, 0.00, NULL, 500, 'kg'),
+(26, 'Charrue Reversible 3 Socs', 'Charrue reversible 3 socs pour labour profond. Compatible tracteurs 80-120 CV.', 'LOCATION', 'DISPONIBLE', 80.00, 'jour', 'Outil', NULL, NULL, NULL, 'Sfax', NULL, NULL, 70, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-03-02 08:52:46', 0, 0, 100.00, NULL, 1, 'piece'),
+(27, 'Dattes Deglet Nour Premium', 'Dattes Deglet Nour premiere qualite, recolte manuelle. Calibre AAA, caisses de 5kg.', 'VENTE', 'DISPONIBLE', 25.00, 'kg', 'Fruits', NULL, NULL, NULL, 'Tozeur', NULL, NULL, 70, '2026-01-01', '2026-06-30', '2026-02-23 12:10:34', '2026-03-02 08:53:04', 0, 0, 0.00, NULL, 300, 'kg'),
+(28, 'Trakteur', 'Titre de l\'annonce : Trakteur de qualité pour les agriculteurs tunisiens\n\nCatégorie : Trakteur\n\nDescription :\n\nVous cherchez un trakteur fiable et performant pour votre exploitation agricole ? Nous sommes ravis de vous présenter notre trakteur de qualité, conçu pour répondre aux besoins spécifiques des agriculteurs tunisiens.\n\nCe trakteur robuste et polyvalent est équipé de moteur puissant, permettant une efficacité maximale dans les travaux de labour, de moissonnage, de transport et d\'autres opérations agricoles. Son système de transmission et de direction est conçu pour garantir une stabilité et une facilité d\'utilisation, même en conditions difficiles.\n\nLes caractéristiques clés de notre trakteur :\n\n- Puissance motorisée : [puissance du moteur]\n- Capacité de déplacement : [capacité de déplacement]\n- Système de transmission : [système de transmission]\n- Système de direction : [système de direction]\n- Capacité de charge : [capacité de charge]\n\nNotre trakteur est équipé de toutes les fonctionnalités essentielles pour un rendement optimal, y compris :\n\n- Un système de freinage performant pour une sécurité maximale\n- Un système de ventilation pour une efficacité accrue\n- Un système de lubrification automatique pour une durée de vie prolongée\n\nEn choisissant notre trakteur, vous bénéficierez d\'une expérience agricole plus efficace, plus rentable et plus durable. N\'hésitez pas à nous contacter pour plus d\'informations ou pour prendre rendez-vous pour une visite.\n\nPrix : [prix du trakteur]\n\nEmplacement : [emplacement du trakteur]\n\nContact : [informations de contact]', 'LOCATION', 'DISPONIBLE', 450.00, 'jour', 'trakteur', NULL, NULL, 0, 'Tunis', NULL, NULL, 78, NULL, NULL, '2026-03-01 22:40:43', '2026-03-01 22:49:54', 0, 0, 0.00, NULL, 0, 'kg'),
+(29, 'Tracteur', 'Titre de l\'annonce : Tracteur agricole de haute qualité\n\nCatégorie : Matériel agricole\n\nDescription détaillée :\n\n**Tracteur agricole de haute qualité**\n\nNous proposons un tracteur agricole robuste et performant pour répondre aux besoins des agriculteurs tunisiens. Ce tracteur est équipé de caractéristiques avancées pour améliorer la productivité et la rentabilité de vos opérations agricoles.\n\n**Caractéristiques clés :**\n\n- Puissance forte et fiable pour une utilisation intensive\n- Transmission hydraulique pour un fonctionnement précis et efficace\n- Système de sécurité avancé pour garantir votre sécurité et celle de vos équipages\n- Capacité d\'intégration de diverses machines agricoles pour une utilisation flexible\n- Conception robuste pour résister aux conditions climatiques difficiles\n\n**Avantages :**\n\n- Meilleure productivité et rentabilité\n- Moins de temps et d\'énergie consommés\n- Possibilité d\'utiliser diverses machines agricoles\n- Conception robuste pour une longue durée de vie\n\n**Prix compétitif**\n\nNous proposons ce tracteur agricole de haute qualité à un prix compétitif. N\'hésitez pas à nous contacter pour en savoir plus sur nos options de financement et de maintenance.\n\n**Contactez-nous**\n\nPour plus d\'informations ou pour obtenir une démonstration du tracteur, n\'hésitez pas à nous contacter à AgriFlow. Nous sommes à votre disposition pour répondre à vos questions et vous aider à trouver la solution qui convient le mieux à vos besoins.', 'LOCATION', 'DISPONIBLE', 150.00, 'jour', 'Tracteurs', NULL, NULL, 0, 'Tunis', NULL, NULL, 70, NULL, NULL, '2026-03-02 09:18:29', '2026-03-02 09:23:36', 0, 0, 0.00, NULL, 0, 'pièce'),
+(30, 'Trax', 'Trax', 'LOCATION', 'DISPONIBLE', 250.00, 'jour', 'trax', NULL, NULL, 0, 'Tunis', NULL, NULL, 39, NULL, NULL, '2026-03-02 09:22:32', '2026-03-02 09:37:06', 0, 0, 0.00, NULL, 1, 'pièce'),
+(31, 'Drone agricole', 'Drone agricole', 'LOCATION', 'DISPONIBLE', 1200.00, 'jour', 'Drones', NULL, NULL, 0, 'TUNISIE', NULL, NULL, 70, NULL, NULL, '2026-03-02 09:32:05', '2026-03-02 09:32:05', 0, 0, 0.00, NULL, 2, 'pièce'),
+(32, 'Trax agriculteur', 'trax agriculteur', 'LOCATION', 'DISPONIBLE', 150.00, 'jour', 'trax', NULL, NULL, 0, 'kelibia', NULL, NULL, 39, NULL, NULL, '2026-03-02 09:38:58', '2026-03-02 09:40:49', 0, 0, 0.00, NULL, 0, 'pièce');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `annonce_photos`
+--
+
+CREATE TABLE `annonce_photos` (
+  `id` int(11) NOT NULL,
+  `annonce_id` int(11) NOT NULL,
+  `url_photo` varchar(500) NOT NULL,
+  `ordre` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `annonce_photos`
+--
+
+INSERT INTO `annonce_photos` (`id`, `annonce_id`, `url_photo`, `ordre`) VALUES
+(10, 19, 'https://images.unsplash.com/photo-1530267981375-f0de937f5f13?w=400', 0),
+(11, 20, 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400', 0),
+(12, 21, 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?w=400', 0),
+(13, 22, 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400', 0),
+(14, 23, 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400', 0),
+(15, 24, 'https://images.unsplash.com/photo-1592982537447-6f2a6a0c7c10?w=400', 0),
+(16, 25, 'https://images.unsplash.com/photo-1445282768818-728615cc910a?w=400', 0),
+(17, 26, 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=400', 0),
+(18, 27, 'https://images.unsplash.com/photo-1590779033100-9f60a05a013d?w=400', 0),
+(19, 28, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGAsfif4Q0lIMxU-fEVhCEitlm3Kp7-dTn5A&s', 0),
+(20, 29, 'https://tse1.mm.bing.net/th/id/OIP.p9kAf3yGs43lFZiqbb4CsAHaEo?rs=1&pid=ImgDetMain&o=7&rm=3', 0),
+(21, 30, 'https://www.excavator.ch/wp-content/uploads/strikingr/images/87_trax-369x277.jpg', 0),
+(22, 31, 'https://m.media-amazon.com/images/I/61LlywY7+zL._AC_SL1500_.jpg', 0),
+(23, 32, 'https://www.gam.com.tn/wp-content/uploads/2021/04/CUKUROVA-883.jpg', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `collab_applications`
+--
+
+CREATE TABLE `collab_applications` (
+  `id` bigint(20) NOT NULL,
+  `request_id` bigint(20) NOT NULL,
+  `candidate_id` bigint(20) NOT NULL DEFAULT 1,
+  `full_name` varchar(255) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `years_of_experience` int(11) NOT NULL DEFAULT 0,
+  `motivation` text NOT NULL,
+  `expected_salary` decimal(10,2) DEFAULT 0.00,
+  `status` varchar(50) NOT NULL DEFAULT 'PENDING',
+  `applied_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `collab_applications`
+--
+
+INSERT INTO `collab_applications` (`id`, `request_id`, `candidate_id`, `full_name`, `phone`, `email`, `years_of_experience`, `motivation`, `expected_salary`, `status`, `applied_at`, `updated_at`) VALUES
+(3, 2, 3, 'Mohamed Slimani', '98765432', 'mohamed@example.com', 2, 'Je cherche à apprendre et je suis très sérieux dans mon travail.', 35.00, 'APPROVED', '2026-02-20 00:02:07', '2026-02-21 03:23:17'),
+(5, 9, 1, 'aa', '0000000', 'bb@bb.com', 5, 'je suis aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 50.00, 'APPROVED', '2026-02-22 14:39:53', '2026-02-22 14:42:28'),
+(8, 8, 1, 'bbbbbbbbbbbbb', '1111111111111', 'bb@bb.bb', 5, 'peut etre  wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww', 100.00, 'PENDING', '2026-02-22 15:03:13', '2026-02-22 15:03:13'),
+(9, 6, 1, 'ccc', '00000000', 'aaa@aaa.c', 0, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 10.00, 'PENDING', '2026-02-22 15:24:14', '2026-02-22 15:24:14'),
+(11, 11, 1, 'ee', '0000000', 'cccc@cc.cc', 5, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 44.00, 'PENDING', '2026-02-23 02:37:20', '2026-02-23 02:37:20'),
+(13, 10, 1, 'aaa', '00000000', 'zzz@zz.v', 5, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 50.00, 'APPROVED', '2026-02-23 09:25:18', '2026-02-23 09:28:23'),
+(14, 12, 1, 'yakine', '28121078', 'yakkine@iii.fr', 5, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 50.00, 'REJECTED', '2026-02-26 03:10:37', '2026-02-26 03:12:23'),
+(15, 15, 2, 'aymen gh', '00000000', 'yaki@fff.com', 5, 'qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq', 50.00, 'PENDING', '2026-02-27 03:26:29', '2026-02-28 03:26:29'),
+(70, 2, 1, 'aymen ghabi', '00000000', 'ayme,@yy.vom', 8, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 50.00, 'APPROVED', '2026-02-28 03:29:50', '2026-02-26 03:41:04'),
+(71, 2, 71, 'ahmed garci', '11111111', 'ahmed@gmail.com', 0, 'je suis motivé , je suis passionné eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 90.00, 'PENDING', '2026-02-27 03:31:56', '2026-02-26 03:31:56'),
+(74, 2, 74, 'imen ben kilani', '28121457', 'imen@imen.cpm', 10, 'motivé motivé  motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé motivé ', 10.00, 'PENDING', '2026-02-27 03:38:15', '2026-02-27 03:38:15'),
+(75, 14, 1, 'ayoub', '111111111', 'ayy@yy.com', 5, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 20.00, 'APPROVED', '2026-02-26 23:09:29', '2026-02-26 23:10:03'),
+(76, 15, 1, 'Ayoub', '20305177', 'ayoub.maatoug@ipeib.ucar.tn', 6, 'lettre de motivation\niiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii', 30.00, 'PENDING', '2026-02-27 16:03:40', '2026-02-27 16:03:40'),
+(77, 16, 1, 'sami', '20305177', 'maatougsami25@gmail.com', 10, 'yesssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss', 50.00, 'PENDING', '2026-02-27 16:09:28', '2026-02-27 16:09:28'),
+(78, 17, 76, 'Yakine Sahli', '23654987', 'yakinesahli48@gmail.com', 15, 'sérieux et motivé aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 0.00, 'APPROVED', '2026-03-01 16:10:42', '2026-03-01 16:40:47'),
+(79, 18, 63, 'Maatoug Sami', '96140807', 'maatougsami25@gmail.com', 20, 'motivé hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh', 50.00, 'PENDING', '2026-03-01 16:42:40', '2026-03-01 16:42:40'),
+(80, 19, 76, 'yakine', '22222222', 'yakinesahli48@gmail.com', 10, 'motivé\nhhhhhhhhhhh22222222222222222222222222222222222hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh222222222', 50.00, 'APPROVED', '2026-03-02 01:25:21', '2026-03-02 01:26:57'),
+(81, 21, 63, 'sami', '12345788', 'aa@aa.com', 5, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 50.00, 'PENDING', '2026-03-02 10:09:45', '2026-03-02 10:09:45'),
+(82, 21, 77, 'yaki,e', '44444444', 'iii@jjj.com', 13, 'je suis motivé passionné aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 10.00, 'PENDING', '2026-03-02 10:14:32', '2026-03-02 10:14:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `collab_requests`
+--
+
+CREATE TABLE `collab_requests` (
+  `id` bigint(20) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `location` varchar(100) NOT NULL,
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(10,7) DEFAULT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `needed_people` int(11) NOT NULL DEFAULT 1,
+  `salary` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `status` varchar(50) NOT NULL DEFAULT 'PENDING',
+  `requester_id` bigint(20) NOT NULL DEFAULT 1,
+  `publisher` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `collab_requests`
+--
+
+INSERT INTO `collab_requests` (`id`, `title`, `description`, `location`, `latitude`, `longitude`, `start_date`, `end_date`, `needed_people`, `salary`, `status`, `requester_id`, `publisher`, `created_at`, `updated_at`) VALUES
+(2, 'Plantation de tomates', 'Aide nécessaire pour la plantation de tomates dans une grande serre. Débutants acceptés.', 'Tunis', NULL, NULL, '2026-03-01', '2026-03-05', 3, 35.00, 'APPROVED', 1, NULL, '2026-02-19 16:54:29', '2026-02-19 16:54:29'),
+(5, 'recolte des tomates ', 'Besoin dun agriculteur serieux avec experience ', 'manzel abderahmen', NULL, NULL, '2026-02-21', '2026-03-01', 1, 20.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-19 23:42:19', '2026-02-19 23:54:28'),
+(7, 'Plantation des pommes de terres', 'On cherche 4 ouvriers serieux', 'Sfax', NULL, NULL, '2026-02-28', '2026-03-08', 4, 50.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-21 02:45:28', '2026-02-21 02:46:00'),
+(8, 'Récolte oranges ', 'on recherche ouvrier serieux', 'Bizerte', NULL, NULL, '2026-03-06', '2026-03-08', 1, 70.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-21 03:29:36', '2026-02-21 03:31:09'),
+(9, 'feunouilles', 'besoin dagriculteurs', 'Bizerte', NULL, NULL, '2026-02-24', '2026-03-01', 1, 40.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-22 14:35:10', '2026-02-22 14:36:22'),
+(11, 'recolte fraise', 'recherche', 'Bizerte', NULL, NULL, '2026-02-24', '2026-02-25', 1, 55.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-23 02:36:14', '2026-02-23 02:36:42'),
+(12, 'Olives recolte', 'recherche ', 'Azmour, Délégation Kélibia, Gouvernorat Nabeul, 8055, Tunisie', 36.9279390, 11.0137939, '2026-02-27', '2026-03-01', 1, 50.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-26 01:59:52', '2026-02-26 02:00:14'),
+(13, 'Plantation des Fraises', 'on cherche plantation fraise ', 'Sidi Ahmed, Délégation Bizerte Sud, Gouvernorat Bizerte, Tunisie', 37.2740528, 9.7229004, '2026-02-27', '2026-03-01', 1, 10.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-26 03:20:11', '2026-02-26 03:20:29'),
+(14, 'Recolte des pommes ', 'on cherche des personnes seriesux pou......', 'Cherichira, Délégation Essouassi, Gouvernorat Mahdia, Tunisie', 35.2994355, 10.5249023, '2026-02-28', '2026-03-03', 2, 53.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-26 23:06:37', '2026-02-26 23:07:56'),
+(15, 'recolte oranges', 'on cherche', 'Habib Thameur, Délégation El Hamma, Gouvernorat Gabès, Tunisie', 33.8521697, 9.6679688, '2026-02-28', '2026-03-01', 1, 44.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-26 23:31:18', '2026-02-26 23:31:41'),
+(16, 'Récolte tomate ', 'illi yji ', 'Sidi Harreth, Délégation Kasserine Sud, Gouvernorat Kasserine, Tunisie', 35.2456191, 8.8165283, '2026-02-28', '2026-03-05', 2, 440.00, 'APPROVED', 1, 'Ali Ben Ahmed', '2026-02-27 16:04:09', '2026-02-27 16:05:57'),
+(17, 'Récolte pomme de terre ', 'à la recherche d\'un ouvrier ', 'عين فرنة, معتمدية برقو, ولاية سليانة, تونس', 36.1733569, 9.5800781, '2026-03-11', '2026-03-26', 10, 40.00, 'APPROVED', 78, 'AYOUB MAATOUG', '2026-03-01 16:05:37', '2026-03-01 16:07:42'),
+(18, 'Récolte Olive', 'Récolte Olive ', 'الطريق الجهوية جبنيانة - المحرس, شعلاب, معتمدية منزل شاكر, ولاية صفاقس, تونس', 35.0389920, 10.5249023, '2026-03-02', '2026-03-31', 9, 35.00, 'APPROVED', 78, 'AYOUB MAATOUG', '2026-03-01 16:39:02', '2026-03-01 16:39:50'),
+(19, 'Récolte fjel', 'yes', 'نهج بيروت, التعمير1, التعمير, معتمدية أريانة المدينة, ولاية أريانة, 2080, تونس', 36.8620427, 10.1953125, '2026-03-03', '2026-03-27', 4, 40.00, 'APPROVED', 74, 'Maatoug Ayoub', '2026-03-02 01:18:32', '2026-03-02 01:23:57'),
+(20, 'Récolte Fjel 2222', 'azerty', 'بوعطوش, معتمدية الحامة, ولاية قابس, تونس', 34.0890613, 9.4482422, '2026-03-06', '2026-03-26', 8, 80.00, 'REJECTED', 74, 'Maatoug Ayoub', '2026-03-02 01:21:23', '2026-03-02 01:24:01'),
+(21, 'Recolte des tomates', 'on recherche des agriculteurs', 'جيملة, معتمدية زغوان, ولاية زغوان, تونس', 36.4831406, 10.2447510, '2026-03-03', '2026-03-10', 1, 40.00, 'APPROVED', 76, 'sahli yakine', '2026-03-02 10:06:13', '2026-03-02 10:06:58');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cultures`
+--
+
+CREATE TABLE `cultures` (
+  `id` int(11) NOT NULL,
+  `parcelle_id` int(11) NOT NULL,
+  `proprietaire_id` int(11) NOT NULL,
+  `nom` varchar(150) DEFAULT NULL,
+  `type_culture` enum('BLE','ORGE','MAIS','POMME_DE_TERRE','TOMATE','OLIVIER','AGRUMES','VIGNE','PASTECQUE','FRAISE','LEGUMES','AUTRE') DEFAULT 'AUTRE',
+  `superficie` decimal(10,2) DEFAULT NULL,
+  `etat` enum('EN_COURS','RECOLTEE','EN_VENTE','VENDUE') DEFAULT 'EN_COURS',
+  `date_recolte` date DEFAULT NULL,
+  `recolte_estime` decimal(10,2) DEFAULT NULL,
+  `date_creation` datetime DEFAULT current_timestamp(),
+  `id_acheteur` int(11) DEFAULT NULL,
+  `date_vente` date DEFAULT NULL,
+  `date_publication` date DEFAULT NULL,
+  `prix_vente` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cultures`
+--
+
+INSERT INTO `cultures` (`id`, `parcelle_id`, `proprietaire_id`, `nom`, `type_culture`, `superficie`, `etat`, `date_recolte`, `recolte_estime`, `date_creation`, `id_acheteur`, `date_vente`, `date_publication`, `prix_vente`) VALUES
+(1, 1, 75, 'fraise', 'FRAISE', 100.00, 'EN_COURS', '2026-03-18', 10.20, '2026-02-28 12:19:09', NULL, NULL, NULL, NULL),
+(2, 2, 78, 'Batata', 'POMME_DE_TERRE', 500.00, 'VENDUE', '2026-03-26', 2000.00, '2026-03-01 15:11:48', 63, '2026-03-01', '2026-03-01', 2600),
+(3, 5, 78, 'Degla', 'AUTRE', 1000.00, 'EN_VENTE', '2026-04-25', 100.00, '2026-03-01 18:20:38', NULL, NULL, '2026-03-01', 30000),
+(4, 6, 76, 'Besbes', 'LEGUMES', 1200.00, 'RECOLTEE', '2026-03-29', 3000.00, '2026-03-01 22:05:11', NULL, NULL, NULL, NULL),
+(5, 8, 74, 'Récolte Fjel', 'LEGUMES', 500.00, 'VENDUE', '2026-03-28', 300.00, '2026-03-02 02:05:53', 78, '2026-03-02', '2026-03-02', 25000),
+(6, 9, 74, 'fraise', 'FRAISE', 1200.00, 'VENDUE', '2026-03-27', 300.00, '2026-03-02 09:27:40', 90, '2026-03-02', '2026-03-02', 600),
+(7, 10, 90, 'culture1', 'POMME_DE_TERRE', 5000.00, 'EN_VENTE', '2026-03-07', 500.00, '2026-03-02 10:43:49', NULL, NULL, '2026-03-02', 6000),
+(8, 4, 78, 'Fraise1', 'FRAISE', 200.00, 'EN_COURS', '2026-03-16', 300.00, '2026-03-02 10:54:36', NULL, NULL, NULL, NULL),
+(9, 11, 78, 'pomme de terre', 'POMME_DE_TERRE', 200.00, 'EN_COURS', '2026-03-10', 200.00, '2026-03-02 10:57:05', NULL, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `diagnosti`
+--
+
+CREATE TABLE `diagnosti` (
+  `id_diagnostic` int(11) NOT NULL,
+  `id_agriculteur` int(11) NOT NULL,
+  `nom_culture` varchar(100) NOT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  `description` text NOT NULL,
+  `reponse_expert` text DEFAULT NULL,
+  `statut` varchar(50) DEFAULT 'En attente',
+  `date_envoi` datetime DEFAULT NULL,
+  `date_reponse` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `diagnosti`
+--
+
+INSERT INTO `diagnosti` (`id_diagnostic`, `id_agriculteur`, `nom_culture`, `image_path`, `description`, `reponse_expert`, `statut`, `date_envoi`, `date_reponse`) VALUES
+(27, 76, 'Besbes', 'C:\\Users\\Crash\\Desktop\\fenouil.png', 'Objet : Réclamation concernant la qualité des plants de fenouil\n\nÀ l\'attention de l\'expert agricole,\n\nJe vous écris pour signaler un problème concernant mes plants de fenouil. Comme vous pouvez le voir sur la photo ci-jointe, les plants de fenouil présentent des feuilles jaunâtres et des tiges faibles.\n\nMalgré un arrosage régulier et une exposition suffisante à la lumière solaire, les plants ne semblent pas se développer normalement. Les feuilles sont également moins nombreuses et moins denses que celles que l\'on peut trouver sur des plants sains.\n\nJe crains que cela puisse être dû à une maladie ou à une carence nutritionnelle. Je vous serais reconnaissant si vous pouviez m\'aider à identifier la cause de ce problème et à trouver une solution pour y remédier.\n\nJe joins à ce message une photo des plants affectés. Je vous remercie d\'avance pour votre attention à cette affaire et je suis impatient de vous entendre.\n\nCordialement,\n[Votre nom]', '\n--- PRODUIT RECOMMANDÉ ---\nNom : Oidium-Fix\nDosage : 1.8 L / hectare\nFréquence : 2 fois par mois\nNote : Ne pas dépasser la dose recommandée. Bien nettoyer le pulvérisateur après usage.\n---------------------------\n', 'Valide', '2026-03-01 22:26:03', NULL),
+(32, 74, 'fraise', 'C:\\Users\\Crash\\Desktop\\fraise malade.jpg', 'Objet: Réclamation Agricole - Fruits Abîmés\n\nCher Expert Agricole,\n\nJe vous écris pour signaler un problème concernant une récolte de fraises qui présente des défauts importants. En examinant les fruits, j\'ai remarqué que plusieurs d\'entre eux ont des tâches brunes en leur centre, comme si une partie du fruit était morte ou pourrie. Voir la flèche noire.\n\nCes fraises faisaient partie d\'un champ qui a reçu un traitement standard en termes d\'irrigation, de fertilisation et de protection phytosanitaire. Cependant, depuis quelques jours, nous avons observé une augmentation significative de la température et une légère diminution des précipitations, ce qui pourrait avoir affecté la santé des plantes.\n\nLes dégâts observés sur les fraises sont caractérisés par:\n\n- Des tâches brunes au centre des fruits\n- Une texture molle et/ou décolorée dans les zones affectées\n- Aucune moisissure visible à l\'extérieur des fruits\n\nJe joins à ce message une image des fruits affectés. Pouvez-vous expertiser cette situation et me donner une analyse de la cause de ces dégâts ? Est-ce lié à un problème de sécheresse, une maladie ou un parasite ? \n\nJe vous remercie de votre attention à cette affaire et je reste à votre disposition pour tout complément d\'information.\n\nCordialement,\n[Votre Nom] \n Responsable Agricole \n Système AGRIFLOW', '\n--- PRODUIT RECOMMANDÉ ---\nNom : F1-2203\nDosage : 2L/hec\nFréquence : 1 fois /moins\nNote : Ne pas appliquer sur un arbre affaibli. Nettoyer le matériel après usage. Éviter le contact avec la peau.\n---------------------------\n', 'Valide', '2026-03-02 09:40:59', NULL),
+(33, 74, 'fraise', 'C:\\Users\\Crash\\Desktop\\fraise malade.jpg', 'Objet : Réclamation concernant des fraises affectées par une maladie ou un défaut\n\nMadame, Monsieur l\'expert agricole,\n\nJe vous écris pour signaler un problème observé sur une récolte de fraises qui semble être affectée par une maladie ou un défaut quelconque. Les symptômes observés sont des taches sombres et des zones détruites sur la surface des fruits, comme le montre la photo ci-jointe.\n\nLes fraises présentent des taches brunes à noires, circulaires ou irrégulières, qui semblent être enfoncées dans la chair du fruit. Ces taches sont souvent entourées d\'une zone jaune ou brune. Les fruits semblent par ailleurs mûrs et de taille normale.\n\nLes informations relatives aux champs où les fraises ont été cultivées sont les suivantes :\n- Localisation : [Insérer localisation]\n- Type de sol : [Insérer type de sol]\n- Conditions météorologiques récentes : [Insérer conditions météorologiques]\n\nLes pratiques agricoles suivies incluent :\n- Irrigation régulière\n- Utilisation d\'engrais et de pesticides selon les recommandations standard\n\nLa variété de fraise cultivée est [Insérer variété].\n\nL\'objectif de cette réclamation est d\'obtenir une identification précise de la cause de ces symptômes et des recommandations pour un traitement approprié afin de prévenir de futures occurrences.\n\nJe joins à ce message une photo des fraises affectées. Je serais ravi de fournir plus d\'informations ou de discuter de ce problème en détail si nécessaire.\n\nCordialement,\n[Votre nom] \nSystème AGRIFLOW.', NULL, 'En attente', '2026-03-02 09:41:31', NULL),
+(34, 78, 'Fraise1', 'C:\\Users\\Crash\\Desktop\\fraise malade.jpg', 'Objet : Demande de réclamation agricole - Fruits endommagés\n\nCher expert agricole,\n\nJe vous écris pour signaler un problème observé sur une culture de fraises dans notre exploitation. Nous avons récemment remarqué que certaines de nos fraises présentaient des dommages importants, comme vous pouvez le voir sur la photo ci-jointe.\n\nLe problème observé est une attaque probable de pourriture, qui semble provenir de Botrytis Cinerea. En effet, on observe des tâches brunes sur les fruits, qui s\'accompagnent d\'un pourrissement rapide. \n\nNous avons déjà mis en place des mesures de prévention, comme la limitation de l\'irrigation, l\'amélioration de la ventilation, et l\'élimination des fruits et feuilles contaminés. Cependant, le problème persiste et nous avons besoin de votre expertise afin d\'identifier la cause exacte de ce problème et de trouver une solution efficace.\n\nPourriez-vous vous déplacer dans notre exploitation afin d\'évaluer la situation et de nous proposer des solutions adaptées ?\n\nJe vous remercie de votre attention à cette affaire et je me tiens à votre disposition pour tout renseignement complémentaire.\n\nCordialement,\n[Votre nom]', '\n--- PRODUIT RECOMMANDÉ ---\nNom : Scab-Control\nDosage : 2 L / hectare\nFréquence : 1 fois tous les 7 jours\nNote : Appliquer avant l’apparition des symptômes. Porter des équipements de protection. Éviter les jours de pluie.\n---------------------------\n', 'Valide', '2026-03-02 11:00:59', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `messages`
+--
+
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL,
+  `expediteur_id` int(11) NOT NULL,
+  `destinataire_id` int(11) NOT NULL,
+  `sujet` varchar(255) DEFAULT NULL,
+  `contenu` text NOT NULL,
+  `annonce_id` int(11) DEFAULT NULL,
+  `reservation_id` int(11) DEFAULT NULL,
+  `lu` tinyint(1) DEFAULT 0,
+  `date_lecture` timestamp NULL DEFAULT NULL,
+  `date_envoi` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `parcelle`
+--
+
+CREATE TABLE `parcelle` (
+  `id` int(11) NOT NULL,
+  `agriculteur_id` int(11) NOT NULL,
+  `nom` varchar(150) DEFAULT NULL,
+  `superficie` decimal(10,2) DEFAULT NULL,
+  `type_terre` enum('ARGILEUSE','SABLEUSE','LIMONEUSE','CALCAIRE','HUMIFERE','SALINE','MIXTE','AUTRE') DEFAULT 'AUTRE',
+  `localisation` varchar(150) DEFAULT NULL,
+  `date_creation` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `parcelle`
+--
+
+INSERT INTO `parcelle` (`id`, `agriculteur_id`, `nom`, `superficie`, `type_terre`, `localisation`, `date_creation`) VALUES
+(1, 75, 'Senya', 100.00, 'HUMIFERE', '22.819,41.573', '2026-02-28 12:19:52'),
+(2, 78, 'Senya batata', 500.00, 'SABLEUSE', '52.839,-1.889', '2026-03-01 15:09:59'),
+(3, 79, 'eeee', 5000.00, 'CALCAIRE', '52.839,-1.889', '2026-03-01 16:13:50'),
+(4, 78, 'waha', 600.00, 'SABLEUSE', 'العذارة, معتمدية دوز الجنوبية, ولاية قبلي, تونس', '2026-03-01 18:07:56'),
+(5, 78, 'Wa7a gabes', 1000.00, 'MIXTE', '33.833920,9.783325', '2026-03-01 18:16:10'),
+(6, 76, 'Henchir', 1200.00, 'ARGILEUSE', '36.686041,9.091187', '2026-03-01 22:04:17'),
+(7, 80, 'Senya Batata', 500.00, 'HUMIFERE', '36.853252,10.898438', '2026-03-02 00:40:16'),
+(8, 74, 'Henchuir fjel', 500.00, 'HUMIFERE', '37.212832,9.942627', '2026-03-02 02:04:55'),
+(9, 74, 'wa7a gbelli', 1500.00, 'SALINE', '33.045508,8.942871', '2026-03-02 09:24:23'),
+(10, 90, 'parcelletest', 10000.00, 'MIXTE', '35.281501,13.886719', '2026-03-02 10:42:43'),
+(11, 78, 'parcelle8', 500.00, 'ARGILEUSE', '36.809285,9.536133', '2026-03-02 10:56:25');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plans_irrigation`
+--
+
+CREATE TABLE `plans_irrigation` (
+  `plan_id` int(11) NOT NULL,
+  `id_culture` int(11) DEFAULT NULL,
+  `nom_culture` varchar(100) DEFAULT NULL,
+  `date_demande` datetime DEFAULT current_timestamp(),
+  `statut` varchar(50) DEFAULT 'en_attente',
+  `volume_eau_propose` float DEFAULT NULL,
+  `temp_irrigation` time DEFAULT NULL,
+  `temp` datetime DEFAULT NULL,
+  `donnees_meteo_json` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `plans_irrigation`
+--
+
+INSERT INTO `plans_irrigation` (`plan_id`, `id_culture`, `nom_culture`, `date_demande`, `statut`, `volume_eau_propose`, `temp_irrigation`, `temp`, `donnees_meteo_json`) VALUES
+(4, 1, NULL, '2026-02-15 19:13:35', 'brouillon', 35, '00:00:00', '2026-02-15 19:13:35', NULL),
+(5, 3, NULL, '2026-02-15 19:13:48', 'brouillon', 50, '00:00:00', '2026-02-15 19:13:48', NULL),
+(7, 9, 'pomme de terre', '2026-02-15 22:33:20', 'soumis', 1303.07, NULL, NULL, NULL),
+(8, 2, NULL, '2026-02-16 11:00:04', 'brouillon', 40, '00:00:00', '2026-02-16 11:00:04', NULL),
+(9, 4, 'Besbes', '2026-02-18 09:46:53', 'soumis', 3224.87, NULL, NULL, NULL),
+(10, 8, NULL, '2026-02-18 09:47:00', 'brouillon', 70, '00:00:00', '2026-02-18 09:47:00', NULL),
+(11, 11, NULL, '2026-02-18 20:38:52', 'brouillon', 45, '00:00:00', '2026-02-18 20:38:52', NULL),
+(12, 5, 'Récolte Fjel', '2026-02-19 19:01:10', 'soumis', 1329.55, NULL, NULL, NULL),
+(13, 3, NULL, '2026-02-20 11:32:16', 'brouillon', 50, '00:00:00', '2026-02-20 11:32:16', NULL),
+(14, 1, NULL, '2026-02-20 11:32:25', 'brouillon', 35, '00:00:00', '2026-02-20 11:32:25', NULL),
+(15, 1, NULL, '2026-02-20 11:52:18', 'brouillon', 35, '00:00:00', '2026-02-20 11:52:18', NULL),
+(16, 7, 'culture1', '2026-03-02 10:53:09', 'soumis', 27831, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plans_irrigation_jour`
+--
+
+CREATE TABLE `plans_irrigation_jour` (
+  `id` int(11) NOT NULL,
+  `plan_id` int(11) NOT NULL,
+  `jour` varchar(10) NOT NULL,
+  `eau_mm` float DEFAULT 0,
+  `temps_min` int(11) DEFAULT 0,
+  `temp_c` float DEFAULT 0,
+  `semaine_debut` date NOT NULL DEFAULT '2024-01-01',
+  `humidite` float DEFAULT 0,
+  `pluie` float DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `plans_irrigation_jour`
+--
+
+INSERT INTO `plans_irrigation_jour` (`id`, `plan_id`, `jour`, `eau_mm`, `temps_min`, `temp_c`, `semaine_debut`, `humidite`, `pluie`) VALUES
+(498, 15, 'THU', 4.2, 21, 13.5, '2026-02-16', 97, 0.3),
+(499, 15, 'TUE', 0.7, 4, 11, '2026-02-16', 95, 3.8),
+(500, 15, 'WED', 4.5, 23, 11.3, '2026-02-16', 95, 0),
+(501, 15, 'SAT', 1.2, 6, 10.3, '2026-02-16', 93, 3.3),
+(502, 15, 'FRI', 1.5, 8, 10.9, '2026-02-16', 91, 3),
+(503, 15, 'MON', 4.5, 23, 11.9, '2026-02-16', 92, 0),
+(504, 15, 'SUN', 0.0999999, 1, 6.6, '2026-02-16', 92, 4.4),
+(512, 13, 'THU', 6.42857, 33, 13.9, '2026-02-16', 96, 0),
+(513, 13, 'TUE', 4.62857, 24, 10.8, '2026-02-16', 95, 1.8),
+(514, 13, 'WED', 6.42857, 33, 11.9, '2026-02-16', 96, 0),
+(515, 13, 'SAT', 2.12857, 11, 10.3, '2026-02-16', 95, 4.3),
+(516, 13, 'FRI', 6.22857, 32, 11.6, '2026-02-16', 94, 0.2),
+(517, 13, 'MON', 6.42857, 33, 11.6, '2026-02-16', 92, 0),
+(518, 13, 'SUN', 2.02857, 11, 6.6, '2026-02-16', 92, 4.4),
+(519, 10, 'THU', 8.7, 44, 13.5, '2026-02-16', 97, 0.3),
+(520, 10, 'TUE', 5.2, 26, 11, '2026-02-16', 95, 3.8),
+(521, 10, 'WED', 9, 45, 11.3, '2026-02-16', 95, 0),
+(522, 10, 'SAT', 5.7, 29, 10.3, '2026-02-16', 93, 3.3),
+(523, 10, 'FRI', 6, 30, 10.9, '2026-02-16', 91, 3),
+(524, 10, 'MON', 9, 45, 11.9, '2026-02-16', 92, 0),
+(525, 10, 'SUN', 4.6, 23, 6.6, '2026-02-16', 92, 4.4),
+(533, 10, 'MON', 9, 45, 11.9, '2026-02-23', 92, 0),
+(534, 10, 'TUE', 5.2, 26, 11, '2026-02-23', 95, 3.8),
+(535, 10, 'WED', 9, 45, 11.3, '2026-02-23', 95, 0),
+(536, 10, 'THU', 8.7, 44, 13.5, '2026-02-23', 97, 0.3),
+(537, 10, 'FRI', 6, 30, 10.9, '2026-02-23', 91, 3),
+(538, 10, 'SAT', 5.7, 29, 10.3, '2026-02-23', 93, 3.3),
+(539, 10, 'SUN', 4.6, 23, 6.6, '2026-02-23', 92, 4.4),
+(561, 8, 'THU', 5.71429, 29, 25.5, '2026-02-16', 30, 0),
+(562, 8, 'TUE', 5.71429, 29, 29.1, '2026-02-16', 42, 0),
+(563, 8, 'WED', 5.71429, 29, 28, '2026-02-16', 60, 0),
+(564, 8, 'SAT', 5.71429, 29, 26.4, '2026-02-16', 52, 0),
+(565, 8, 'FRI', 5.71429, 29, 28.6, '2026-02-16', 41, 0),
+(566, 8, 'MON', 5.71429, 29, 28.4, '2026-02-16', 26, 0),
+(567, 8, 'SUN', 5.71429, 29, 25.5, '2026-02-16', 56, 0),
+(568, 15, 'THU', 25.71, 129, 9.4, '2026-02-23', 96, 0),
+(569, 15, 'TUE', 24.51, 123, 13.5, '2026-02-23', 93, 1.2),
+(570, 15, 'WED', 25.71, 129, 9.1, '2026-02-23', 92, 0),
+(571, 15, 'SAT', 20.91, 105, 9.5, '2026-02-23', 99, 4.8),
+(572, 15, 'FRI', 25.71, 129, 13.2, '2026-02-23', 94, 0),
+(573, 15, 'MON', 24.71, 124, 11.6, '2026-02-23', 97, 1),
+(574, 15, 'SUN', 25.11, 126, 9.8, '2026-02-23', 97, 0.6),
+(610, 8, 'THU', 192.857, 965, 10.5, '2026-02-23', 100, 0),
+(611, 8, 'TUE', 192.257, 962, 13.8, '2026-02-23', 92, 0.6),
+(612, 8, 'WED', 192.557, 963, 10.7, '2026-02-23', 94, 0.3),
+(613, 8, 'SAT', 192.857, 965, 8.4, '2026-02-23', 87, 0),
+(614, 8, 'FRI', 187.757, 939, 10.6, '2026-02-23', 98, 5.1),
+(615, 8, 'MON', 192.857, 965, 11.4, '2026-02-23', 96, 0),
+(616, 8, 'SUN', 192.857, 965, 9.4, '2026-02-23', 96, 0),
+(617, 13, 'THU', 257.14, 1286, 24.4, '2026-02-23', 90, 0),
+(618, 13, 'TUE', 257.14, 1286, 20.8, '2026-02-23', 96, 0),
+(619, 13, 'WED', 285.71, 1429, 22.4, '2026-02-23', 71, 0),
+(620, 13, 'SAT', 238.59, 1193, 18.6, '2026-02-23', 92, 18.55),
+(621, 13, 'FRI', 256.64, 1284, 19.6, '2026-02-23', 95, 0.5),
+(622, 13, 'MON', 257.14, 1286, 20.3, '2026-02-23', 100, 0),
+(623, 13, 'SUN', 257.14, 1286, 18.3, '2026-02-23', 88, 0),
+(631, 9, 'THU', 462.56, 2313, 21.7, '2026-02-23', 94, 0.3),
+(632, 9, 'TUE', 462.86, 2315, 19.5, '2026-02-23', 100, 0),
+(633, 9, 'WED', 462.86, 2315, 18.9, '2026-02-23', 96, 0),
+(634, 9, 'SAT', 449.41, 2248, 15.5, '2026-02-23', 96, 13.45),
+(635, 9, 'FRI', 461.46, 2308, 17.3, '2026-02-23', 94, 1.4),
+(636, 9, 'MON', 462.86, 2315, 18.8, '2026-02-23', 96, 0),
+(637, 9, 'SUN', 462.86, 2315, 16.5, '2026-02-23', 98, 0),
+(666, 12, 'THU', 190.657, 954, 17, '2026-03-02', 92, 2.2),
+(667, 12, 'TUE', 192.757, 964, 19.6, '2026-03-02', 94, 0.1),
+(668, 12, 'WED', 192.757, 964, 21.5, '2026-03-02', 92, 0.1),
+(669, 12, 'SAT', 192.857, 965, 18.5, '2026-03-02', 100, 0),
+(670, 12, 'FRI', 174.807, 875, 15.3, '2026-03-02', 94, 18.05),
+(671, 12, 'MON', 192.857, 965, 19.9, '2026-03-02', 93, 0),
+(672, 12, 'SUN', 192.857, 965, 19.5, '2026-03-02', 100, 0),
+(687, 16, 'THU', 3857.14, 19286, 16.9, '2026-03-02', 84, 0),
+(688, 16, 'TUE', 4285.71, 21429, 17, '2026-03-02', 79, 0),
+(689, 16, 'WED', 3857.14, 19286, 17, '2026-03-02', 81, 0),
+(690, 16, 'SAT', 3839.04, 19196, 15.9, '2026-03-02', 89, 18.1),
+(691, 16, 'FRI', 3849.94, 19250, 16.7, '2026-03-02', 87, 7.2),
+(692, 16, 'MON', 4285.71, 21429, 17, '2026-03-02', 77, 0),
+(693, 16, 'SUN', 3856.34, 19282, 16.5, '2026-03-02', 82, 0.8),
+(694, 7, 'THU', 192.56, 963, 18.5, '2026-03-02', 90, 0.3),
+(695, 7, 'TUE', 192.26, 962, 17.8, '2026-03-02', 88, 0.6),
+(696, 7, 'WED', 192.86, 965, 20.8, '2026-03-02', 91, 0),
+(697, 7, 'SAT', 187.41, 938, 15.6, '2026-03-02', 98, 5.45),
+(698, 7, 'FRI', 154.06, 771, 13.5, '2026-03-02', 93, 38.8),
+(699, 7, 'MON', 192.86, 965, 19, '2026-03-02', 93, 0),
+(700, 7, 'SUN', 191.06, 956, 16.8, '2026-03-02', 99, 1.8);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `produits_phytosanitaires`
+--
+
+CREATE TABLE `produits_phytosanitaires` (
+  `id_produit` int(11) NOT NULL,
+  `nom_produit` varchar(100) NOT NULL,
+  `dosage` varchar(100) DEFAULT NULL,
+  `frequence_application` varchar(100) DEFAULT NULL,
+  `remarques` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `produits_phytosanitaires`
+--
+
+INSERT INTO `produits_phytosanitaires` (`id_produit`, `nom_produit`, `dosage`, `frequence_application`, `remarques`) VALUES
+(17, 'Bio-Protect', '4 L / hectare', '1 fois tous les 15 jours', 'Produit biologique sans danger pour l’environnement. Bien agiter avant utilisation. Stocker à l’abri de la chaleur.'),
+(18, 'Scab-Control', '2 L / hectare', '1 fois tous les 7 jours', 'Appliquer avant l’apparition des symptômes. Porter des équipements de protection. Éviter les jours de pluie.'),
+(19, 'Oidium-Fix', '1.8 L / hectare', '2 fois par mois', 'Ne pas dépasser la dose recommandée. Bien nettoyer le pulvérisateur après usage.'),
+(20, 'F1-2203', '2L/hec', '1 fois /moins', 'Ne pas appliquer sur un arbre affaibli. Nettoyer le matériel après usage. Éviter le contact avec la peau.');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reclamations`
+--
+
+CREATE TABLE `reclamations` (
+  `id` int(11) NOT NULL,
+  `utilisateur_id` int(11) NOT NULL,
+  `categorie` varchar(255) NOT NULL,
+  `titre` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `date_creation` datetime NOT NULL DEFAULT current_timestamp(),
+  `statut` varchar(30) NOT NULL DEFAULT 'EN_ATTENTE',
+  `reponse` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reclamations`
+--
+
+INSERT INTO `reclamations` (`id`, `utilisateur_id`, `categorie`, `titre`, `description`, `date_creation`, `statut`, `reponse`) VALUES
+(9, 44, 'ACCESS', 'access rec', 'relamationaaaaa', '2026-02-20 14:16:01', 'EN_ATTENTE', 'maatoug ayoub (ADMIN) : noooo\nmaatoug ayoub (ADMIN) : yes'),
+(10, 44, 'PAIMENT', 'aaaaaa', 'aaaaaaaaaa', '2026-02-20 14:16:35', 'EN_ATTENTE', 'maatoug ayoub (ADMIN) : yes'),
+(12, 49, 'AUTRE', 'rrr', 'rrrrr', '2026-02-21 00:45:17', 'EN_ATTENTE', NULL),
+(18, 81, 'TECHNIQUE', 'je veux changer ma signature', 'yes', '2026-03-02 01:16:47', 'TRAITE', 'Adam Maatoug (AGRICULTEUR) : yes\nmaatoug ayoub (ADMIN) : j\'ai corrigé le problème\nAdam Maatoug (AGRICULTEUR) : rrrr\nAdam Maatoug (AGRICULTEUR) : eeee\nAdam Maatoug (AGRICULTEUR) : eeeeeeeeeeee'),
+(19, 81, 'ACCESS', 'tttt', 'ttttt', '2026-03-02 01:42:17', 'TRAITE', 'maatoug ayoub (ADMIN) : rrrrrrrrrrrr'),
+(21, 74, 'TECHNIQUE', 'Design mal fait', 'j\'ai pas appticié le design', '2026-03-02 09:58:29', 'EN_ATTENTE', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reservations`
+--
+
+CREATE TABLE `reservations` (
+  `id` int(11) NOT NULL,
+  `annonce_id` int(11) NOT NULL,
+  `demandeur_id` int(11) NOT NULL,
+  `proprietaire_id` int(11) NOT NULL,
+  `date_debut` date NOT NULL,
+  `date_fin` date NOT NULL,
+  `quantite` int(11) DEFAULT 1,
+  `prix_total` decimal(10,2) NOT NULL,
+  `caution` decimal(10,2) DEFAULT 0.00,
+  `statut` enum('EN_ATTENTE','ACCEPTEE','REFUSEE','EN_COURS','TERMINEE','ANNULEE') DEFAULT 'EN_ATTENTE',
+  `message_demande` text DEFAULT NULL,
+  `reponse_proprietaire` text DEFAULT NULL,
+  `date_demande` timestamp NOT NULL DEFAULT current_timestamp(),
+  `date_reponse` timestamp NULL DEFAULT NULL,
+  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
+  `contrat_url` varchar(500) DEFAULT NULL,
+  `contrat_signe` tinyint(1) DEFAULT 0,
+  `date_signature_contrat` timestamp NULL DEFAULT NULL,
+  `paiement_effectue` tinyint(1) DEFAULT 0,
+  `date_paiement` timestamp NULL DEFAULT NULL,
+  `mode_paiement` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `reservations`
+--
+
+INSERT INTO `reservations` (`id`, `annonce_id`, `demandeur_id`, `proprietaire_id`, `date_debut`, `date_fin`, `quantite`, `prix_total`, `caution`, `statut`, `message_demande`, `reponse_proprietaire`, `date_demande`, `date_reponse`, `date_creation`, `contrat_url`, `contrat_signe`, `date_signature_contrat`, `paiement_effectue`, `date_paiement`, `mode_paiement`) VALUES
+(2, 4, 36, 39, '2026-02-15', '2026-02-16', 1, 275.00, 0.00, 'REFUSEE', 'hey', 'noob', '2026-02-15 22:52:58', '2026-02-15 23:04:37', '2026-02-15 22:52:58', NULL, 0, NULL, 0, NULL, NULL),
+(3, 1, 39, 36, '2026-02-15', '2026-02-16', 1, 550.00, 1000.00, 'EN_ATTENTE', 'salut', NULL, '2026-02-15 23:06:47', NULL, '2026-02-15 23:06:47', NULL, 0, NULL, 0, NULL, NULL),
+(4, 4, 41, 39, '2026-02-15', '2026-02-16', 1, 275.00, 0.00, 'EN_ATTENTE', 'interessé', NULL, '2026-02-15 23:15:01', NULL, '2026-02-15 23:15:01', NULL, 0, NULL, 0, NULL, NULL),
+(5, 1, 39, 36, '2026-02-16', '2026-02-17', 1, 550.00, 1000.00, 'EN_ATTENTE', 'salut', NULL, '2026-02-16 00:06:34', NULL, '2026-02-16 00:06:34', NULL, 0, NULL, 0, NULL, NULL),
+(6, 2, 39, 36, '2026-02-16', '2026-02-17', 1, 1760.00, 3000.00, 'EN_ATTENTE', 'aaaaaaaa', NULL, '2026-02-16 00:11:01', NULL, '2026-02-16 00:11:01', NULL, 0, NULL, 0, NULL, NULL),
+(7, 19, 74, 39, '2026-02-25', '2026-02-26', 1, 550.00, 500.00, 'EN_ATTENTE', 'aaaaaaaa', NULL, '2026-02-25 15:55:14', NULL, '2026-02-25 15:55:14', NULL, 0, NULL, 0, NULL, NULL),
+(8, 19, 74, 39, '2026-02-25', '2026-02-26', 1, 550.00, 500.00, 'ACCEPTEE', 'aaaaaaa', 'Demande acceptée. Bienvenue !', '2026-02-25 15:56:46', '2026-02-25 15:57:30', '2026-02-25 15:56:46', NULL, 0, NULL, 1, '2026-02-25 15:58:14', 'Carte bancaire (Stripe)'),
+(9, 27, 63, 44, '2026-03-01', '2026-03-02', 1, 27.50, 0.00, 'EN_ATTENTE', 'aaaaaaaaa', NULL, '2026-03-01 14:33:01', NULL, '2026-03-01 14:33:01', NULL, 0, NULL, 0, NULL, NULL),
+(10, 28, 70, 78, '2026-03-01', '2026-03-03', 1, 1485.00, 0.00, 'ACCEPTEE', 'Salut', 'Demande acceptée. Bienvenue !', '2026-03-01 22:48:06', '2026-03-01 22:49:54', '2026-03-01 22:48:06', NULL, 0, NULL, 1, '2026-03-01 22:53:33', 'Carte bancaire (Stripe)'),
+(11, 29, 39, 70, '2026-03-02', '2026-03-04', 3, 495.00, 0.00, 'ACCEPTEE', 'je suis interessé', 'Demande acceptée. Bienvenue !', '2026-03-02 09:21:07', '2026-03-02 09:23:36', '2026-03-02 09:21:07', NULL, 0, NULL, 1, '2026-03-02 09:25:53', 'Carte bancaire (Stripe)'),
+(12, 30, 70, 39, '2026-03-02', '2026-03-03', 2, 550.00, 0.00, 'ANNULEE', 'salut', 'Demande acceptée. Bienvenue !', '2026-03-02 09:27:20', '2026-03-02 09:27:46', '2026-03-02 09:27:20', NULL, 0, NULL, 0, NULL, NULL),
+(14, 30, 70, 39, '2026-03-02', '2026-03-03', 1, 550.00, 0.00, 'ACCEPTEE', '', 'Demande acceptée. Bienvenue !', '2026-03-02 09:35:47', '2026-03-02 09:37:06', '2026-03-02 09:35:47', NULL, 0, NULL, 0, NULL, NULL),
+(15, 32, 70, 39, '2026-03-02', '2026-03-15', 2, 2310.00, 0.00, 'EN_ATTENTE', '', NULL, '2026-03-02 09:39:31', NULL, '2026-03-02 09:39:31', NULL, 0, NULL, 0, NULL, NULL),
+(16, 32, 63, 39, '2026-03-02', '2026-03-05', 2, 660.00, 0.00, 'ACCEPTEE', '', 'Demande acceptée. Bienvenue !', '2026-03-02 09:40:13', '2026-03-02 09:40:49', '2026-03-02 09:40:13', NULL, 0, NULL, 0, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `utilisateurs`
+--
+
+CREATE TABLE `utilisateurs` (
+  `id` int(11) NOT NULL,
+  `nom` varchar(255) NOT NULL,
+  `prenom` varchar(255) NOT NULL,
+  `cin` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `motDePasse` varchar(255) NOT NULL,
+  `role` varchar(40) NOT NULL,
+  `dateCreation` date NOT NULL,
+  `signature` varchar(500) NOT NULL,
+  `revenu` double DEFAULT NULL,
+  `carte_pro` varchar(500) DEFAULT NULL,
+  `adresse` varchar(255) DEFAULT NULL,
+  `parcelles` varchar(255) DEFAULT NULL,
+  `certification` varchar(500) DEFAULT NULL,
+  `verification_status` varchar(20) NOT NULL DEFAULT 'APPROVED',
+  `verification_reason` varchar(500) DEFAULT NULL,
+  `verification_score` double DEFAULT NULL,
+  `nom_ar` varchar(255) DEFAULT NULL,
+  `prenom_ar` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `utilisateurs`
+--
+
+INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `cin`, `email`, `motDePasse`, `role`, `dateCreation`, `signature`, `revenu`, `carte_pro`, `adresse`, `parcelles`, `certification`, `verification_status`, `verification_reason`, `verification_score`, `nom_ar`, `prenom_ar`) VALUES
+(39, 'maatoug', 'ayoub', 11429920, 'ayoub.maatoug@esprit.tn', '$2a$12$aiBquFb/ffsalNnpdndEFuR0m0ZLh5luTEYjS.hVCfPS/plKY2j3q', 'ADMIN', '2026-02-16', 'C:\\xampp\\htdocs\\signatures\\1771633850595_signature_ayoub.jpg', 100.5, NULL, NULL, NULL, NULL, 'APPROVED', NULL, NULL, NULL, NULL),
+(63, 'SAMI', 'MAATOUG', 74100000, 'maatougsami25@gmail.com', '$2a$12$OCCHJP1GqPJz5uThamkB/...VSdgqZiUrcyF5u0Y8CwR7T6nR675y', 'AGRICULTEUR', '2026-02-22', 'C:\\xampp\\htdocs\\signatures\\1771730327340_signature_sami.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1771730400439_sami____________.jpg', 'rue ali douagi - Ras Jebel', '', NULL, 'APPROVED', NULL, NULL, 'سامي', 'معتوق'),
+(70, 'Jerbi', 'Amenallah', 12345678, 'amenallahjerbi@gmail.com', '$2a$12$RtfOc84bjnnNBx5Y/j7YkO/lwMe0KkeedD3D4UykZH6fjUyjCQkIW', 'AGRICULTEUR', '2026-02-22', 'C:\\xampp\\htdocs\\signatures\\1771779144715_signature_amen.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1771779159143__amen_____________.jpg', 'korba', '', NULL, 'APPROVED', NULL, NULL, 'أمان الله', 'جربي'),
+(74, 'Ayoub', 'Maatoug', 11223344, 'ayoub.maatoug@ipeib.ucar.tn', '$2a$12$ik1rxx.xGV.Th2LFj2xeJ.Fp8zY2sjwThD/M5nqp/kPWSMxxoEuIC', 'AGRICULTEUR', '2026-02-23', 'C:\\xampp\\htdocs\\signatures\\1771821459799_signature_ayoub.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1771821529933_Carte_pro__ayoub_.png', 'Bizerte  ras jebel', '', NULL, 'APPROVED', NULL, NULL, 'أيوب', 'معتوق'),
+(76, 'yakine', 'sahli', 77882020, 'yakinesahli48@gmail.com', '$2a$12$RscsfaflKeKNiwTGqruexeZL.DS8D6tmcxyFErpOeKUTIwNw8HX0m', 'AGRICULTEUR', '2026-02-27', 'C:\\xampp\\htdocs\\signatures\\1772209232788_signature_yakine.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1772209276977_Carte_pro_yakine.png', 'Bizerte', '', NULL, 'APPROVED', '', 1, 'يقين', 'ساحلي'),
+(77, 'sahli', 'yakine eddine', 98765432, 'yakineddine.sahli@isgb.ucar.tn', '$2a$12$qD6nzyC34wBASVrNEkDXUOqV2hnzqppcBdiYlm4H7HuLiDNviraBm', 'AGRICULTEUR', '2026-02-27', 'C:\\xampp\\htdocs\\signatures\\1772209652466_signature_yakine.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1772209684709_carte_pro_yakine22.png', 'ariana', '', NULL, 'APPROVED', '', 1, 'يقين', 'ساحلي'),
+(78, 'MAATOUG', 'AYOUB', 25042000, 'maatougayoub7@gmail.com', '$2a$12$XKSQNDhKw0WtMA4CRGA6Ze5fxppJ5dlKLIt9/Tu8E.zWIrw5wAJyG', 'AGRICULTEUR', '2026-02-28', 'C:\\xampp\\htdocs\\signatures\\1772289147867_signature_ayoub.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1772289190234_carte_pro_25042000.png', 'Ras Jebel', '', NULL, 'APPROVED', NULL, NULL, 'أيوب', 'معتوق'),
+(79, 'Fattoumi', 'Oussama', 20252026, 'fattoumioussema8@gmail.com', '$2a$12$s8tX4O8qwbSLRXImzxIoL.wMn3lCuovNrRYYcmL9d3WrWTSyyw.Hy', 'EXPERT', '2026-03-01', 'C:\\xampp\\htdocs\\signatures\\1772323714914_signature_oussama.jpg', NULL, NULL, NULL, NULL, 'C:\\xampp\\htdocs\\certifications\\1772323721302_diplome_expert_Oussama_.png', 'APPROVED', '', 1, NULL, NULL),
+(90, 'Maatoug', 'Adam', 12032004, 'adammaatoug7@gmail.com', '$2a$12$r05UMl9I8943Lkg9g5FW/.3swmkf7Ynm/TU4r6gGwoOWws30tVl0a', 'AGRICULTEUR', '2026-03-02', 'C:\\xampp\\htdocs\\signatures\\1772442430562_signature_ADAM_2222.jpg', NULL, 'C:\\xampp\\htdocs\\cartes\\1772442577034_carte_pro_adem.jpg', 'ariana', '', NULL, 'APPROVED', NULL, NULL, 'آدم', 'معتوق');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `annonces`
+--
+ALTER TABLE `annonces`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_type` (`type`),
+  ADD KEY `idx_statut` (`statut`),
+  ADD KEY `idx_categorie` (`categorie`),
+  ADD KEY `idx_prix` (`prix`),
+  ADD KEY `idx_proprietaire` (`proprietaire_id`);
+
+--
+-- Indexes for table `annonce_photos`
+--
+ALTER TABLE `annonce_photos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_annonce` (`annonce_id`);
+
+--
+-- Indexes for table `collab_applications`
+--
+ALTER TABLE `collab_applications`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_application` (`request_id`,`candidate_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_candidate` (`candidate_id`);
+
+--
+-- Indexes for table `collab_requests`
+--
+ALTER TABLE `collab_requests`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_location` (`location`),
+  ADD KEY `idx_dates` (`start_date`,`end_date`);
+
+--
+-- Indexes for table `cultures`
+--
+ALTER TABLE `cultures`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_cultures_acheteur` (`id_acheteur`);
+
+--
+-- Indexes for table `diagnosti`
+--
+ALTER TABLE `diagnosti`
+  ADD PRIMARY KEY (`id_diagnostic`),
+  ADD KEY `diag` (`id_agriculteur`);
+
+--
+-- Indexes for table `messages`
+--
+ALTER TABLE `messages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_message_annonce` (`annonce_id`),
+  ADD KEY `fk_message_reservation` (`reservation_id`),
+  ADD KEY `idx_expediteur` (`expediteur_id`),
+  ADD KEY `idx_destinataire` (`destinataire_id`),
+  ADD KEY `idx_lu` (`lu`);
+
+--
+-- Indexes for table `parcelle`
+--
+ALTER TABLE `parcelle`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `plans_irrigation`
+--
+ALTER TABLE `plans_irrigation`
+  ADD PRIMARY KEY (`plan_id`),
+  ADD KEY `id_culture` (`id_culture`);
+
+--
+-- Indexes for table `plans_irrigation_jour`
+--
+ALTER TABLE `plans_irrigation_jour`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_plan_jour_date` (`plan_id`,`jour`,`semaine_debut`);
+
+--
+-- Indexes for table `produits_phytosanitaires`
+--
+ALTER TABLE `produits_phytosanitaires`
+  ADD PRIMARY KEY (`id_produit`);
+
+--
+-- Indexes for table `reclamations`
+--
+ALTER TABLE `reclamations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_reclamations_utilisateur` (`utilisateur_id`);
+
+--
+-- Indexes for table `reservations`
+--
+ALTER TABLE `reservations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_reservation_annonce` (`annonce_id`),
+  ADD KEY `idx_statut` (`statut`),
+  ADD KEY `idx_demandeur` (`demandeur_id`),
+  ADD KEY `idx_proprietaire` (`proprietaire_id`);
+
+--
+-- Indexes for table `utilisateurs`
+--
+ALTER TABLE `utilisateurs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `cin` (`cin`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `annonces`
+--
+ALTER TABLE `annonces`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT for table `annonce_photos`
+--
+ALTER TABLE `annonce_photos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+
+--
+-- AUTO_INCREMENT for table `collab_applications`
+--
+ALTER TABLE `collab_applications`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
+
+--
+-- AUTO_INCREMENT for table `collab_requests`
+--
+ALTER TABLE `collab_requests`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT for table `cultures`
+--
+ALTER TABLE `cultures`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `diagnosti`
+--
+ALTER TABLE `diagnosti`
+  MODIFY `id_diagnostic` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+
+--
+-- AUTO_INCREMENT for table `messages`
+--
+ALTER TABLE `messages`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `parcelle`
+--
+ALTER TABLE `parcelle`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT for table `plans_irrigation`
+--
+ALTER TABLE `plans_irrigation`
+  MODIFY `plan_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `plans_irrigation_jour`
+--
+ALTER TABLE `plans_irrigation_jour`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=722;
+
+--
+-- AUTO_INCREMENT for table `produits_phytosanitaires`
+--
+ALTER TABLE `produits_phytosanitaires`
+  MODIFY `id_produit` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+
+--
+-- AUTO_INCREMENT for table `reclamations`
+--
+ALTER TABLE `reclamations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT for table `reservations`
+--
+ALTER TABLE `reservations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `utilisateurs`
+--
+ALTER TABLE `utilisateurs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `cultures`
+--
+ALTER TABLE `cultures`
+  ADD CONSTRAINT `fk_cultures_acheteur` FOREIGN KEY (`id_acheteur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `diagnosti`
+--
+ALTER TABLE `diagnosti`
+  ADD CONSTRAINT `diag` FOREIGN KEY (`id_agriculteur`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

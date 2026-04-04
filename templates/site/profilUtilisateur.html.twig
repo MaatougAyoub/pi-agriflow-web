@@ -1,0 +1,265 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil Utilisateur | AgriFlow{% endblock %}
+
+{% block stylesheets %}
+<style>
+:root {
+    --green-900:#1b5e20;
+    --green-800:#2e7d32;
+    --green-700:#43a047;
+    --ink:#263238;
+    --muted:#637381;
+    --line:#e8edf2;
+    --card:#ffffff;
+}
+
+* { box-sizing:border-box; }
+
+body {
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:
+        radial-gradient(1200px 600px at 90% -20%, rgba(255,213,79,0.2), transparent),
+        linear-gradient(135deg, var(--green-900), var(--green-800), var(--green-700));
+    padding:24px;
+}
+
+.profile-shell {
+    width:100%;
+    max-width:1120px;
+    margin:0 auto;
+    background:var(--card);
+    border-radius:20px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.25);
+    overflow:hidden;
+}
+
+.profile-topbar {
+    padding:18px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border-bottom:1px solid var(--line);
+}
+
+.brand {
+    color:var(--green-900);
+    font-size:24px;
+    font-weight:800;
+    margin:0;
+}
+
+.top-actions {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.btn {
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:0 16px;
+}
+
+.btn-primary {
+    color:#fff;
+    background:linear-gradient(90deg, var(--green-900), var(--green-800));
+}
+
+.btn-secondary {
+    border:1px solid #dfe3e8;
+    color:#6e7a86;
+    background:#fff;
+}
+
+.profile-content {
+    padding:30px 30px 34px;
+    display:grid;
+    gap:18px;
+}
+
+.role-pill {
+    display:inline-flex;
+    width:max-content;
+    padding:8px 12px;
+    border-radius:999px;
+    background:#eef7ef;
+    color:var(--green-900);
+    font-weight:800;
+}
+
+.section-card {
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    background:#fff;
+}
+
+.section-title {
+    margin:0 0 14px;
+    color:var(--green-900);
+    font-size:24px;
+}
+
+.data-grid {
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap:12px 18px;
+}
+
+.field-label {
+    font-weight:700;
+    color:#4d5a65;
+}
+
+.field-value {
+    color:var(--ink);
+    min-height:24px;
+}
+
+.image-box {
+    width:100%;
+    max-width:360px;
+    min-height:120px;
+    border:1px solid #dfe3e8;
+    border-radius:12px;
+    padding:8px;
+    background:#fbfcfd;
+}
+
+.image-box img {
+    width:100%;
+    height:auto;
+    max-height:230px;
+    object-fit:contain;
+    border-radius:8px;
+    display:block;
+}
+
+.image-empty {
+    color:var(--muted);
+    font-size:14px;
+}
+
+@media (max-width: 760px) {
+    .profile-topbar {
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .profile-content {
+        padding:20px;
+    }
+
+    .data-grid {
+        grid-template-columns:1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+{% set roleRaw = (user.role ?? '')|upper %}
+{% set role = roleRaw starts with 'ROLE_' ? roleRaw|replace({'ROLE_': ''}) : roleRaw %}
+
+<main class="profile-shell">
+    <div class="profile-topbar">
+        <h1 class="brand">AgriFlow - Profil Utilisateur</h1>
+        <div class="top-actions">
+            <a class="btn btn-secondary" href="{{ path('site_home') }}">Accueil</a>
+            <a class="btn btn-primary" href="{{ path('app_logout') }}">Deconnexion</a>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="role-pill">Role: {{ role ?: '-' }}</div>
+
+        <section class="section-card">
+            <h2 class="section-title">Informations generales</h2>
+            <div class="data-grid">
+                <div class="field-label">Nom</div>
+                <div class="field-value">{{ user.nom ?: '-' }}</div>
+
+                <div class="field-label">Prenom</div>
+                <div class="field-value">{{ user.prenom ?: '-' }}</div>
+
+                <div class="field-label">CIN</div>
+                <div class="field-value">{{ user.cin ?: '-' }}</div>
+
+                <div class="field-label">Email</div>
+                <div class="field-value">{{ user.email ?: '-' }}</div>
+
+                <div class="field-label">Date creation</div>
+                <div class="field-value">{{ user.dateCreation ? user.dateCreation|date('d/m/Y') : '-' }}</div>
+
+                <div class="field-label">Signature</div>
+                <div class="field-value">
+                    <div class="image-box">
+                        {% if user.signature %}
+                            <img src="{{ path('app_profile_signature_image') }}" alt="Signature utilisateur">
+                        {% else %}
+                            <p class="image-empty">Aucune signature disponible.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {% if role == 'AGRICULTEUR' %}
+            <section class="section-card">
+                <h2 class="section-title">Informations Agriculteur</h2>
+                <div class="data-grid">
+                    <div class="field-label">Adresse</div>
+                    <div class="field-value">{{ user.adresse ?: '-' }}</div>
+
+                    <div class="field-label">Carte professionnelle</div>
+                    <div class="field-value">
+                        <div class="image-box">
+                            {% if user.cartePro %}
+                                <img src="{{ path('app_profile_carte_image') }}" alt="Carte professionnelle">
+                            {% else %}
+                                <p class="image-empty">Aucune carte professionnelle disponible.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif role == 'EXPERT' %}
+            <section class="section-card">
+                <h2 class="section-title">Informations Expert</h2>
+                <div class="data-grid">
+                    <div class="field-label">Certification</div>
+                    <div class="field-value">
+                        <div class="image-box">
+                            {% if user.certification %}
+                                <img src="{{ path('app_profile_certification_image') }}" alt="Certification expert">
+                            {% else %}
+                                <p class="image-empty">Aucune certification disponible.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif role == 'ADMIN' %}
+            <section class="section-card">
+                <h2 class="section-title">Informations Admin</h2>
+                <div class="data-grid">
+                    <div class="field-label">Revenu</div>
+                    <div class="field-value">{{ user.revenu is not null ? user.revenu : '-' }}</div>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

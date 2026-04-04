@@ -49,6 +49,10 @@
 
       <nav id="navmenu" class="navmenu">
         <ul>
+          <li><a href="{{ app.user ? path('app_profile') : path('app_login') }}">Profil</a></li>
+          {% if app.user and is_granted('ROLE_ADMIN') %}
+            <li><a href="{{ path('app_admin_users') }}">Liste des utilisateurs</a></li>
+          {% endif %}
           <li><a href="{{ path('site_home') }}">Home</a></li>
           <li><a href="{{ path('site_about') }}">About Us</a></li>
           <li><a href="{{ path('site_services') }}" class="active">Our Services</a></li>
@@ -72,6 +76,11 @@
             </ul>
           </li>
           <li><a href="{{ path('site_contact') }}">Contact</a></li>
+          {% if app.user %}
+            <li><a href="{{ path('app_logout') }}">Deconnexion</a></li>
+          {% else %}
+            <li><a href="{{ path('app_login') }}">Se connecter</a></li>
+          {% endif %}
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>

@@ -1,0 +1,323 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste Utilisateurs | AgriFlow{% endblock %}
+
+{% block stylesheets %}
+<style>
+:root {
+    --green-900:#1b5e20;
+    --green-800:#2e7d32;
+    --green-700:#43a047;
+    --ink:#263238;
+    --muted:#637381;
+    --line:#e6ebef;
+    --danger:#c62828;
+    --danger-bg:#ffebee;
+    --success:#1b5e20;
+    --success-bg:#e8f5e9;
+}
+
+* { box-sizing:border-box; }
+
+body {
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:#f5f5f5;
+}
+
+.page-shell {
+    width:100%;
+    max-width:1400px;
+    margin:20px auto;
+    background:#fff;
+    border-radius:16px;
+    box-shadow:0 20px 44px rgba(0,0,0,0.14);
+    overflow:hidden;
+}
+
+.page-header {
+    background:linear-gradient(120deg, var(--green-900), var(--green-800));
+    padding:22px 26px;
+    color:#fff;
+}
+
+.page-title {
+    margin:0;
+    font-size:28px;
+    font-weight:800;
+}
+
+.page-subtitle {
+    margin:8px 0 0;
+    font-size:18px;
+    color:#e8f5e9;
+}
+
+.page-content {
+    padding:20px 26px 24px;
+}
+
+.toolbar {
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+    margin-bottom:14px;
+}
+
+.toolbar input {
+    flex:1 1 320px;
+    min-height:40px;
+    border:1px solid #d7dee4;
+    border-radius:10px;
+    padding:0 12px;
+    font-size:16px;
+}
+
+.btn {
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    text-decoration:none;
+    min-height:40px;
+    padding:0 18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.btn-search { background:#2e7d32; color:#fff; }
+.btn-refresh { background:#1976d2; color:#fff; }
+.btn-profile { background:#757575; color:#fff; }
+.btn-approve { background:#2e7d32; color:#fff; }
+.btn-reject { background:#f57c00; color:#fff; }
+.btn-delete { background:#d32f2f; color:#fff; }
+
+.btn:disabled {
+    opacity:0.55;
+    cursor:not-allowed;
+}
+
+.alert {
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+.alert-danger {
+    background:var(--danger-bg);
+    color:var(--danger);
+}
+
+.alert-success {
+    background:var(--success-bg);
+    color:var(--success);
+}
+
+.table-wrap {
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:auto;
+    background:#fff;
+}
+
+table {
+    width:100%;
+    min-width:1450px;
+    border-collapse:collapse;
+    font-size:14px;
+}
+
+thead th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#f8fafb;
+    color:#45545f;
+    border-bottom:1px solid var(--line);
+    font-weight:800;
+    text-align:left;
+    padding:12px 10px;
+}
+
+tbody td {
+    border-bottom:1px solid #eef2f5;
+    padding:10px;
+    vertical-align:middle;
+}
+
+.image-thumb {
+    width:88px;
+    height:54px;
+    border-radius:8px;
+    border:1px solid #dfe5ea;
+    object-fit:contain;
+    background:#fafcfd;
+    display:block;
+}
+
+.actions {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.actions form {
+    margin:0;
+}
+
+.count {
+    margin-top:10px;
+    color:#616161;
+    font-size:15px;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell">
+    <header class="page-header">
+        <h1 class="page-title">AgriFlow - Utilisateurs</h1>
+        <p class="page-subtitle">Liste des utilisateurs (Admin)</p>
+    </header>
+
+    <section class="page-content">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="toolbar">
+            <input id="searchField" type="text" placeholder="Rechercher par nom / prenom / email...">
+            <button id="searchBtn" class="btn btn-search" type="button">Rechercher</button>
+            <button id="refreshBtn" class="btn btn-refresh" type="button">Rafraichir</button>
+            <a class="btn btn-profile" href="{{ path('app_profile') }}">Retour profil</a>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prenom</th>
+                        <th>CIN</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Date creation</th>
+                        <th>Verification</th>
+                        <th>Signature</th>
+                        <th>Carte pro</th>
+                        <th>Certification</th>
+                        <th>Adresse</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% for u in users %}
+                        {% set rowRoleRaw = (u.role ?? '')|upper %}
+                        {% set rowRole = rowRoleRaw starts with 'ROLE_' ? rowRoleRaw|replace({'ROLE_': ''}) : rowRoleRaw %}
+                        <tr class="user-row" data-search="{{ (u.nom ~ ' ' ~ u.prenom ~ ' ' ~ u.email ~ ' ' ~ rowRole)|lower }}">
+                            <td>{{ u.nom ?: '-' }}</td>
+                            <td>{{ u.prenom ?: '-' }}</td>
+                            <td>{{ u.cin ?: '-' }}</td>
+                            <td>{{ u.email ?: '-' }}</td>
+                            <td>{{ rowRole ?: '-' }}</td>
+                            <td>{{ u.dateCreation ? u.dateCreation|date('Y-m-d') : '-' }}</td>
+                            <td>{{ u.verificationStatus ?: '-' }}</td>
+                            <td>
+                                {% if u.signature %}
+                                    <img class="image-thumb" src="{{ path('app_admin_user_image', {id: u.id, type: 'signature'}) }}" alt="Signature">
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rowRole == 'AGRICULTEUR' and u.cartePro %}
+                                    <img class="image-thumb" src="{{ path('app_admin_user_image', {id: u.id, type: 'carte'}) }}" alt="Carte pro">
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rowRole == 'EXPERT' and u.certification %}
+                                    <img class="image-thumb" src="{{ path('app_admin_user_image', {id: u.id, type: 'certification'}) }}" alt="Certification">
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ rowRole == 'AGRICULTEUR' ? (u.adresse ?: '-') : '-' }}</td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn btn-approve" type="button" disabled>Approuver</button>
+                                    <button class="btn btn-reject" type="button" disabled>Rejeter</button>
+                                    <form method="post" action="{{ path('app_admin_user_delete', {id: u.id}) }}" onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
+                                        <button class="btn btn-delete" type="submit" {% if app.user and app.user.id == u.id %}disabled{% endif %}>Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="12">Aucun utilisateur trouve.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p id="countLabel" class="count">{{ users|length }} utilisateur(s)</p>
+    </section>
+</main>
+
+<script>
+(function () {
+    const searchField = document.getElementById('searchField');
+    const searchBtn = document.getElementById('searchBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const rows = Array.from(document.querySelectorAll('.user-row'));
+    const countLabel = document.getElementById('countLabel');
+
+    function updateCount() {
+        const visible = rows.filter(row => row.style.display !== 'none').length;
+        countLabel.textContent = visible + ' utilisateur(s)';
+    }
+
+    function applyFilter() {
+        const query = (searchField.value || '').trim().toLowerCase();
+
+        rows.forEach(row => {
+            const haystack = row.getAttribute('data-search') || '';
+            row.style.display = haystack.includes(query) ? '' : 'none';
+        });
+
+        updateCount();
+    }
+
+    searchBtn.addEventListener('click', applyFilter);
+    searchField.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            applyFilter();
+        }
+    });
+
+    refreshBtn.addEventListener('click', function () {
+        searchField.value = '';
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        updateCount();
+    });
+
+    updateCount();
+})();
+</script>
+{% endblock %}
