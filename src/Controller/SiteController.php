@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
+
 
 use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Form\ContactRequestType;
+use App\Model\ContactRequest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -51,10 +56,23 @@ final class SiteController extends AbstractController
         return $this->render('site/blog-details.html.twig');
     }
 
-    #[Route('/contact', name: 'site_contact', methods: ['GET'])]
-    public function contact(): Response
+    #[Route('/contact', name: 'site_contact', methods: ['GET', 'POST'])]
+    public function contact(Request $request): Response
     {
-        return $this->render('site/contact.html.twig');
+        $contactRequest = new ContactRequest();
+        $form = $this->createForm(ContactRequestType::class, $contactRequest);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // houni nwarriw message clair bech page contact tab9a fonctionnelle fel demo
+            $this->addFlash('success', 'Votre message a ete recu. Nous reviendrons vers vous rapidement.');
+
+            return $this->redirectToRoute('site_contact');
+        }
+
+        return $this->render('site/contact.html.twig', [
+            'contactForm' => $form->createView(),
+        ]);
     }
 
     #[Route('/profil', name: 'app_profile', methods: ['GET'])]

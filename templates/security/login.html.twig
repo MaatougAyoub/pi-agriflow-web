@@ -2,9 +2,11 @@
 
 {% block title %}Connexion | AgriFlow{% endblock %}
 
+{% block body_class %}agf-auth-page{% endblock %}
+
 {% block stylesheets %}
-<style>
-:root {
+<style data-turbo-temporary>
+.agf-auth-page {
     --green-900:#1b5e20;
     --green-800:#2e7d32;
     --green-700:#43a047;
@@ -14,11 +16,7 @@
     --danger:#c62828;
     --success-bg:#e8f5e9;
     --success:#1b5e20;
-}
 
-*{box-sizing:border-box;}
-
-body{
     margin:0;
     min-height:100vh;
     font-family:"Segoe UI","Noto Sans",sans-serif;
@@ -31,7 +29,11 @@ body{
     padding:24px;
 }
 
-.signin-shell{
+.agf-auth-page * {
+    box-sizing:border-box;
+}
+
+.agf-auth-page .signin-shell {
     width:100%;
     max-width:980px;
     min-height:560px;
@@ -43,9 +45,7 @@ body{
     grid-template-columns:1fr 1fr;
 }
 
-/* ===== HERO ===== */
-
-.signin-hero{
+.agf-auth-page .signin-hero {
     background-image:
         linear-gradient(rgba(27,94,32,0.64),rgba(27,94,32,0.76)),
         url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=80');
@@ -61,8 +61,7 @@ body{
     gap:18px;
 }
 
-/* ✅ IMAGE AGRANDIE */
-.brand-logo img{
+.agf-auth-page .brand-logo img {
     width:422px;
     max-width:100%;
     height:auto;
@@ -70,26 +69,26 @@ body{
     filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));
 }
 
-.brand-title{
+.agf-auth-page .brand-title {
     margin:0;
     font-size:56px;
     font-weight:800;
     text-shadow:0 2px 8px rgba(0,0,0,0.35);
 }
 
-.brand-sub{
+.agf-auth-page .brand-sub {
     margin:0;
     font-size:18px;
 }
 
-.brand-divider{
+.agf-auth-page .brand-divider {
     width:130px;
     height:3px;
     border-radius:999px;
     background:linear-gradient(90deg,transparent,#ffd54f,transparent);
 }
 
-.feature-list{
+.agf-auth-page .feature-list {
     list-style:none;
     padding:0;
     margin:0;
@@ -98,9 +97,7 @@ body{
     font-weight:600;
 }
 
-/* ===== FORM ===== */
-
-.signin-form{
+.agf-auth-page .signin-form {
     padding:42px 44px;
     display:flex;
     flex-direction:column;
@@ -108,75 +105,75 @@ body{
     gap:16px;
 }
 
-.signin-title{
+.agf-auth-page .signin-title {
     margin:0;
     font-size:34px;
     color:var(--green-900);
 }
 
-.signin-subtitle{
+.agf-auth-page .signin-subtitle {
     margin:0;
     color:var(--muted);
 }
 
-.alert{
+.agf-auth-page .alert {
     border-radius:10px;
     padding:10px 12px;
     font-size:14px;
 }
 
-.alert-danger{
+.agf-auth-page .alert-danger {
     background:var(--danger-bg);
     color:var(--danger);
 }
 
-.alert-success{
+.agf-auth-page .alert-success {
     background:var(--success-bg);
     color:var(--success);
 }
 
-.field{
+.agf-auth-page .field {
     display:grid;
     gap:7px;
 }
 
-.field label{
+.agf-auth-page .field label {
     font-weight:700;
 }
 
-.field input{
+.agf-auth-page .field input {
     border:1.5px solid #dfe3e8;
     border-radius:10px;
     padding:12px;
 }
 
-.field input:focus{
+.agf-auth-page .field input:focus {
     border-color:var(--green-700);
     box-shadow:0 0 0 4px rgba(67,160,71,0.16);
 }
 
-.inline-row{
+.agf-auth-page .inline-row {
     display:flex;
     justify-content:space-between;
     font-size:13px;
-    margin-top: 11px;
-    margin-bottom: 11px;
+    margin-top:11px;
+    margin-bottom:11px;
 }
 
-.btn{
+.agf-auth-page .btn {
     border:none;
     border-radius:10px;
     cursor:pointer;
     font-weight:700;
 }
 
-.btn-primary{
+.agf-auth-page .btn-primary {
     padding:13px;
     color:#fff;
     background:linear-gradient(90deg,var(--green-900),var(--green-800));
 }
 
-.btn-secondary{
+.agf-auth-page .btn-secondary {
     display:grid;
     place-items:center;
     padding:10px;
@@ -184,13 +181,13 @@ body{
     text-decoration:none;
 }
 
-.footer-line{
+.agf-auth-page .footer-line {
     text-align:center;
     font-size:13px;
 }
 
 @media(max-width:960px){
-    .signin-shell{
+    .agf-auth-page .signin-shell {
         grid-template-columns:1fr;
         max-width:560px;
     }
@@ -238,7 +235,7 @@ body{
             <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
 
-        <form method="post">
+        <form method="post" data-turbo="false">
 
             <div class="field">
                 <label>Email</label>
