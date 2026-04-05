@@ -1,0 +1,114 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block page_title %}Candidatures – Admin{% endblock %}
+{% block admin_title %}Candidatures{% endblock %}
+{% block admin_subtitle %}{{ total }} candidature{{ total != 1 ? 's' : '' }} au total{% endblock %}
+
+{% block admin_body %}
+
+{% include 'partials/_flash.html.twig' %}
+
+{# Filters #}
+<form method="get" class="row g-2 mb-4">
+    <div class="col-auto">
+        <select name="status" class="form-select form-select-sm">
+            <option value="">Tous les statuts</option>
+            {% for label, val in statuses %}
+                <option value="{{ val }}" {{ current_status == val ? 'selected' : '' }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrer</button>
+        <a href="{{ path('admin_collab_applications') }}" class="btn btn-sm btn-link">Réinitialiser</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white rounded shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Candidat</th>
+                <th>Demande</th>
+                <th>Expérience</th>
+                <th>Salaire attendu</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+                <tr>
+                    <td class="text-muted small">{{ app.id }}</td>
+                    <td>
+                        <div class="fw-semibold">{{ app.fullName }}</div>
+                        <div class="small text-muted">{{ app.email }}</div>
+                    </td>
+                    <td class="small">
+                        {% if app.request %}
+                            <a href="{{ path('admin_collab_request_show', {id: app.request.id}) }}" class="text-decoration-none">
+                                {{ app.request.title|slice(0,40) }}{% if app.request.title|length > 40 %}…{% endif %}
+                            </a>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ app.yearsOfExperience }} ans</td>
+                    <td>{{ app.expectedSalaryAsFloat|number_format(2) }} DT</td>
+                    <td class="small">{{ app.appliedAt|date('d/m/Y') }}</td>
+                    <td>
+                        <span class="badge {% if app.status == 'accepted' %}bg-success{% elseif app.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {% if app.status == 'accepted' %}Acceptée{% elseif app.status == 'rejected' %}Refusée{% else %}En attente{% endif %}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-1 justify-content-end">
+                            {% for label, val in statuses %}
+                                {% if val != app.status %}
+                                    <form method="post" action="{{ path('admin_collab_application_status', {id: app.id}) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('app_status_' ~ app.id) }}">
+                                        <input type="hidden" name="status" value="{{ val }}">
+                                        <button type="submit" class="btn btn-xs btn-outline-{% if val == 'accepted' %}success{% elseif val == 'rejected' %}danger{% else %}warning{% endif %} btn-sm py-0 px-1" title="{{ label }}">
+                                            {% if val == 'accepted' %}<i class="bi bi-check"></i>{% elseif val == 'rejected' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endfor %}
+                            <form method="post" action="{{ path('admin_collab_application_delete', {id: app.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette candidature ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_app_' ~ app.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="Supprimer">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">Aucune candidature trouvée.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Pagination #}
+{% if lastPage > 1 %}
+    <nav class="mt-4 d-flex justify-content-center" aria-label="Pagination">
+        <ul class="pagination pagination-sm">
+            <li class="page-item {{ page <= 1 ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ path('admin_collab_applications', {page: page - 1, status: current_status}) }}">‹</a>
+            </li>
+            {% for p in 1..lastPage %}
+                <li class="page-item {{ p == page ? 'active' : '' }}">
+                    <a class="page-link" href="{{ path('admin_collab_applications', {page: p, status: current_status}) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {{ page >= lastPage ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ path('admin_collab_applications', {page: page + 1, status: current_status}) }}">›</a>
+            </li>
+        </ul>
+    </nav>
+{% endif %}
+
+{% endblock admin_body %}

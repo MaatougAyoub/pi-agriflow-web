@@ -1,0 +1,133 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}{{ collabRequest.title }} – AgriFlow{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container" data-aos="fade-up">
+
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ path('collab_index') }}">Collaborations</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ collabRequest.title|slice(0,40) }}…</li>
+            </ol>
+        </nav>
+
+        {% include 'partials/_flash.html.twig' %}
+
+        <div class="row g-4">
+            {# Main card #}
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h2 class="h3 fw-bold mb-0">{{ collabRequest.title }}</h2>
+                            <span class="badge {% if collabRequest.status == 'open' %}bg-success{% elseif collabRequest.status == 'closed' %}bg-secondary{% else %}bg-warning text-dark{% endif %} fs-6">
+                                {% if collabRequest.status == 'open' %}Ouverte{% elseif collabRequest.status == 'closed' %}Fermée{% else %}Brouillon{% endif %}
+                            </span>
+                        </div>
+
+                        <p class="text-muted">{{ collabRequest.description }}</p>
+
+                        <hr>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-6 col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <i class="bi bi-people fs-4 text-success"></i>
+                                    <div class="fw-semibold mt-1">{{ collabRequest.neededPeople }}</div>
+                                    <small class="text-muted">personnes</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <i class="bi bi-geo-alt fs-4 text-success"></i>
+                                    <div class="fw-semibold mt-1 small">{{ collabRequest.location }}</div>
+                                    <small class="text-muted">localisation</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <i class="bi bi-calendar-range fs-4 text-success"></i>
+                                    <div class="fw-semibold mt-1 small">{{ collabRequest.startDate|date('d/m/Y') }}</div>
+                                    <small class="text-muted">début</small>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 text-center">
+                                <div class="p-3 bg-light rounded">
+                                    <i class="bi bi-calendar-check fs-4 text-success"></i>
+                                    <div class="fw-semibold mt-1 small">{{ collabRequest.endDate|date('d/m/Y') }}</div>
+                                    <small class="text-muted">fin</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if collabRequest.salaryPerDayAsFloat > 0 or collabRequest.salaryAsFloat > 0 %}
+                            <div class="mt-4 p-3 bg-success bg-opacity-10 rounded">
+                                <h6 class="fw-semibold text-success mb-2"><i class="bi bi-currency-exchange me-1"></i>Rémunération</h6>
+                                {% if collabRequest.salaryPerDayAsFloat > 0 %}
+                                    <span class="me-3"><strong>{{ collabRequest.salaryPerDayAsFloat|number_format(2) }} DT</strong> / jour</span>
+                                {% endif %}
+                                {% if collabRequest.salaryAsFloat > 0 %}
+                                    <span><strong>{{ collabRequest.salaryAsFloat|number_format(2) }} DT</strong> total</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# Sidebar #}
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body p-4">
+                        <h6 class="fw-semibold mb-3">Publié par</h6>
+                        <p class="mb-1"><i class="bi bi-person me-1 text-success"></i>{{ collabRequest.publisher ?? 'Anonyme' }}</p>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-clock me-1"></i>{{ collabRequest.createdAt|date('d/m/Y à H:i') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h6 class="fw-semibold mb-3">
+                            <i class="bi bi-file-earmark-person me-1 text-success"></i>
+                            {{ collabRequest.applications|length }} candidature{{ collabRequest.applications|length != 1 ? 's' : '' }}
+                        </h6>
+
+                        {% if app.user %}
+                            {% if collabRequest.status == 'open' and not collabRequest.expired %}
+                                <a href="{{ path('collab_apply', {id: collabRequest.id}) }}" class="btn btn-success w-100">
+                                    <i class="bi bi-send me-1"></i>Postuler maintenant
+                                </a>
+                            {% elseif collabRequest.expired %}
+                                <div class="alert alert-warning small mb-0">Date limite dépassée.</div>
+                            {% else %}
+                                <div class="alert alert-secondary small mb-0">Cette demande n'est plus ouverte.</div>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Connectez-vous pour postuler
+                            </a>
+                        {% endif %}
+
+                        {% if app.user and collabRequest.requester and collabRequest.requester.id == app.user.id %}
+                            <hr>
+                            <a href="{{ path('collab_edit', {id: collabRequest.id}) }}" class="btn btn-outline-secondary btn-sm w-100 mb-2">
+                                <i class="bi bi-pencil me-1"></i>Modifier
+                            </a>
+                            <form method="post" action="{{ path('collab_delete', {id: collabRequest.id}) }}" onsubmit="return confirm('Supprimer cette demande ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_collab_' ~ collabRequest.id) }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                    <i class="bi bi-trash me-1"></i>Supprimer
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

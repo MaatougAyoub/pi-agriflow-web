@@ -1,0 +1,74 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Postuler – {{ collabRequest.title }} – AgriFlow{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ path('collab_index') }}">Collaborations</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('collab_show', {id: collabRequest.id}) }}">{{ collabRequest.title|slice(0,30) }}…</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Postuler</li>
+                    </ol>
+                </nav>
+
+                <div class="alert alert-info d-flex align-items-start gap-2 mb-4">
+                    <i class="bi bi-info-circle-fill flex-shrink-0 mt-1"></i>
+                    <div>
+                        <strong>{{ collabRequest.title }}</strong><br>
+                        <small>
+                            <i class="bi bi-geo-alt me-1"></i>{{ collabRequest.location }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-calendar-range me-1"></i>{{ collabRequest.startDate|date('d/m/Y') }} → {{ collabRequest.endDate|date('d/m/Y') }}
+                            {% if collabRequest.salaryPerDayAsFloat > 0 %}
+                                &nbsp;·&nbsp;
+                                <i class="bi bi-currency-exchange me-1"></i>{{ collabRequest.salaryPerDayAsFloat|number_format(2) }} DT/j
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+
+                {% include 'partials/_flash.html.twig' %}
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-4">Votre candidature</h4>
+
+                        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                {{ form_row(form.fullName) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.phone) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.email) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.yearsOfExperience) }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form_row(form.expectedSalary) }}
+                            </div>
+                            <div class="col-12">
+                                {{ form_row(form.motivation) }}
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-send me-1"></i>Soumettre ma candidature
+                            </button>
+                            <a href="{{ path('collab_show', {id: collabRequest.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock front_body %}
