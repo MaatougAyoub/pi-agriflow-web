@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Annonce;
+use App\Enum\AnnonceStatut;
+use App\Enum\AnnonceType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +20,51 @@ class AnnonceRepository extends ServiceEntityRepository
         parent::__construct($registry, Annonce::class);
     }
 
-    //    /**
-    //     * @return Annonce[] Returns an array of Annonce objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('a.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return Annonce[]
+     */
+    public function searchPublic(?string $keyword = null, ?AnnonceType $type = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('a')
+            ->andWhere('a.statut = :statut')
+            ->setParameter('statut', AnnonceStatut::DISPONIBLE)
+            ->orderBy('a.createdAt', 'DESC');
 
-    //    public function findOneBySomeField($value): ?Annonce
-    //    {
-    //        return $this->createQueryBuilder('a')
-    //            ->andWhere('a.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (null !== $keyword && '' !== trim($keyword)) {
+            $queryBuilder
+                ->andWhere('a.titre LIKE :keyword OR a.categorie LIKE :keyword OR a.localisation LIKE :keyword')
+                ->setParameter('keyword', '%'.trim($keyword).'%');
+        }
+
+        if (null !== $type) {
+            $queryBuilder
+                ->andWhere('a.type = :type')
+                ->setParameter('type', $type);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return Annonce[]
+     */
+    public function findByOwnerId(int $ownerId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.proprietaireId = :ownerId')
+            ->setParameter('ownerId', $ownerId)
+            ->orderBy('a.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByOwnerId(int $ownerId): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->andWhere('a.proprietaireId = :ownerId')
+            ->setParameter('ownerId', $ownerId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

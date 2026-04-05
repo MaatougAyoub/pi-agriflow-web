@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% block page_title %}Espace vendeur AgriFlow{% endblock %}{% endblock %}
+{% block body_class %}agf-admin bg-light{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+    <link href="{{ asset('template/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('template/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <aside class="col-lg-2 agf-sidebar text-white p-4">
+                <a href="{{ path('app_admin_dashboard') }}" class="text-white text-decoration-none d-block mb-4">
+                    <span class="h4 d-block mb-1">AgriFlow</span>
+                    <small>Espace gestion</small>
+                </a>
+
+                <nav class="nav flex-column gap-2">
+                    <a class="nav-link text-white px-0" href="{{ path('app_admin_dashboard') }}">
+                        <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
+                    </a>
+                    <a class="nav-link text-white px-0" href="{{ path('app_admin_annonce_index') }}">
+                        <i class="bi bi-grid me-2"></i>Annonces
+                    </a>
+                    <a class="nav-link text-white px-0" href="{{ path('app_admin_reservation_index') }}">
+                        <i class="bi bi-calendar-check me-2"></i>Reservations
+                    </a>
+                    <a class="nav-link text-white px-0" href="{{ path('app_marketplace_index') }}">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>Ouvrir le site
+                    </a>
+                </nav>
+            </aside>
+
+            <div class="col-lg-10 p-0">
+                <header class="bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h4 mb-1">{% block admin_title %}Espace vendeur{% endblock %}</h1>
+                        <p class="text-muted mb-0">{% block admin_subtitle %}Gestion des annonces et des reservations{% endblock %}</p>
+                    </div>
+                    <a href="{{ path('app_marketplace_index') }}" class="btn btn-outline-success">
+                        Retour au site
+                    </a>
+                </header>
+
+                <div class="p-4">
+                    {% block admin_body %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block admin_title %}Tableau de bord Marketplace{% endblock %}
+{% block admin_subtitle %}Suivi rapide des annonces et des demandes en cours{% endblock %}
+
+{% block admin_body %}
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <span class="text-muted small d-block mb-2">Annonces</span>
+                    <h2 class="display-6 mb-0">{{ annonceCount }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <span class="text-muted small d-block mb-2">Reservations</span>
+                    <h2 class="display-6 mb-0">{{ reservationCount }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <span class="text-muted small d-block mb-2">Commission</span>
+                    <h2 class="display-6 mb-0">5%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <span class="text-muted small d-block mb-2">Etat</span>
+                    <h2 class="display-6 mb-0">Ouvert</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h5 mb-0">Dernieres annonces</h3>
+                        <a href="{{ path('app_admin_annonce_new') }}" class="btn btn-sm btn-success">Nouvelle annonce</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Prix</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for annonce in latestAnnonces %}
+                                    <tr>
+                                        <td>{{ annonce.titre }}</td>
+                                        <td>{{ annonce.type.label() }}</td>
+                                        <td>{{ annonce.prix }} TND</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-muted">Aucune annonce disponible.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h5 mb-0">Demandes en attente</h3>
+                        <a href="{{ path('app_admin_reservation_new') }}" class="btn btn-sm btn-outline-dark">Nouvelle reservation</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Annonce</th>
+                                    <th>Client</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in pendingReservations %}
+                                    <tr>
+                                        <td>{{ reservation.annonce.titre }}</td>
+                                        <td>#{{ reservation.clientId }}</td>
+                                        <td>{{ reservation.prixTotal }} TND</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-muted">Aucune reservation en attente.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

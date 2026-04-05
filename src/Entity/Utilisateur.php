@@ -2,344 +2,240 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Reclamation;
+use App\Enum\Role;
+use App\Repository\UtilisateurRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
-use App\Repository\UtilisateurRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateurs')]
+#[ORM\UniqueConstraint(name: 'cin', columns: ['cin'])]
+#[ORM\UniqueConstraint(name: 'email', columns: ['email'])]
 class Utilisateur
+    implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $prenom = null;
+
+    #[ORM\Column]
+    private ?int $cin = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $email = null;
+
+    #[ORM\Column(name: 'motDePasse', length: 255)]
+    private ?string $motDePasse = null;
+
+    #[ORM\Column(length: 40)]
+    private ?string $role = null;
+
+    #[ORM\Column(name: 'dateCreation', type: Types::DATE_MUTABLE)]
+    private ?\DateTime $dateCreation = null;
+
+    #[ORM\Column(length: 500)]
+    private ?string $signature = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $revenu = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $carte_pro = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adresse = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $parcelles = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $certification = null;
+
+    #[ORM\Column(length: 20, options: ['default' => 'APPROVED'])]
+    private ?string $verification_status = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $verification_reason = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $verification_score = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nom_ar = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $prenom_ar = null;
+
+    /**
+     * @var Collection<int, Reclamation>
+     */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Reclamation::class, orphanRemoval: true)]
+    private Collection $reclamations;
+
+    public function __construct()
+    {
+        $this->reclamations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function setId(int $id): static
     {
         $this->id = $id;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $nom = null;
 
     public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(string $nom): static
     {
         $this->nom = $nom;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $prenom = null;
 
     public function getPrenom(): ?string
     {
         return $this->prenom;
     }
 
-    public function setPrenom(string $prenom): self
+    public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $cin = null;
 
     public function getCin(): ?int
     {
         return $this->cin;
     }
 
-    public function setCin(int $cin): self
+    public function setCin(int $cin): static
     {
         $this->cin = $cin;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $email = null;
 
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $motDePasse = null;
 
     public function getMotDePasse(): ?string
     {
         return $this->motDePasse;
     }
 
-    public function setMotDePasse(string $motDePasse): self
+    public function setMotDePasse(string $motDePasse): static
     {
         $this->motDePasse = $motDePasse;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $role = null;
 
     public function getRole(): ?string
     {
         return $this->role;
     }
 
-    public function setRole(string $role): self
+    public function setRole(string $role): static
     {
         $this->role = $role;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: false)]
-    private ?\DateTimeInterface $dateCreation = null;
+    public function getRoles(): array
+    {
+        $storedRole = strtoupper((string) $this->role);
 
-    public function getDateCreation(): ?\DateTimeInterface
+        // DB contains domain values (ADMIN/EXPERT/AGRICULTEUR); normalize to Symfony role names.
+        if (str_starts_with($storedRole, 'ROLE_')) {
+            $securityRole = $storedRole;
+        } elseif (Role::tryFrom('ROLE_'.$storedRole) !== null) {
+            $securityRole = 'ROLE_'.$storedRole;
+        } else {
+            $securityRole = Role::AGRICULTEUR->value;
+        }
+
+        return array_values(array_unique([$securityRole]));
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    public function getPassword(): string
+    {
+        return (string) $this->motDePasse;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getDateCreation(): ?\DateTime
     {
         return $this->dateCreation;
     }
 
-    public function setDateCreation(\DateTimeInterface $dateCreation): self
+    public function setDateCreation(?\DateTime $dateCreation): static
     {
         $this->dateCreation = $dateCreation;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $signature = null;
 
     public function getSignature(): ?string
     {
         return $this->signature;
     }
 
-    public function setSignature(string $signature): self
+    public function setSignature(?string $signature): static
     {
         $this->signature = $signature;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'decimal', nullable: true)]
-    private ?float $revenu = null;
 
     public function getRevenu(): ?float
     {
         return $this->revenu;
     }
 
-    public function setRevenu(?float $revenu): self
+    public function setRevenu(?float $revenu): static
     {
         $this->revenu = $revenu;
-        return $this;
-    }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $carte_pro = null;
-
-    public function getCarte_pro(): ?string
-    {
-        return $this->carte_pro;
-    }
-
-    public function setCarte_pro(?string $carte_pro): self
-    {
-        $this->carte_pro = $carte_pro;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $adresse = null;
-
-    public function getAdresse(): ?string
-    {
-        return $this->adresse;
-    }
-
-    public function setAdresse(?string $adresse): self
-    {
-        $this->adresse = $adresse;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $parcelles = null;
-
-    public function getParcelles(): ?string
-    {
-        return $this->parcelles;
-    }
-
-    public function setParcelles(?string $parcelles): self
-    {
-        $this->parcelles = $parcelles;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $certification = null;
-
-    public function getCertification(): ?string
-    {
-        return $this->certification;
-    }
-
-    public function setCertification(?string $certification): self
-    {
-        $this->certification = $certification;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $verification_status = null;
-
-    public function getVerification_status(): ?string
-    {
-        return $this->verification_status;
-    }
-
-    public function setVerification_status(string $verification_status): self
-    {
-        $this->verification_status = $verification_status;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $verification_reason = null;
-
-    public function getVerification_reason(): ?string
-    {
-        return $this->verification_reason;
-    }
-
-    public function setVerification_reason(?string $verification_reason): self
-    {
-        $this->verification_reason = $verification_reason;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'decimal', nullable: true)]
-    private ?float $verification_score = null;
-
-    public function getVerification_score(): ?float
-    {
-        return $this->verification_score;
-    }
-
-    public function setVerification_score(?float $verification_score): self
-    {
-        $this->verification_score = $verification_score;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom_ar = null;
-
-    public function getNom_ar(): ?string
-    {
-        return $this->nom_ar;
-    }
-
-    public function setNom_ar(?string $nom_ar): self
-    {
-        $this->nom_ar = $nom_ar;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $prenom_ar = null;
-
-    public function getPrenom_ar(): ?string
-    {
-        return $this->prenom_ar;
-    }
-
-    public function setPrenom_ar(?string $prenom_ar): self
-    {
-        $this->prenom_ar = $prenom_ar;
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: Culture::class, mappedBy: 'utilisateur')]
-    private Collection $cultures;
-
-    /**
-     * @return Collection<int, Culture>
-     */
-    public function getCultures(): Collection
-    {
-        if (!$this->cultures instanceof Collection) {
-            $this->cultures = new ArrayCollection();
-        }
-        return $this->cultures;
-    }
-
-    public function addCulture(Culture $culture): self
-    {
-        if (!$this->getCultures()->contains($culture)) {
-            $this->getCultures()->add($culture);
-        }
-        return $this;
-    }
-
-    public function removeCulture(Culture $culture): self
-    {
-        $this->getCultures()->removeElement($culture);
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: Diagnosti::class, mappedBy: 'utilisateur')]
-    private Collection $diagnostis;
-
-    public function __construct()
-    {
-        $this->cultures = new ArrayCollection();
-        $this->diagnostis = new ArrayCollection();
-    }
-
-    /**
-     * @return Collection<int, Diagnosti>
-     */
-    public function getDiagnostis(): Collection
-    {
-        if (!$this->diagnostis instanceof Collection) {
-            $this->diagnostis = new ArrayCollection();
-        }
-        return $this->diagnostis;
-    }
-
-    public function addDiagnosti(Diagnosti $diagnosti): self
-    {
-        if (!$this->getDiagnostis()->contains($diagnosti)) {
-            $this->getDiagnostis()->add($diagnosti);
-        }
-        return $this;
-    }
-
-    public function removeDiagnosti(Diagnosti $diagnosti): self
-    {
-        $this->getDiagnostis()->removeElement($diagnosti);
         return $this;
     }
 
@@ -355,12 +251,48 @@ class Utilisateur
         return $this;
     }
 
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+
+    public function setAdresse(?string $adresse): static
+    {
+        $this->adresse = $adresse;
+
+        return $this;
+    }
+
+    public function getParcelles(): ?string
+    {
+        return $this->parcelles;
+    }
+
+    public function setParcelles(?string $parcelles): static
+    {
+        $this->parcelles = $parcelles;
+
+        return $this;
+    }
+
+    public function getCertification(): ?string
+    {
+        return $this->certification;
+    }
+
+    public function setCertification(?string $certification): static
+    {
+        $this->certification = $certification;
+
+        return $this;
+    }
+
     public function getVerificationStatus(): ?string
     {
         return $this->verification_status;
     }
 
-    public function setVerificationStatus(string $verification_status): static
+    public function setVerificationStatus(?string $verification_status): static
     {
         $this->verification_status = $verification_status;
 
@@ -379,12 +311,12 @@ class Utilisateur
         return $this;
     }
 
-    public function getVerificationScore(): ?string
+    public function getVerificationScore(): ?float
     {
         return $this->verification_score;
     }
 
-    public function setVerificationScore(?string $verification_score): static
+    public function setVerificationScore(?float $verification_score): static
     {
         $this->verification_score = $verification_score;
 
@@ -415,4 +347,32 @@ class Utilisateur
         return $this;
     }
 
+    /**
+     * @return Collection<int, Reclamation>
+     */
+    public function getReclamations(): Collection
+    {
+        return $this->reclamations;
+    }
+
+    public function addReclamation(Reclamation $reclamation): static
+    {
+        if (!$this->reclamations->contains($reclamation)) {
+            $this->reclamations->add($reclamation);
+            $reclamation->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReclamation(Reclamation $reclamation): static
+    {
+        if ($this->reclamations->removeElement($reclamation)) {
+            if ($reclamation->getUtilisateur() === $this) {
+                $reclamation->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
 }

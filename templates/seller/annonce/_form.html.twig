@@ -1,0 +1,37 @@
+{{ form_start(form, {attr: {class: 'agf-admin-form'}}) }}
+    {{ include('partials/_form_error_summary.html.twig', {form: form}) }}
+
+    <div class="row g-4">
+        <div class="col-lg-8">{{ form_row(form.titre) }}</div>
+        <div class="col-lg-2">{{ form_row(form.type) }}</div>
+        <div class="col-lg-2">{{ form_row(form.statut) }}</div>
+    </div>
+
+    <div class="mt-4">
+        {{ form_row(form.description) }}
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-4">{{ form_row(form.prix) }}</div>
+        <div class="col-lg-4">{{ form_row(form.unitePrix) }}</div>
+        <div class="col-lg-4">{{ form_row(form.categorie) }}</div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-8">{{ form_row(form.imageUrl) }}</div>
+        <div class="col-lg-4">{{ form_row(form.quantiteDisponible) }}</div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-6">{{ form_row(form.localisation) }}</div>
+        <div class="col-lg-6 d-flex align-items-end">
+            <div class="small text-muted">
+                Le proprietaire est recupere automatiquement depuis votre compte connecte.
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+        <button class="btn btn-success px-4">{{ button_label|default('Enregistrer') }}</button>
+    </div>
+{{ form_end(form) }}

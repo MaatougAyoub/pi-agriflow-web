@@ -1,0 +1,471 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Profil | AgriFlow{% endblock %}
+
+{% block body_class %}agf-profile-edit-page{% endblock %}
+
+{% block stylesheets %}
+<style data-turbo-temporary>
+.agf-profile-edit-page {
+    --green-900:#1b5e20;
+    --green-800:#2e7d32;
+    --green-700:#43a047;
+    --ink:#263238;
+    --muted:#637381;
+    --danger-bg:#ffebee;
+    --danger:#c62828;
+    --success-bg:#e8f5e9;
+    --success:#1b5e20;
+
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:
+        radial-gradient(1200px 600px at 90% -20%, rgba(255,213,79,0.18), transparent),
+        linear-gradient(135deg, var(--green-900), var(--green-800), var(--green-700));
+    padding:24px;
+}
+
+.agf-profile-edit-page * { box-sizing:border-box; }
+
+.agf-profile-edit-page .edit-shell {
+    width:100%;
+    max-width:1180px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 30px 60px rgba(0,0,0,0.25);
+    display:grid;
+    grid-template-columns:0.9fr 1.1fr;
+}
+
+.agf-profile-edit-page .edit-hero {
+    background-image:
+        linear-gradient(rgba(27,94,32,0.66), rgba(27,94,32,0.82)),
+        url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=80');
+    background-size:cover;
+    background-position:center;
+    color:#fff;
+    padding:40px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:18px;
+}
+
+.agf-profile-edit-page .brand-logo {
+    width:220px;
+    max-width:100%;
+}
+
+.agf-profile-edit-page .brand-logo img {
+    width:100%;
+    height:auto;
+    object-fit:contain;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+}
+
+.agf-profile-edit-page .brand-title {
+    margin:0;
+    font-size:50px;
+    line-height:1;
+    font-weight:800;
+    text-shadow:0 2px 8px rgba(0,0,0,0.35);
+}
+
+.agf-profile-edit-page .brand-sub {
+    margin:0;
+    font-size:18px;
+    opacity:0.95;
+}
+
+.agf-profile-edit-page .brand-divider {
+    width:130px;
+    height:3px;
+    border-radius:999px;
+    background:linear-gradient(90deg, transparent, #ffd54f, transparent);
+}
+
+.agf-profile-edit-page .feature-list {
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    gap:10px;
+    font-weight:600;
+}
+
+.agf-profile-edit-page .edit-form {
+    padding:34px 38px;
+}
+
+.agf-profile-edit-page .form-header {
+    margin-bottom:20px;
+}
+
+.agf-profile-edit-page .edit-title {
+    margin:0;
+    font-size:34px;
+    color:var(--green-900);
+}
+
+.agf-profile-edit-page .edit-subtitle {
+    margin:8px 0 0;
+    color:var(--muted);
+}
+
+.agf-profile-edit-page .role-pill {
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:6px 12px;
+    margin-top:10px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.3px;
+    color:#fff;
+    background:linear-gradient(90deg, var(--green-900), var(--green-800));
+}
+
+.agf-profile-edit-page .alert {
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+.agf-profile-edit-page .alert-danger {
+    background:var(--danger-bg);
+    color:var(--danger);
+}
+
+.agf-profile-edit-page .alert-success {
+    background:var(--success-bg);
+    color:var(--success);
+}
+
+.agf-profile-edit-page .form-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.agf-profile-edit-page .field {
+    display:grid;
+    gap:7px;
+}
+
+.agf-profile-edit-page .field.full {
+    grid-column:1 / -1;
+}
+
+.agf-profile-edit-page .field label {
+    font-weight:700;
+    font-size:14px;
+}
+
+.agf-profile-edit-page .field input {
+    width:100%;
+    border:1.5px solid #dfe3e8;
+    border-radius:10px;
+    padding:12px;
+    font-size:15px;
+    outline:none;
+}
+
+.agf-profile-edit-page .field input:focus {
+    border-color:var(--green-700);
+    box-shadow:0 0 0 4px rgba(67,160,71,0.16);
+}
+
+.agf-profile-edit-page .file-help {
+    font-size:12px;
+    color:var(--muted);
+}
+
+.agf-profile-edit-page .preview-box {
+    margin-top:8px;
+    max-width:280px;
+    border:1px solid #dfe3e8;
+    border-radius:10px;
+    padding:6px;
+    background:#fbfcfd;
+}
+
+.agf-profile-edit-page .preview-box img {
+    width:100%;
+    height:auto;
+    max-height:180px;
+    object-fit:contain;
+    border-radius:8px;
+    display:block;
+}
+
+.agf-profile-edit-page .actions {
+    margin-top:20px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.agf-profile-edit-page .btn {
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:46px;
+    padding:0 18px;
+}
+
+.agf-profile-edit-page .btn-primary {
+    color:#fff;
+    background:linear-gradient(90deg, var(--green-900), var(--green-800));
+    box-shadow:0 8px 18px rgba(46,125,50,0.28);
+}
+
+.agf-profile-edit-page .btn-secondary {
+    border:1px solid #dfe3e8;
+    color:#6e7a86;
+    background:#fff;
+}
+
+.agf-profile-edit-page .helper-row {
+    margin-top:14px;
+    text-align:center;
+    font-size:13px;
+    color:#66757f;
+}
+
+@media (max-width: 1024px) {
+    .agf-profile-edit-page .edit-shell {
+        grid-template-columns:1fr;
+        max-width:780px;
+    }
+}
+
+@media (max-width: 720px) {
+    .agf-profile-edit-page .edit-form {
+        padding:24px;
+    }
+
+    .agf-profile-edit-page .form-grid {
+        grid-template-columns:1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<main class="edit-shell">
+    <section class="edit-hero">
+        <div class="brand-logo">
+            <img src="{{ asset('template/assets/img/logo2.png') }}" alt="AgriFlow">
+        </div>
+        <h1 class="brand-title">AgriFlow</h1>
+        <p class="brand-sub">Mise a jour des informations personnelles</p>
+        <div class="brand-divider"></div>
+        <ul class="feature-list">
+            <li>Modification securisee par code a 6 chiffres</li>
+            <li>Validation adaptee a votre role</li>
+            <li>Conservation des fichiers existants si besoin</li>
+            <li>Mise a jour immediate apres verification</li>
+        </ul>
+    </section>
+
+    <section class="edit-form">
+        <div class="form-header">
+            <h2 class="edit-title">Modifier mes informations</h2>
+            <p class="edit-subtitle">Mettez a jour vos donnees puis validez avec le code de verification.</p>
+            <span class="role-pill">Role: {{ role }}</span>
+        </div>
+
+        <div id="clientErrors"></div>
+
+        {% for error in errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endfor %}
+
+        <form id="profileEditForm" method="post" enctype="multipart/form-data" novalidate data-turbo="false" data-role="{{ role }}" data-has-signature="{{ has_signature ? '1' : '0' }}" data-has-carte-pro="{{ has_carte_pro ? '1' : '0' }}" data-has-certification="{{ has_certification ? '1' : '0' }}">
+            <div class="form-grid">
+                <div class="field">
+                    <label>Nom *</label>
+                    <input type="text" name="nom" value="{{ old.nom }}" placeholder="Votre nom" required>
+                </div>
+
+                <div class="field">
+                    <label>Prenom *</label>
+                    <input type="text" name="prenom" value="{{ old.prenom }}" placeholder="Votre prenom" required>
+                </div>
+
+                <div class="field full">
+                    <label>Email *</label>
+                    <input type="email" name="email" value="{{ old.email }}" placeholder="exemple@email.com" required>
+                </div>
+
+                <div class="field full">
+                    <label>Signature *</label>
+                    <input type="file" name="signature" accept="image/*">
+                    <span class="file-help">Laissez vide pour conserver la signature actuelle.</span>
+                    {% if user.signature %}
+                        <div class="preview-box">
+                            <img src="{{ path('app_profile_signature_image') }}" alt="Signature actuelle">
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if role == 'AGRICULTEUR' %}
+                    <div class="field full">
+                        <label>Adresse *</label>
+                        <input type="text" name="adresse" value="{{ old.adresse }}" placeholder="Votre adresse complete" required>
+                    </div>
+
+                    <div class="field full">
+                        <label>Carte professionnelle *</label>
+                        <input type="file" name="carte_pro" accept="image/*">
+                        <span class="file-help">Laissez vide pour conserver la carte actuelle.</span>
+                        {% if user.cartePro %}
+                            <div class="preview-box">
+                                <img src="{{ path('app_profile_carte_image') }}" alt="Carte professionnelle actuelle">
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if role == 'EXPERT' %}
+                    <div class="field full">
+                        <label>Certification *</label>
+                        <input type="file" name="certification" accept="image/*">
+                        <span class="file-help">Laissez vide pour conserver la certification actuelle.</span>
+                        {% if user.certification %}
+                            <div class="preview-box">
+                                <img src="{{ path('app_profile_certification_image') }}" alt="Certification actuelle">
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" type="submit">Modifier</button>
+                <a class="btn btn-secondary" href="{{ path('app_profile') }}">Annuler</a>
+            </div>
+        </form>
+
+        <div class="helper-row">Un code de verification sera affiche dans le terminal apres validation.</div>
+    </section>
+</main>
+
+<script data-turbo-temporary>
+(function () {
+    const form = document.getElementById('profileEditForm');
+    const clientErrors = document.getElementById('clientErrors');
+
+    if (!form || form.dataset.validationBound === '1') {
+        return;
+    }
+
+    form.dataset.validationBound = '1';
+
+    const role = (form.dataset.role || '').toUpperCase();
+    const hasSignature = form.dataset.hasSignature === '1';
+    const hasCartePro = form.dataset.hasCartePro === '1';
+    const hasCertification = form.dataset.hasCertification === '1';
+
+    const nomInput = form.querySelector('input[name="nom"]');
+    const prenomInput = form.querySelector('input[name="prenom"]');
+    const emailInput = form.querySelector('input[name="email"]');
+    const signatureInput = form.querySelector('input[name="signature"]');
+    const adresseInput = form.querySelector('input[name="adresse"]');
+    const carteInput = form.querySelector('input[name="carte_pro"]');
+    const certifInput = form.querySelector('input[name="certification"]');
+
+    function renderClientError(message) {
+        if (!clientErrors) {
+            return;
+        }
+
+        clientErrors.innerHTML = '';
+        if (!message) {
+            return;
+        }
+
+        const errorBox = document.createElement('div');
+        errorBox.className = 'alert alert-danger';
+        errorBox.textContent = message;
+        clientErrors.appendChild(errorBox);
+    }
+
+    function getFirstValidationError() {
+        if (!nomInput || nomInput.value.trim() === '') {
+            return 'Veuillez entrer votre nom.';
+        }
+
+        if (!prenomInput || prenomInput.value.trim() === '') {
+            return 'Veuillez entrer votre prenom.';
+        }
+
+        const emailValue = emailInput ? emailInput.value.trim() : '';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+            return 'Veuillez entrer un email valide.';
+        }
+
+        const signatureMissing = !hasSignature && (!signatureInput || signatureInput.files.length === 0);
+        if (signatureMissing) {
+            return 'Veuillez ajouter votre signature.';
+        }
+
+        if (role === 'AGRICULTEUR') {
+            if (!adresseInput || adresseInput.value.trim() === '') {
+                return 'Veuillez entrer votre adresse.';
+            }
+
+            const carteMissing = !hasCartePro && (!carteInput || carteInput.files.length === 0);
+            if (carteMissing) {
+                return 'Veuillez ajouter la carte professionnelle.';
+            }
+        }
+
+        if (role === 'EXPERT') {
+            const certificationMissing = !hasCertification && (!certifInput || certifInput.files.length === 0);
+            if (certificationMissing) {
+                return 'Veuillez ajouter la certification.';
+            }
+        }
+
+        return null;
+    }
+
+    form.addEventListener('submit', function (event) {
+        const validationError = getFirstValidationError();
+
+        if (validationError) {
+            event.preventDefault();
+            renderClientError(validationError);
+            return;
+        }
+
+        renderClientError(null);
+    });
+
+    [nomInput, prenomInput, emailInput, signatureInput, adresseInput, carteInput, certifInput].forEach(function (input) {
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener('input', function () {
+            renderClientError(null);
+        });
+
+        input.addEventListener('change', function () {
+            renderClientError(null);
+        });
+    });
+})();
+</script>
+{% endblock %}
