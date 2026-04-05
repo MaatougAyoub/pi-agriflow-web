@@ -1,0 +1,14 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Ajouter une parcelle{% endblock %}
+{% block hero_title %}Ajouter une parcelle 
+
+{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+{% block hero_subtitle %}Creez une parcelle pour commencer a organiser vos cultures.{% endblock %}
+
+
+
+{% block module_body %}
+  {% include 'parcelle/_form.html.twig' with {form: form, submit_label: 'Creer la parcelle'} %}
+{% endblock %}

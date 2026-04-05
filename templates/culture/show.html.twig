@@ -1,0 +1,79 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Detail culture{% endblock %}
+{% block hero_title %}
+{{ culture.nom ?: 'Culture #' ~ culture.id }}
+{% endblock %}
+{% block hero_subtitle %}
+Suivi et informations détaillées de cette culture
+{% endblock %}
+{% block top_right_action %}
+  <button type="button" class="btn btn-outline-success" onclick="window.history.length > 1 ? history.back() : window.location.href='{{ path('app_culture_index') }}'">Retour</button>
+{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+{% block module_body %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-1">{{ culture.nom ?: 'Culture' }}</h1>
+          <p class="text-muted mb-4">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
+          <h2 class="h4 mb-4">Informations de la culture</h2>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Parcelle associée</div>
+                <div class="fw-semibold">
+                  {% if parcelle %}
+                    <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="text-decoration-none">
+                      {{ parcelle.nom ?: 'Parcelle' }}
+                    </a>
+                  {% else %}
+                    Introuvable
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Superficie</div>
+                <div class="fw-semibold">{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Etat</div>
+                <div class="fw-semibold">{{ culture.etat ?: 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Type de culture</div>
+                <div class="fw-semibold">{{ culture.typeCulture ?: 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de recolte</div>
+                <div class="fw-semibold">{{ culture.dateRecolte ? culture.dateRecolte|date('d/m/Y') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Recolte estimee</div>
+                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4 flex-wrap">
+            <a href="{{ path('app_culture_edit', {id: culture.id}) }}" class="btn btn-outline-secondary">Modifier</a>
+            {% include 'culture/_delete_form.html.twig' %}
+            {% if parcelle %}
+              <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="btn btn-success">Voir la parcelle</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

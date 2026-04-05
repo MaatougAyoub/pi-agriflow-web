@@ -1,0 +1,19 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Modifier une culture{% endblock %}
+
+{% block hero_title %}Modifier la culture 
+<br>
+{{ culture.nom ?: 'Culture #' ~ culture.id }}{% endblock %}
+{% block hero_subtitle %}{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+{% block module_body %}
+  {% include 'culture/_form.html.twig' with {
+    form: form,
+    parcelles: parcelles,
+    available_surface_map: available_surface_map,
+    selected_parcelle: selected_parcelle,
+    selected_available_surface: selected_available_surface,
+    submit_label: 'Mettre a jour'
+  } %}
+{% endblock %}

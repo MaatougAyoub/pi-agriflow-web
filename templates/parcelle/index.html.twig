@@ -1,0 +1,91 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Mes parcelles{% endblock %}
+{% block hero_title %}Mes parcelles{% endblock %}
+{% block hero_subtitle %}Gérez vos parcelles agricoles{% endblock %}
+{% block top_right_action %}
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ path('app_culture_index') }}" class="btn btn-outline-success">
+      <i class="bi bi-flower1 me-2"></i>Voir mes cultures
+    </a>
+    <a href="{{ path('app_parcelle_new') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-2"></i>Ajouter une parcelle
+    </a>
+  </div>
+{% endblock %}
+
+{% block module_body %}
+  <form method="get" class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="search" class="form-label">Recherche par nom</label>
+          <input type="text" id="search" name="search" class="form-control" value="{{ filters.search }}" placeholder="Nom de parcelle">
+        </div>
+        <div class="col-md-3">
+          <label for="type_terre" class="form-label">Type de terre</label>
+          <select id="type_terre" name="type_terre" class="form-select">
+            <option value="">Tous</option>
+            {% for typeTerre in type_terre_choices %}
+              <option value="{{ typeTerre }}" {{ filters.type_terre == typeTerre ? 'selected' : '' }}>{{ typeTerre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="sort" class="form-label">Trier par</label>
+          <select id="sort" name="sort" class="form-select">
+            {% for sortKey, sortLabel in sort_choices %}
+              <option value="{{ sortKey }}" {{ filters.sort == sortKey ? 'selected' : '' }}>{{ sortLabel }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="direction" class="form-label">Ordre</label>
+          <select id="direction" name="direction" class="form-select">
+            <option value="asc" {{ filters.direction == 'asc' ? 'selected' : '' }}>Asc</option>
+            <option value="desc" {{ filters.direction == 'desc' ? 'selected' : '' }}>Desc</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-grid">
+          <button class="btn btn-success">OK</button>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <a href="{{ path('app_parcelle_index') }}" class="btn btn-outline-secondary btn-sm">Reinitialiser</a>
+      </div>
+    </div>
+  </form>
+
+  {% if parcelles is empty %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h3 class="h5">Aucune parcelle pour le moment</h3>
+        <p class="mb-3">Aucun resultat ne correspond aux criteres actuels.</p>
+        <a href="{{ path('app_parcelle_new') }}" class="btn btn-success">Creer une parcelle</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="row g-4">
+      {% for parcelle in parcelles %}
+        <div class="col-md-6 col-xl-4">
+          <div class="card border-0 shadow-sm h-100 position-relative">
+            <div class="card-body d-flex flex-column p-4">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <span class="badge text-bg-light">{{ culture_count_by_parcelle[parcelle.id] ?? 0 }} culture(s)</span>
+              </div>
+              <h3 class="h5 mb-2">{{ parcelle.nom ?: 'Parcelle sans nom' }}</h3>
+              <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="stretched-link" aria-label="Voir la parcelle {{ parcelle.nom ?: parcelle.id }}"></a>
+              <p class="text-muted mb-3">{{ parcelle.localisation ?: 'Localisation non renseignee' }}</p>
+              <ul class="list-unstyled small text-muted mb-0">
+                <li class="mb-2"><strong>Type de terre:</strong> {{parcelle.typeTerre ?: 'Type non renseigne'}} </li>
+
+                <li class="mb-2"><strong>Superficie:</strong> {{ parcelle.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</li>
+                <li><strong>Superficie disponible:</strong> {{ (available_surface_map[parcelle.id] ?? 0)|number_format(0, '.', ' ') }} m&sup2;</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% block page_title %}Parcelles & Cultures{% endblock %} | AgriFlow{% endblock %}
+
+{% block stylesheets %}
+  <link href="{{ asset('template/assets/img/favicon.png') }}" rel="icon">
+  <link href="{{ asset('template/assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Marcellus:wght@400&display=swap" rel="stylesheet">
+  <link href="{{ asset('template/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('template/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+  <link href="{{ asset('template/assets/vendor/aos/aos.css') }}" rel="stylesheet">
+  <link href="{{ asset('template/assets/vendor/swiper/swiper-bundle.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('template/assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('template/assets/css/main.css') }}" rel="stylesheet">
+
+ <style>
+  .pc-hero {
+    position: relative;
+    width: 100%;
+    background: url('{{ asset("images/header-banner-parcelles-cultures.png") }}') center center / cover no-repeat;
+  }
+
+
+.pc-hero-default {
+  height: 600px;
+}
+
+.pc-hero-small {
+  height: 220px;
+}
+
+.pc-hero-medium {
+  height: 300px;
+}
+  .pc-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .pc-hero-content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .pc-hero-title {
+    color: #fff;
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .pc-hero-subtitle {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 500;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  .pc-top-actions {
+    padding: 20px 0 10px;
+  }
+
+  @media (max-width: 992px) {
+    .pc-hero-default {
+      height: 320px;
+    }
+  .pc-hero-medium {
+    height: 240px;
+  }
+
+    .pc-hero-title {
+      font-size: 40px;
+    }
+
+    .pc-hero-subtitle {
+      font-size: 18px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  {% include 'parcelle_culture/_header.html.twig' %}
+
+  <main class="main">
+   {% block main_hero %}
+<section class="pc-hero {% block hero_size %}pc-hero-default{% endblock %}">
+    <div class="pc-hero-overlay"></div>
+
+    <div class="pc-hero-content">
+      <h1 class="pc-hero-title">
+        {% block hero_title %}Parcelles & Cultures{% endblock %}
+      </h1>
+
+      <p class="pc-hero-subtitle">
+        {% block hero_subtitle %}Gérez facilement vos parcelles et vos cultures{% endblock %}
+      </p>
+    </div>
+  </section>
+{% endblock %}
+
+    <section class="pc-top-actions">
+      <div class="container d-flex justify-content-end">
+        {% block top_right_action %}{% endblock %}
+      </div>
+    </section>
+
+    {% block hero %}{% endblock %}
+
+    <section class="section pt-3">
+      <div class="container">
+        {% include 'parcelle_culture/_flash_messages.html.twig' %}
+        {% block module_body %}{% endblock %}
+      </div>
+    </section>
+  </main>
+
+  {% include 'parcelle_culture/_footer.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+  <script src="{{ asset('template/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('template/assets/vendor/php-email-form/validate.js') }}"></script>
+  <script src="{{ asset('template/assets/vendor/aos/aos.js') }}"></script>
+  <script src="{{ asset('template/assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
+  <script src="{{ asset('template/assets/vendor/glightbox/js/glightbox.min.js') }}"></script>
+  <script src="{{ asset('template/assets/js/main.js') }}"></script>
+{% endblock %}

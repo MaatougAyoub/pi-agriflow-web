@@ -1,0 +1,83 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Detail parcelle{% endblock %}
+{% block hero_title %}
+{{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}
+{% endblock %}
+{% block hero_subtitle %}
+Consultez les informations et les cultures liées à cette parcelle{% endblock %}
+
+{% block top_right_action %}
+  <button type="button" class="btn btn-outline-success" onclick="window.history.length > 1 ? history.back() : window.location.href='{{ path('app_parcelle_index') }}'">Retour</button>
+{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+
+{% block module_body %}
+  <div class="row g-4 mb-4">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-1">{{ parcelle.nom ?: 'Parcelle' }}</h1>
+          <p class="text-muted mb-4">{{ parcelle.localisation ?: 'Localisation non renseignee' }}</p>
+          <h2 class="h4 mb-4">Informations de la parcelle</h2>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Superficie totale</div>
+                <div class="fw-semibold">{{ parcelle.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Surface disponible</div>
+                <div class="fw-semibold">{{ available_surface|number_format(0, '.', ' ') }} m&sup2;</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Type de terre</div>
+                <div class="fw-semibold">{{ parcelle.typeTerre ?: 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de creation</div>
+                <div class="fw-semibold">{{ parcelle.dateCreation ? parcelle.dateCreation|date('d/m/Y H:i') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-4 flex-wrap">
+            <a href="{{ path('app_parcelle_edit', {id: parcelle.id}) }}" class="btn btn-outline-secondary">Modifier</a>
+            {% include 'parcelle/_delete_form.html.twig' %}
+            <a href="{{ path('app_culture_new', {parcelle: parcelle.id}) }}" class="btn btn-success">Ajouter une culture</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body p-4">
+          <h2 class="h4 mb-4">Cultures liees</h2>
+          {% if cultures is empty %}
+            <p class="text-muted mb-3">Aucune culture n'est encore liee a cette parcelle.</p>
+          {% else %}
+            <div class="d-grid gap-3">
+              {% for culture in cultures %}
+                <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="border rounded p-3 text-decoration-none text-reset d-block">
+                  <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                      <h3 class="h6 mb-1">{{ culture.nom ?: 'Culture' }}</h3>
+                      <p class="mb-1 text-muted">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
+                      <small>{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</small>
+                    </div>
+                    <span class="btn btn-outline-success btn-sm">Voir</span>
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
