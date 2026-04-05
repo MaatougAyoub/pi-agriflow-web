@@ -89,6 +89,17 @@ body {
     gap:18px;
 }
 
+.edit-cta-row {
+    display:flex;
+    justify-content:flex-end;
+}
+
+.btn-highlight {
+    color:#fff;
+    background:linear-gradient(90deg, var(--green-900), var(--green-800));
+    box-shadow:0 8px 18px rgba(46,125,50,0.24);
+}
+
 .role-pill {
     display:inline-flex;
     width:max-content;
@@ -178,6 +189,7 @@ body {
         <h1 class="brand">AgriFlow - Profil Utilisateur</h1>
         <div class="top-actions">
             <a class="btn btn-secondary" href="{{ path('site_home') }}">Accueil</a>
+            <a class="btn btn-secondary" href="{{ path('app_profile_edit') }}">Modifier profil</a>
             <a class="btn btn-secondary" href="{{ path('app_reclamation_index') }}">Reclamations</a>
             <a class="btn btn-primary" href="{{ path('app_logout') }}">Deconnexion</a>
         </div>
@@ -185,6 +197,10 @@ body {
 
     <div class="profile-content">
         <div class="role-pill">Role: {{ role ?: '-' }}</div>
+
+        <div class="edit-cta-row">
+            <a class="btn btn-highlight" href="{{ path('app_profile_edit') }}">Modifier mes informations</a>
+        </div>
 
         <section class="section-card">
             <h2 class="section-title">Informations generales</h2>
