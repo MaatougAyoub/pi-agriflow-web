@@ -8,6 +8,19 @@
     font-family: 'Open Sans', sans-serif;
 }
 
+.agf-front .header .logo img {
+    max-height: 86px;
+    width: auto;
+    margin-right: 0;
+    display: block;
+}
+
+@media (max-width: 1199px) {
+    .agf-front .header .logo img {
+        max-height: 72px;
+    }
+}
+
 .agf-header-actions {
     align-items: center;
     gap: 12px;
