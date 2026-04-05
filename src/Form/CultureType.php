@@ -73,8 +73,6 @@ class CultureType extends AbstractType
             ->add('superficie', NumberType::class, [
                 'label' => 'Superficie (m²)',
                 'scale' => 2,
-                'required' => true,
-                'invalid_message' => 'Veuillez saisir un nombre valide.',
                 'help' => $superficieHelp,
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir une superficie.']),
@@ -104,10 +102,8 @@ class CultureType extends AbstractType
             ->add('recolteEstime', NumberType::class, [
                 'label' => 'Recolte estimee',
                 'scale' => 2,
-                'required' => true,
-                'invalid_message' => 'Veuillez saisir un nombre valide.',
+                'required' => false,
                 'constraints' => [
-                    new NotBlank(['message' => 'Veuillez saisir une recolte estimee.']),
                     new GreaterThanOrEqual([
                         'value' => 0,
                         'message' => 'La recolte estimee doit etre superieure ou egale a 0.',
