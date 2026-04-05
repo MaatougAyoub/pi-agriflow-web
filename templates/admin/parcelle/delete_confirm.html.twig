@@ -1,0 +1,51 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Confirmation suppression parcelle{% endblock %}
+{% block admin_page_title %}Confirmer la suppression{% endblock %}
+{% block admin_page_subtitle %}Cette parcelle possede encore des cultures liees.{% endblock %}
+{% block admin_page_actions %}
+  <a href="{{ path('app_admin_parcelle_show', {id: parcelle.id}) }}" class="btn btn-outline-secondary">Retour au detail</a>
+{% endblock %}
+
+{% block admin_body %}
+  <div class="card admin-card">
+    <div class="card-body p-4">
+      <h2 class="h4 mb-3">{{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}</h2>
+      <p class="text-muted">
+        Cette parcelle contient {{ cultures|length }} culture(s). Les supprimer en meme temps supprimera aussi toutes les cultures liees.
+      </p>
+
+      <div class="table-responsive mb-4">
+        <table class="table admin-table">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Nom</th>
+              <th>Type</th>
+              <th>Superficie</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for culture in cultures %}
+              <tr>
+                <td>{{ culture.id }}</td>
+                <td>{{ culture.nom ?: 'Sans nom' }}</td>
+                <td>{{ culture.typeCulture ?: '-' }}</td>
+                <td>{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <form method="post" action="{{ path('app_admin_parcelle_delete', {id: parcelle.id}) }}">
+          <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_parcelle_' ~ parcelle.id) }}">
+          <input type="hidden" name="confirm_cascade_delete" value="1">
+          <button type="submit" class="btn btn-danger">Supprimer la parcelle et ses cultures</button>
+        </form>
+        <a href="{{ path('app_admin_parcelle_show', {id: parcelle.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

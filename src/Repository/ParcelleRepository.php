@@ -102,6 +102,57 @@ class ParcelleRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @param array<string, string|null> $criteria
+     * @return Parcelle[]
+     */
+    public function findFilteredForAdmin(array $criteria): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+
+        $search = trim((string) ($criteria['search'] ?? ''));
+        if ('' !== $search) {
+            $queryBuilder
+                ->andWhere('LOWER(COALESCE(p.nom, \'\')) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower($search).'%');
+        }
+
+        $typeTerre = trim((string) ($criteria['type_terre'] ?? ''));
+        if ('' !== $typeTerre) {
+            $queryBuilder
+                ->andWhere('p.type_terre = :typeTerre')
+                ->setParameter('typeTerre', $typeTerre);
+        }
+
+        $sort = (string) ($criteria['sort'] ?? 'date_creation');
+        $direction = strtolower((string) ($criteria['direction'] ?? 'desc'));
+        $sortField = self::ALLOWED_SORT_FIELDS[$sort] ?? self::ALLOWED_SORT_FIELDS['date_creation'];
+        $sortDirection = 'asc' === $direction ? 'ASC' : 'DESC';
+
+        return $queryBuilder
+            ->orderBy($sortField, $sortDirection)
+            ->addOrderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function findTypeTerreChoicesForAdmin(): array
+    {
+        $results = $this->createQueryBuilder('p')
+            ->select('DISTINCT p.type_terre AS typeTerre')
+            ->andWhere('p.type_terre IS NOT NULL')
+            ->andWhere('p.type_terre != :emptyValue')
+            ->setParameter('emptyValue', '')
+            ->orderBy('p.type_terre', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): string => (string) $row['typeTerre'], $results);
+    }
+
     //    /**
     //     * @return Parcelle[] Returns an array of Parcelle objects
     //     */
