@@ -1,6 +1,17 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-{{ form_start(form) }}
+<style>
+  .agf-form-errors .invalid-feedback,
+  .agf-form-errors .form-error-message,
+  .agf-form-errors .text-danger {
+    display: block !important;
+  }
+</style>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+<div class="agf-form-errors">
+  {% include 'partials/_form_error_summary.html.twig' with { form: form } %}
+
   {% if selected_parcelle %}
     <div class="alert alert-info" id="culture-surface-alert">
       Surface disponible pour <strong id="selected-parcelle-name">{{ selected_parcelle.nom ?: 'Parcelle #' ~ selected_parcelle.id }}</strong>:
@@ -11,6 +22,8 @@
       Selectionnez une parcelle. Les surfaces disponibles actuelles sont rappelees ci-dessous.
     </div>
   {% endif %}
+
+  {{ form_errors(form) }}
 
   <div class="card border-0 shadow-sm mb-4">
     <div class="card-body p-4">
@@ -26,6 +39,7 @@
       <div class="row">
         <div class="col-md-6">
           {{ form_row(form.superficie) }}
+          {{ form_errors(form.superficie) }}
         </div>
         <div class="col-md-6">
           {{ form_row(form.etat) }}
@@ -34,9 +48,11 @@
       <div class="row">
         <div class="col-md-6">
           {{ form_row(form.dateRecolte) }}
+          {{ form_errors(form.dateRecolte) }}
         </div>
         <div class="col-md-6">
           {{ form_row(form.recolteEstime) }}
+          {{ form_errors(form.recolteEstime) }}
         </div>
       </div>
     </div>
@@ -63,6 +79,7 @@
     <button class="btn btn-success">{{ submit_label|default('Enregistrer') }}</button>
     <a href="{{ path('app_culture_index') }}" class="btn btn-outline-secondary">Retour a la liste</a>
   </div>
+</div>
 {{ form_end(form) }}
 
 <script>

@@ -46,7 +46,10 @@ class ParcelleType extends AbstractType
                 'label' => 'Type de terre',
                 'choices' => self::TYPE_TERRE_CHOICES,
                 'placeholder' => 'Choisir un type de terre',
-                'required' => false,
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'Le type de terre est obligatoire.']),
+                ],
             ])
             ->add('localisation', TextType::class, [
                 'label' => 'Localisation',

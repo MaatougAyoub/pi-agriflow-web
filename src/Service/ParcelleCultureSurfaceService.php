@@ -36,7 +36,7 @@ class ParcelleCultureSurfaceService
         $availableSurface = $this->getAvailableSurfaceForParcelle($parcelle, $excludeCultureId);
 
         return sprintf(
-            'La superficie saisie dépasse la surface disponible pour cette parcelle. Maximum disponible: %.2f m².',
+            'La superficie saisie depasse la surface disponible pour cette parcelle. Maximum disponible: %.2f m².',
             $availableSurface
         );
     }

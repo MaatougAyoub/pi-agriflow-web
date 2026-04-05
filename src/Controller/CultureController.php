@@ -209,7 +209,10 @@ final class CultureController extends AbstractController
                 $form->get('parcelleId')->addError(new FormError('La parcelle selectionnee est invalide.'));
             } elseif (!$surfaceService->canAssignSurface($selectedParcelle, $culture->getSuperficie(), $culture->getId())) {
                 $form->get('superficie')->addError(
-                    new FormError($surfaceService->createSurfaceExceededMessage($selectedParcelle, $culture->getId()))
+                    new FormError(sprintf(
+                        'La superficie de la culture depasse la surface encore disponible pour cette parcelle. %s',
+                        $surfaceService->createSurfaceExceededMessage($selectedParcelle, $culture->getId())
+                    ))
                 );
             }
 

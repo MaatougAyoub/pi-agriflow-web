@@ -16,6 +16,28 @@ use Symfony\Component\Validator\Constraints\Positive;
 
 class CultureType extends AbstractType
 {
+    private const TYPE_CULTURE_CHOICES = [
+        'Ble' => 'BLE',
+        'Orge' => 'ORGE',
+        'Mais' => 'MAIS',
+        'Pomme de terre' => 'POMME_DE_TERRE',
+        'Tomate' => 'TOMATE',
+        'Olivier' => 'OLIVIER',
+        'Agrumes' => 'AGRUMES',
+        'Vigne' => 'VIGNE',
+        'Pasteque' => 'PASTECQUE',
+        'Fraise' => 'FRAISE',
+        'Legumes' => 'LEGUMES',
+        'Autre' => 'AUTRE',
+    ];
+
+    private const ETAT_CHOICES = [
+        'En cours' => 'EN_COURS',
+        'Recoltee' => 'RECOLTEE',
+        'En vente' => 'EN_VENTE',
+        'Vendue' => 'VENDUE',
+    ];
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $selectedParcelleId = $options['selected_parcelle_id'];
@@ -39,22 +61,34 @@ class CultureType extends AbstractType
                     new NotBlank(['message' => 'Veuillez saisir un nom de culture.']),
                 ],
             ])
-            ->add('typeCulture', TextType::class, [
+            ->add('typeCulture', ChoiceType::class, [
                 'label' => 'Type de culture',
-                'required' => false,
+                'choices' => self::TYPE_CULTURE_CHOICES,
+                'placeholder' => 'Choisir un type de culture',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'Le type de culture est obligatoire.']),
+                ],
             ])
             ->add('superficie', NumberType::class, [
                 'label' => 'Superficie (m²)',
                 'scale' => 2,
+                'required' => true,
+                'invalid_message' => 'Veuillez saisir un nombre valide.',
                 'help' => $superficieHelp,
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir une superficie.']),
                     new Positive(['message' => 'La superficie doit etre superieure a 0.']),
                 ],
             ])
-            ->add('etat', TextType::class, [
+            ->add('etat', ChoiceType::class, [
                 'label' => 'Etat',
-                'required' => false,
+                'choices' => self::ETAT_CHOICES,
+                'placeholder' => 'Choisir un etat',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => "L'etat est obligatoire."]),
+                ],
             ])
             ->add('dateRecolte', DateType::class, [
                 'label' => 'Date de recolte',
@@ -63,15 +97,17 @@ class CultureType extends AbstractType
                 'constraints' => [
                     new GreaterThanOrEqual([
                         'value' => 'today',
-                        'message' => 'La date de recolte doit etre superieure ou egale a aujourd hui.',
+                        'message' => 'La date de recolte doit etre egale ou posterieure a aujourd hui.',
                     ]),
                 ],
             ])
             ->add('recolteEstime', NumberType::class, [
                 'label' => 'Recolte estimee',
                 'scale' => 2,
-                'required' => false,
+                'required' => true,
+                'invalid_message' => 'Veuillez saisir un nombre valide.',
                 'constraints' => [
+                    new NotBlank(['message' => 'Veuillez saisir une recolte estimee.']),
                     new GreaterThanOrEqual([
                         'value' => 0,
                         'message' => 'La recolte estimee doit etre superieure ou egale a 0.',
