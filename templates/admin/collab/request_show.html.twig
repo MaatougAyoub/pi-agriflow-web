@@ -1,0 +1,156 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block page_title %}{{ collabRequest.title }} – Admin Collaboration{% endblock %}
+{% block admin_title %}Détail de la demande{% endblock %}
+{% block admin_subtitle %}{{ collabRequest.title }}{% endblock %}
+
+{% block admin_body %}
+
+<div class="d-flex gap-2 mb-4">
+    <a href="{{ path('admin_collab_requests') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Retour aux demandes
+    </a>
+</div>
+
+{% include 'partials/_flash.html.twig' %}
+
+<div class="row g-4">
+    {# Request info #}
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Informations</h5>
+                <dl class="row small mb-0">
+                    <dt class="col-5 text-muted">Statut</dt>
+                    <dd class="col-7">
+                        <span class="badge {% if collabRequest.status == 'open' %}bg-success{% elseif collabRequest.status == 'closed' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+                            {% if collabRequest.status == 'open' %}Ouverte{% elseif collabRequest.status == 'closed' %}Fermée{% else %}Brouillon{% endif %}
+                        </span>
+                    </dd>
+                    <dt class="col-5 text-muted">Localisation</dt>
+                    <dd class="col-7">{{ collabRequest.location }}</dd>
+                    <dt class="col-5 text-muted">Période</dt>
+                    <dd class="col-7">{{ collabRequest.startDate|date('d/m/Y') }}<br><span class="text-muted">→ {{ collabRequest.endDate|date('d/m/Y') }}</span></dd>
+                    <dt class="col-5 text-muted">Personnes</dt>
+                    <dd class="col-7">{{ collabRequest.neededPeople }}</dd>
+                    <dt class="col-5 text-muted">Salaire/j</dt>
+                    <dd class="col-7">{{ collabRequest.salaryPerDayAsFloat|number_format(2) }} DT</dd>
+                    <dt class="col-5 text-muted">Publié par</dt>
+                    <dd class="col-7">{{ collabRequest.publisher ?? '—' }}</dd>
+                    <dt class="col-5 text-muted">Créé le</dt>
+                    <dd class="col-7">{{ collabRequest.createdAt|date('d/m/Y H:i') }}</dd>
+                </dl>
+            </div>
+        </div>
+
+        {# Change status form #}
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="fw-semibold mb-3">Changer le statut</h6>
+                <form method="post" action="{{ path('admin_collab_request_status', {id: collabRequest.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('req_status_' ~ collabRequest.id) }}">
+                    <div class="d-flex gap-2">
+                        <select name="status" class="form-select form-select-sm">
+                            {% for label, val in {'Ouverte': 'open', 'Fermée': 'closed', 'Brouillon': 'draft'} %}
+                                <option value="{{ val }}" {{ collabRequest.status == val ? 'selected' : '' }}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-success text-nowrap">Appliquer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="fw-semibold mb-2">Description</h6>
+                <p class="text-muted small mb-0">{{ collabRequest.description }}</p>
+            </div>
+        </div>
+    </div>
+
+    {# Applications ranked #}
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+                <h5 class="fw-bold mb-0">
+                    Candidatures
+                    <span class="badge bg-secondary rounded-pill ms-1">{{ collabRequest.applications|length }}</span>
+                </h5>
+                <a href="{{ path('admin_collab_applications') }}" class="btn btn-sm btn-outline-secondary">Voir toutes</a>
+            </div>
+            <div class="card-body p-0">
+                {% if ranking|length == 0 %}
+                    <p class="text-center text-muted py-4">Aucune candidature pour cette demande.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Candidat</th>
+                                    <th>Exp.</th>
+                                    <th>Score IA</th>
+                                    <th>Statut</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in ranking %}
+                                    {% set app = row.application %}
+                                    {% set score = row.score %}
+                                    <tr>
+                                        <td class="text-muted small">{{ loop.index }}</td>
+                                        <td>
+                                            <div class="fw-semibold">{{ app.fullName }}</div>
+                                            <div class="small text-muted">{{ app.email }} · {{ app.phone }}</div>
+                                            <div class="small text-muted">Salaire attendu : {{ app.expectedSalaryAsFloat|number_format(2) }} DT</div>
+                                        </td>
+                                        <td class="small">{{ app.yearsOfExperience }} ans</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <div class="progress flex-grow-1" style="height:6px;width:60px">
+                                                    <div class="progress-bar {% if score.total >= 70 %}bg-success{% elseif score.total >= 50 %}bg-warning{% else %}bg-danger{% endif %}"
+                                                         role="progressbar"
+                                                         style="width:{{ score.total }}%"
+                                                         aria-valuenow="{{ score.total }}"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                                <span class="small fw-semibold">{{ score.total }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if app.status == 'accepted' %}bg-success{% elseif app.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                                {% if app.status == 'accepted' %}Acceptée{% elseif app.status == 'rejected' %}Refusée{% else %}En attente{% endif %}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex gap-1 justify-content-end">
+                                                {% for label, val in statuses %}
+                                                    {% if val != app.status %}
+                                                        <form method="post" action="{{ path('admin_collab_application_status', {id: app.id}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('app_status_' ~ app.id) }}">
+                                                            <input type="hidden" name="status" value="{{ val }}">
+                                                            <input type="hidden" name="redirect" value="{{ app.request ? path('admin_collab_request_show', {id: app.request.id}) : '' }}">
+                                                            <button type="submit" class="btn btn-sm {% if val == 'accepted' %}btn-outline-success{% elseif val == 'rejected' %}btn-outline-danger{% else %}btn-outline-warning{% endif %} py-0 px-1" title="{{ label }}">
+                                                                {% if val == 'accepted' %}<i class="bi bi-check"></i>{% elseif val == 'rejected' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock admin_body %}
