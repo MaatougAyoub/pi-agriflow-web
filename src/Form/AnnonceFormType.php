@@ -24,14 +24,21 @@ class AnnonceFormType extends AbstractType
         $builder
             ->add('titre', TextType::class, [
                 'label' => 'Titre',
+                'empty_data' => '',
                 'attr' => [
+                    'minlength' => 3,
+                    'maxlength' => 150,
                     'placeholder' => 'Ex: Tracteur New Holland T5',
                 ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
+                'empty_data' => '',
+                'help' => 'Minimum 20 caracteres pour decrire l offre clairement.',
                 'attr' => [
                     'rows' => 6,
+                    'minlength' => 20,
+                    'maxlength' => 2000,
                     'placeholder' => 'Decrivez clairement l offre, l etat du produit et les conditions.',
                 ],
             ])
@@ -49,37 +56,50 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Prix',
                 'currency' => 'TND',
                 'divisor' => 1,
+                'empty_data' => '0',
+                'help' => 'Saisissez un montant en dinars tunisiens.',
                 'attr' => [
-                    'min' => 0,
+                    'min' => 0.01,
                     'step' => '0.01',
                 ],
             ])
             ->add('unitePrix', TextType::class, [
                 'label' => 'Unite du prix',
+                'empty_data' => '',
+                'help' => 'Exemples: jour, piece, semaine.',
                 'attr' => [
-                    'placeholder' => 'jour / piece / semaine',
+                    'maxlength' => 20,
+                    'placeholder' => 'Ex: jour, piece, semaine',
                 ],
             ])
             ->add('categorie', TextType::class, [
                 'label' => 'Categorie',
+                'empty_data' => '',
                 'attr' => [
+                    'maxlength' => 120,
                     'placeholder' => 'Materiel, Fruits, Irrigation...',
                 ],
             ])
             ->add('imageUrl', UrlType::class, [
                 'label' => 'URL image',
+                'empty_data' => '',
+                'help' => 'Ajoutez un lien complet du style https://...',
                 'attr' => [
+                    'maxlength' => 255,
                     'placeholder' => 'https://...',
                 ],
             ])
             ->add('localisation', TextType::class, [
                 'label' => 'Localisation',
+                'empty_data' => '',
                 'attr' => [
+                    'maxlength' => 120,
                     'placeholder' => 'Nabeul, Sousse, Ariana...',
                 ],
             ])
             ->add('quantiteDisponible', IntegerType::class, [
                 'label' => 'Quantite disponible',
+                'empty_data' => '0',
                 'attr' => [
                     'min' => 1,
                 ],

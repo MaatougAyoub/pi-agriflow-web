@@ -57,7 +57,7 @@ final class AdminReservationController extends AbstractController
         return $this->render('admin/reservation/new.html.twig', [
             'reservation' => $reservation,
             'form' => $form->createView(),
-        ]);
+        ], $form->isSubmitted() ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
@@ -86,7 +86,7 @@ final class AdminReservationController extends AbstractController
         return $this->render('admin/reservation/edit.html.twig', [
             'reservation' => $reservation,
             'form' => $form->createView(),
-        ]);
+        ], $form->isSubmitted() ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['POST'])]

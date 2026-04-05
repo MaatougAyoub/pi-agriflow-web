@@ -1,0 +1,24 @@
+{% set has_errors = form.vars.errors|length > 0 %}
+
+{% for child in form %}
+    {% if child.vars.errors|length > 0 %}
+        {% set has_errors = true %}
+    {% endif %}
+{% endfor %}
+
+{% if has_errors %}
+    <div id="form-errors" class="alert alert-danger agf-form-summary mb-4" role="alert">
+        <h2 class="h6 mb-2">Merci de corriger les champs ci-dessous.</h2>
+        <ul class="mb-0 ps-3">
+            {% for error in form.vars.errors %}
+                <li>{{ error.message }}</li>
+            {% endfor %}
+
+            {% for child in form %}
+                {% for error in child.vars.errors %}
+                    <li><strong>{{ child.vars.label|default(child.vars.name) }}:</strong> {{ error.message }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

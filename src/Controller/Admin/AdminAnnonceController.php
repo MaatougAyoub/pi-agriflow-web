@@ -53,7 +53,7 @@ final class AdminAnnonceController extends AbstractController
         return $this->render('admin/annonce/new.html.twig', [
             'annonce' => $annonce,
             'form' => $form->createView(),
-        ]);
+        ], $form->isSubmitted() ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
@@ -76,7 +76,7 @@ final class AdminAnnonceController extends AbstractController
         return $this->render('admin/annonce/edit.html.twig', [
             'annonce' => $annonce,
             'form' => $form->createView(),
-        ]);
+        ], $form->isSubmitted() ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
 
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
