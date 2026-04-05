@@ -133,7 +133,7 @@
                                                         <form method="post" action="{{ path('admin_collab_application_status', {id: app.id}) }}" class="d-inline">
                                                             <input type="hidden" name="_token" value="{{ csrf_token('app_status_' ~ app.id) }}">
                                                             <input type="hidden" name="status" value="{{ val }}">
-                                                            <input type="hidden" name="redirect" value="{{ app.request ? path('admin_collab_request_show', {id: app.request.id}) : '' }}">
+                                                            <input type="hidden" name="redirect_request_id" value="{{ app.request ? app.request.id : '' }}">
                                                             <button type="submit" class="btn btn-sm {% if val == 'accepted' %}btn-outline-success{% elseif val == 'rejected' %}btn-outline-danger{% else %}btn-outline-warning{% endif %} py-0 px-1" title="{{ label }}">
                                                                 {% if val == 'accepted' %}<i class="bi bi-check"></i>{% elseif val == 'rejected' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
                                                             </button>
