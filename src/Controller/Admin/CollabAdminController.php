@@ -149,8 +149,10 @@ final class CollabAdminController extends AbstractController
             throw $this->createNotFoundException('Candidature introuvable.');
         }
 
-        $newStatus   = $request->request->get('status', '');
-        $redirectUrl = $request->request->get('redirect', null);
+        $newStatus = $request->request->get('status', '');
+
+        // Safe redirect: only accept an integer request ID to redirect back to its detail page.
+        $redirectRequestId = (int) $request->request->get('redirect_request_id', 0);
 
         if ($this->isCsrfTokenValid('app_status_'.$id, $request->request->get('_token'))) {
             try {
@@ -161,8 +163,8 @@ final class CollabAdminController extends AbstractController
             }
         }
 
-        if ($redirectUrl !== null) {
-            return $this->redirect($redirectUrl);
+        if ($redirectRequestId > 0) {
+            return $this->redirectToRoute('admin_collab_request_show', ['id' => $redirectRequestId]);
         }
 
         return $this->redirectToRoute('admin_collab_applications');
