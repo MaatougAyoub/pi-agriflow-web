@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+{% block title %}Produits - AGRIFLOW{% endblock %}
+
+{% block sidebar %}
+    <a href="{{ path('expert_home') }}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="{{ path('expert_irrigation') }}"><span class="icon">💧</span> Irrigation</a>
+    <a href="{{ path('expert_diagnostics') }}"><span class="icon">📝</span> Diagnostics</a>
+    <a href="{{ path('expert_produits') }}" class="active"><span class="icon">🧪</span> Produits</a>
+{% endblock %}
+
+{% block body %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:30px">
+    <div>
+        <div class="page-subtitle">Gestion des produits</div>
+        <div class="page-title">Produits Phytosanitaires</div>
+    </div>
+    <a href="{{ path('expert_produit_new') }}" class="btn btn-green">➕ Nouveau Produit</a>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px">
+    {% for p in produits %}
+    <div class="card" style="display:flex;align-items:center;padding:15px 20px;
+                              border-left:4px solid #2D5A27">
+        <div style="flex:1">
+            <div style="font-weight:700;font-size:15px;color:#1B4332">{{ p.nomProduit }}</div>
+            {% if p.remarques %}
+            <div style="font-size:13px;color:#95a5a6;font-style:italic;margin-top:3px">
+                {{ p.remarques }}
+            </div>
+            {% endif %}
+        </div>
+        <div style="width:150px;text-align:center">
+            <span style="background:#E8F5E9;color:#2D5A27;padding:4px 12px;
+                          border-radius:20px;font-size:12px;font-weight:600">
+                {{ p.dosage }}
+            </span>
+        </div>
+        <div style="width:180px;text-align:center;color:#6B7280;font-size:13px">
+            {{ p.frequenceApplication }}
+        </div>
+        <div>
+            <a href="{{ path('expert_produit_delete', {id: p.id}) }}"
+               onclick="return confirm('Supprimer ?')"
+               style="background:#FDEDEC;color:#E74C3C;padding:8px 14px;
+                      border-radius:8px;text-decoration:none;font-size:13px;font-weight:600">
+                🗑 Supprimer
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center;color:#95a5a6;padding:40px">
+        Aucun produit.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

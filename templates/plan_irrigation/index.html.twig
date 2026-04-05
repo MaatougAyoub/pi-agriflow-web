@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+{% block title %}Plans d'irrigation{% endblock %}
+{% block body %}
+<h1>Plans d'irrigation</h1>
+<a href="{{ path('plan_new') }}">+ Nouveau plan</a>
+<table border="1" cellpadding="8" style="margin-top:20px;width:100%">
+    <tr>
+        <th>Culture</th><th>Besoin eau (L)</th><th>Statut</th><th>Date</th><th>Actions</th>
+    </tr>
+    {% for p in plans %}
+    <tr>
+        <td>{{ p.culture.nom }}</td>
+        <td>{{ p.besoinEau }}</td>
+        <td>{{ p.statut }}</td>
+        <td>{{ p.dateCreation|date('d/m/Y') }}</td>
+        <td>
+            {% if p.statut == 'brouillon' %}
+            <a href="{{ path('plan_approuver', {id: p.id}) }}">Approuver</a>
+            {% endif %}
+            <a href="{{ path('plan_delete', {id: p.id}) }}"
+               onclick="return confirm('Supprimer ?')">Supprimer</a>
+        </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Aucun plan.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

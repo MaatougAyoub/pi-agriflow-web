@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+{% block title %}Détail Plan - Expert{% endblock %}
+
+{% block sidebar %}
+    <a href="{{ path('expert_home') }}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="{{ path('expert_irrigation') }}" class="active"><span class="icon">💧</span> Irrigation</a>
+    <a href="{{ path('expert_diagnostics') }}"><span class="icon">📝</span> Diagnostics</a>
+    <a href="{{ path('expert_produits') }}"><span class="icon">🧪</span> Produits</a>
+{% endblock %}
+
+{% block body %}
+<div style="background:linear-gradient(135deg,#1B4332,#2D6A4F);border-radius:14px;
+            padding:30px 35px;color:white;display:flex;justify-content:space-between;
+            align-items:center;margin-bottom:30px">
+    <div>
+        <div style="font-size:13px;opacity:0.8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">
+            Expert — Remplir le plan
+        </div>
+        <div style="font-size:24px;font-weight:800;margin-bottom:8px">{{ plan.culture.nom }}</div>
+        <div style="opacity:0.85;font-size:14px">
+            Parcelle: {{ plan.culture.superficie }} ha &nbsp;|&nbsp;
+            Besoin: {{ plan.besoinEau|number_format(1) }} mm &nbsp;|&nbsp;
+            <span style="background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:20px">
+                {{ plan.statut }}
+            </span>
+        </div>
+    </div>
+    <div style="text-align:center;opacity:0.9">
+        <div style="font-size:42px">💧</div>
+        <div style="font-size:11px;letter-spacing:2px;margin-top:4px">AGRIFLOW</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom:25px;color:#1B4332;font-size:17px">📅 Planning Hebdomadaire</h3>
+
+    <form method="post" action="{{ path('expert_irrigation_save', {id: plan.id}) }}">
+        <div style="overflow-x:auto">
+        <table style="border-collapse:separate;border-spacing:0">
+            {% set jours = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}
+            {% set joursKeys = ['LUN','MAR','MER','JEU','VEN','SAM','DIM'] %}
+            <thead>
+                <tr>
+                    <th style="width:130px;background:white;border-bottom:2px solid #f0f0f0"></th>
+                    {% for j in jours %}
+                    <th style="text-align:center;padding:12px 8px;background:white;
+                               border-bottom:2px solid #f0f0f0;color:#1B4332;font-weight:700">
+                        {{ j }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">EAU (mm)</td>
+                    {% for k in joursKeys %}
+                    <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
+                        <input type="number" step="0.1" name="eau_{{ k }}"
+                               value="{{ jourData[k].eauMm ?? 0.0 }}"
+                               style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">DURÉE (min)</td>
+                    {% for k in joursKeys %}
+                    <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
+                        <input type="number" name="duree_{{ k }}"
+                               value="{{ jourData[k].dureeMin ?? 0 }}"
+                               style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">TEMP (°C)</td>
+                    {% for k in joursKeys %}
+                    <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
+                        <input type="number" step="0.1" name="temp_{{ k }}"
+                               value="{{ jourData[k].temperature ?? 0.0 }}"
+                               style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">HUMIDITÉ (%)</td>
+                    {% for k in joursKeys %}
+                    <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
+                        <input type="number" step="0.1" name="hum_{{ k }}"
+                               value="{{ jourData[k].humidite ?? 0.0 }}"
+                               style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                    </td>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px">PLUIE (mm)</td>
+                    {% for k in joursKeys %}
+                    <td style="padding:8px;text-align:center">
+                        <input type="number" step="0.1" name="pluie_{{ k }}"
+                               value="{{ jourData[k].pluieMm ?? 0.0 }}"
+                               style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:25px">
+            <a href="{{ path('expert_irrigation') }}" class="btn btn-gray">← Retour</a>
+            <button type="submit" class="btn btn-green">💾 Enregistrer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

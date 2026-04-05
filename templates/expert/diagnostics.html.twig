@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+{% block title %}Diagnostics Expert - AGRIFLOW{% endblock %}
+
+{% block sidebar %}
+    <a href="{{ path('expert_home') }}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="{{ path('expert_irrigation') }}"><span class="icon">💧</span> Irrigation</a>
+    <a href="{{ path('expert_diagnostics') }}" class="active"><span class="icon">📝</span> Diagnostics</a>
+    <a href="{{ path('expert_produits') }}"><span class="icon">🧪</span> Produits</a>
+{% endblock %}
+
+{% block body %}
+<div style="margin-bottom:30px">
+    <div class="page-subtitle">Gestion des analyses</div>
+    <div class="page-title">Diagnostics à traiter</div>
+</div>
+
+{% for d in diagnostics %}
+<div class="card" style="margin-bottom:15px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px">
+        <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:45px;height:45px;background:#E8F5E9;border-radius:12px;
+                        display:flex;align-items:center;justify-content:center;font-size:20px">
+                🌿
+            </div>
+            <div>
+                <div style="font-weight:700;font-size:16px;color:#1B4332">{{ d.nomCulture }}</div>
+                <div style="font-size:12px;color:#95a5a6">{{ d.dateEnvoi|date('d/m/Y H:i') }}</div>
+            </div>
+        </div>
+        {% if d.statut == 'traite' %}
+            <span class="badge" style="background:#E8F5E9;color:#4CAF50">✅ TRAITÉ</span>
+        {% else %}
+            <span class="badge" style="background:#FFF4E5;color:#FF9800">⏳ EN ATTENTE</span>
+        {% endif %}
+    </div>
+
+    <div style="background:#F9FAFB;padding:12px;border-radius:8px;margin-bottom:15px;color:#6B7280">
+        {{ d.description }}
+    </div>
+
+    {% if d.reponseExpert %}
+    <div style="background:#F0FDF4;padding:12px;border-radius:8px;margin-bottom:15px;
+                border-left:3px solid #4CAF50">
+        <div style="font-weight:600;color:#1B4332;margin-bottom:6px">💬 Réponse envoyée :</div>
+        <div style="color:#374151">{{ d.reponseExpert }}</div>
+    </div>
+    {% endif %}
+
+    {% if d.statut != 'traite' %}
+    <form method="post" action="{{ path('expert_diagnostic_repondre', {id: d.id}) }}">
+        <textarea name="reponse" placeholder="Votre réponse d'expert..."
+                  style="width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:8px;
+                         font-size:14px;height:100px;resize:vertical;margin-bottom:10px"></textarea>
+        <div style="text-align:right">
+            <button type="submit" class="btn btn-green">💾 Envoyer la réponse</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% else %}
+<div class="card" style="text-align:center;color:#95a5a6;padding:40px">
+    Aucun diagnostic.
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau plan{% endblock %}
+{% block body %}
+<h1>Nouveau plan d'irrigation</h1>
+<form method="post">
+    <label>Culture :
+        <select name="culture_id" required>
+            {% for c in cultures %}
+            <option value="{{ c.id }}">{{ c.nom }} ({{ c.libelleType }})</option>
+            {% endfor %}
+        </select>
+    </label><br><br>
+    <label>Statut :
+        <select name="statut">
+            <option value="brouillon">Brouillon</option>
+            <option value="soumis">Soumis</option>
+        </select>
+    </label><br><br>
+    <button type="submit">Créer le plan</button>
+    <a href="{{ path('plan_index') }}">Annuler</a>
+</form>
+{% endblock %}

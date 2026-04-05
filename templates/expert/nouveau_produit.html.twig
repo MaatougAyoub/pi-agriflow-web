@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouveau Produit - AGRIFLOW{% endblock %}
+
+{% block sidebar %}
+    <a href="{{ path('expert_home') }}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="{{ path('expert_irrigation') }}"><span class="icon">💧</span> Irrigation</a>
+    <a href="{{ path('expert_diagnostics') }}"><span class="icon">📝</span> Diagnostics</a>
+    <a href="{{ path('expert_produits') }}" class="active"><span class="icon">🧪</span> Produits</a>
+{% endblock %}
+
+{% block body %}
+<div style="margin-bottom:30px">
+    <div class="page-subtitle">Ajouter un produit</div>
+    <div class="page-title">Nouveau Produit Phytosanitaire</div>
+</div>
+
+<div class="card" style="max-width:600px;margin:0 auto">
+    <form method="post" id="produitForm">
+        <label>Nom du produit</label>
+        <input type="text" name="nomProduit" id="nomProduit" required placeholder="Ex: Roundup">
+        <div id="errNom" style="color:#E74C3C;font-size:12px;margin-top:4px;display:none">
+            Le nom est obligatoire.
+        </div>
+
+        <label>Dosage <span style="color:#95a5a6;font-weight:normal;font-size:12px">(format: nombre ml/L — ex: 3ml/L)</span></label>
+        <input type="text" name="dosage" id="dosage" placeholder="Ex: 3ml/L">
+        <div id="errDosage" style="color:#E74C3C;font-size:12px;margin-top:4px;display:none">
+            Format invalide. Utilisez le format : <strong>3ml/L</strong> (nombre suivi de ml/L)
+        </div>
+
+        <label>Fréquence d'application <span style="color:#95a5a6;font-weight:normal;font-size:12px">(format: nombre par semaine — ex: 3 par semaine)</span></label>
+        <input type="text" name="frequence" id="frequence" placeholder="Ex: 3 par semaine">
+        <div id="errFrequence" style="color:#E74C3C;font-size:12px;margin-top:4px;display:none">
+            Format invalide. Utilisez le format : <strong>3 par semaine</strong> (nombre suivi de "par semaine")
+        </div>
+
+        <label>Remarques</label>
+        <textarea name="remarques" placeholder="Notes supplémentaires..."></textarea>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:25px">
+            <a href="{{ path('expert_produits') }}" class="btn btn-gray">Annuler</a>
+            <button type="button" onclick="validerFormulaire()" class="btn btn-green">💾 Enregistrer</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function validerFormulaire() {
+    let valide = true;
+
+    // Reset erreurs
+    document.getElementById('errNom').style.display = 'none';
+    document.getElementById('errDosage').style.display = 'none';
+    document.getElementById('errFrequence').style.display = 'none';
+
+    // Valider nom
+    const nom = document.getElementById('nomProduit').value.trim();
+    if (nom === '') {
+        document.getElementById('errNom').style.display = 'block';
+        valide = false;
+    }
+
+    // Valider dosage : nombre suivi de ml/L (ex: 3ml/L ou 3.5ml/L)
+    const dosage = document.getElementById('dosage').value.trim();
+    const dosageRegex = /^\d+(\.\d+)?ml\/L$/i;
+    if (dosage !== '' && !dosageRegex.test(dosage)) {
+        document.getElementById('errDosage').style.display = 'block';
+        valide = false;
+    }
+
+    // Valider fréquence : nombre suivi de "par semaine" (ex: 3 par semaine)
+    const frequence = document.getElementById('frequence').value.trim();
+    const frequenceRegex = /^\d+\s+par\s+semaine$/i;
+    if (frequence !== '' && !frequenceRegex.test(frequence)) {
+        document.getElementById('errFrequence').style.display = 'block';
+        valide = false;
+    }
+
+    if (valide) {
+        document.getElementById('produitForm').submit();
+    } else {
+        // Alerte globale
+        alert('⚠️ Veuillez corriger les erreurs avant d\'enregistrer.\n\n• Dosage : format requis → 3ml/L\n• Fréquence : format requis → 3 par semaine');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Cultures{% endblock %}
+{% block body %}
+<h1>Liste des cultures</h1>
+<a href="{{ path('culture_new') }}">+ Nouvelle culture</a>
+<table border="1" cellpadding="8" style="margin-top:20px;width:100%">
+    <tr>
+        <th>Nom</th><th>Type</th><th>Superficie (ha)</th><th>Besoin eau (L)</th><th>Actions</th>
+    </tr>
+    {% for c in cultures %}
+    <tr>
+        <td>{{ c.nom }}</td>
+        <td>{{ c.libelleType }}</td>
+        <td>{{ c.superficie }}</td>
+        <td>{{ c.calculerBesoinEau() }}</td>
+        <td>
+            <a href="{{ path('culture_edit', {id: c.id}) }}">Modifier</a>
+            <a href="{{ path('culture_delete', {id: c.id}) }}"
+               onclick="return confirm('Supprimer ?')">Supprimer</a>
+        </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Aucune culture.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

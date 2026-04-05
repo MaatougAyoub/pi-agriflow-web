@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+{% block title %}Plan d'Irrigation - AGRIFLOW{% endblock %}
+
+{% block sidebar %}
+    <a href="{{ path('agriculteur_home') }}"><span class="icon">🏠</span> Dashboard</a>
+    <a href="{{ path('agriculteur_irrigation') }}" class="active"><span class="icon">💧</span> Plan d'Irrigation</a>
+    <a href="{{ path('agriculteur_diagnostics') }}"><span class="icon">📝</span> Diagnostic</a>
+{% endblock %}
+
+{% block body %}
+<div style="margin-bottom:30px">
+    <div class="page-subtitle">Farm Management</div>
+    <div class="page-title">Plans d'Irrigation</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;">
+    {% for p in plans %}
+    <a href="{{ path('agriculteur_irrigation_detail', {id: p.id}) }}"
+       style="text-decoration:none;color:inherit;">
+        <div style="background:white;border-radius:12px;padding:20px 25px;
+                    display:flex;justify-content:space-between;align-items:center;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+                    border-left:4px solid #52B788;
+                    transition:all 0.2s;cursor:pointer;"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.transform='translateY(-1px)'"
+             onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';this.style.transform='translateY(0)'">
+            <div>
+                <div style="font-size:17px;font-weight:700;color:#1B4332;margin-bottom:4px">
+                    {{ p.culture.nom }}
+                </div>
+                <div style="font-size:13px;color:#95a5a6">
+                    Parcelle: {{ p.culture.superficie }}
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px">
+                <span class="badge badge-green">{{ p.statut }}</span>
+                <div style="font-size:16px;font-weight:700;color:#1976D2">
+                    {{ p.besoinEau|number_format(1) }} mm
+                </div>
+                <div style="color:#ccc;font-size:20px">›</div>
+            </div>
+        </div>
+    </a>
+    {% else %}
+    <div class="card" style="text-align:center;color:#95a5a6;padding:40px">
+        Aucun plan d'irrigation.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
