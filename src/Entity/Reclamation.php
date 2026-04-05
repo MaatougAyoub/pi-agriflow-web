@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
+use App\Repository\ReclamationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
-use App\Repository\ReclamationRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReclamationRepository::class)]
 #[ORM\Table(name: 'reclamations')]
@@ -15,140 +15,120 @@ class Reclamation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'reclamations')]
+    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: false)]
+    private ?Utilisateur $utilisateur = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Veuillez choisir une categorie.')]
+    private ?string $categorie = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Veuillez entrer un titre.')]
+    private ?string $titre = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Veuillez entrer une description.')]
+    private ?string $description = null;
+
+    #[ORM\Column(name: 'date_creation', type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateCreation = null;
+
+    #[ORM\Column(length: 30, options: ['default' => 'EN_ATTENTE'])]
+    private string $statut = 'EN_ATTENTE';
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $reponse = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function getUtilisateur(): ?Utilisateur
     {
-        $this->id = $id;
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): static
+    {
+        $this->utilisateur = $utilisateur;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $utilisateur_id = null;
-
-    public function getUtilisateur_id(): ?int
-    {
-        return $this->utilisateur_id;
-    }
-
-    public function setUtilisateur_id(int $utilisateur_id): self
-    {
-        $this->utilisateur_id = $utilisateur_id;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $categorie = null;
 
     public function getCategorie(): ?string
     {
         return $this->categorie;
     }
 
-    public function setCategorie(string $categorie): self
+    public function setCategorie(string $categorie): static
     {
-        $this->categorie = $categorie;
+        $this->categorie = trim($categorie);
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $titre = null;
 
     public function getTitre(): ?string
     {
         return $this->titre;
     }
 
-    public function setTitre(string $titre): self
+    public function setTitre(string $titre): static
     {
-        $this->titre = $titre;
+        $this->titre = trim($titre);
+
         return $this;
     }
-
-    #[ORM\Column(type: 'text', nullable: false)]
-    private ?string $description = null;
 
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function setDescription(string $description): self
+    public function setDescription(string $description): static
     {
-        $this->description = $description;
+        $this->description = trim($description);
+
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $date_creation = null;
-
-    public function getDate_creation(): ?\DateTimeInterface
+    public function getDateCreation(): ?\DateTimeInterface
     {
-        return $this->date_creation;
+        return $this->dateCreation;
     }
 
-    public function setDate_creation(\DateTimeInterface $date_creation): self
+    public function setDateCreation(?\DateTimeInterface $dateCreation): static
     {
-        $this->date_creation = $date_creation;
+        $this->dateCreation = $dateCreation;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $statut = null;
-
-    public function getStatut(): ?string
+    public function getStatut(): string
     {
         return $this->statut;
     }
 
-    public function setStatut(string $statut): self
+    public function setStatut(string $statut): static
     {
-        $this->statut = $statut;
+        $this->statut = trim($statut);
+
         return $this;
     }
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $reponse = null;
 
     public function getReponse(): ?string
     {
         return $this->reponse;
     }
 
-    public function setReponse(?string $reponse): self
+    public function setReponse(?string $reponse): static
     {
         $this->reponse = $reponse;
-        return $this;
-    }
-
-    public function getUtilisateurId(): ?int
-    {
-        return $this->utilisateur_id;
-    }
-
-    public function setUtilisateurId(int $utilisateur_id): static
-    {
-        $this->utilisateur_id = $utilisateur_id;
 
         return $this;
     }
-
-    public function getDateCreation(): ?\DateTime
-    {
-        return $this->date_creation;
-    }
-
-    public function setDateCreation(\DateTime $date_creation): static
-    {
-        $this->date_creation = $date_creation;
-
-        return $this;
-    }
-
 }

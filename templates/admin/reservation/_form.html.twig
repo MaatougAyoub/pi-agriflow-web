@@ -1,0 +1,23 @@
+{{ form_start(form, {attr: {class: 'agf-admin-form'}}) }}
+    {{ include('partials/_form_error_summary.html.twig', {form: form}) }}
+
+    <div class="row g-4">
+        <div class="col-lg-6">{{ form_row(form.annonce) }}</div>
+        <div class="col-lg-3">{{ form_row(form.clientId) }}</div>
+        <div class="col-lg-3">{{ form_row(form.quantite) }}</div>
+    </div>
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-4">{{ form_row(form.dateDebut) }}</div>
+        <div class="col-lg-4">{{ form_row(form.dateFin) }}</div>
+        <div class="col-lg-4">{{ form_row(form.statut) }}</div>
+    </div>
+
+    <div class="mt-4">
+        {{ form_row(form.message) }}
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+        <button class="btn btn-success px-4">{{ button_label|default('Enregistrer') }}</button>
+    </div>
+{{ form_end(form) }}

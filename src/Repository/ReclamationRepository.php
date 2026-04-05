@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Reclamation;
@@ -16,28 +18,32 @@ class ReclamationRepository extends ServiceEntityRepository
         parent::__construct($registry, Reclamation::class);
     }
 
-    //    /**
-    //     * @return Reclamation[] Returns an array of Reclamation objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('r.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return list<Reclamation>
+     */
+    public function searchWithUser(?string $query, ?string $category): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->leftJoin('r.utilisateur', 'u')
+            ->addSelect('u')
+            ->orderBy('r.dateCreation', 'DESC')
+            ->addOrderBy('r.id', 'DESC');
 
-    //    public function findOneBySomeField($value): ?Reclamation
-    //    {
-    //        return $this->createQueryBuilder('r')
-    //            ->andWhere('r.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $normalizedQuery = trim((string) $query);
+        if ($normalizedQuery !== '') {
+            $normalizedQuery = mb_strtolower($normalizedQuery);
+            $qb
+                ->andWhere("LOWER(r.titre) LIKE :q OR LOWER(r.description) LIKE :q OR LOWER(r.categorie) LIKE :q OR LOWER(r.statut) LIKE :q OR LOWER(COALESCE(r.reponse, '')) LIKE :q OR LOWER(COALESCE(u.email, '')) LIKE :q OR LOWER(COALESCE(u.nom, '')) LIKE :q OR LOWER(COALESCE(u.prenom, '')) LIKE :q")
+                ->setParameter('q', '%'.$normalizedQuery.'%');
+        }
+
+        $normalizedCategory = strtoupper(trim((string) $category));
+        if ($normalizedCategory !== '' && $normalizedCategory !== 'TOUTES') {
+            $qb
+                ->andWhere('UPPER(r.categorie) = :category')
+                ->setParameter('category', $normalizedCategory);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

@@ -1,0 +1,683 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste Utilisateurs | AgriFlow{% endblock %}
+
+{% block body_class %}agf-admin-list-page{% endblock %}
+
+{% block stylesheets %}
+<style data-turbo-temporary>
+.agf-admin-list-page {
+    --green-900:#1b5e20;
+    --green-800:#2e7d32;
+    --green-700:#43a047;
+    --ink:#263238;
+    --muted:#637381;
+    --line:#e5ebe8;
+    --surface:#ffffff;
+    --surface-soft:#f7faf8;
+    --danger:#c62828;
+    --danger-bg:#ffebee;
+    --success:#1b5e20;
+    --success-bg:#e8f5e9;
+    --admin:#1d5f3a;
+    --expert:#0b5cad;
+    --farmer:#8d6e63;
+}
+
+.agf-admin-list-page,
+.agf-admin-list-page * {
+    box-sizing:border-box;
+}
+
+.agf-admin-list-page {
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:
+        radial-gradient(1200px 600px at 85% -10%, rgba(43, 143, 84, 0.12), transparent),
+        linear-gradient(180deg, #f5f8f5 0%, #eef3ef 100%);
+    padding:28px 20px 36px;
+}
+
+.page-shell {
+    width:100%;
+    max-width:1440px;
+    margin:0 auto;
+    background:var(--surface);
+    border:1px solid rgba(29, 95, 58, 0.08);
+    border-radius:24px;
+    box-shadow:0 24px 60px rgba(16, 37, 25, 0.10);
+    overflow:hidden;
+}
+
+.page-header {
+    background:
+        linear-gradient(135deg, rgba(24, 57, 43, 0.96), rgba(44, 113, 68, 0.94)),
+        linear-gradient(120deg, var(--green-900), var(--green-800));
+    padding:26px 28px;
+    
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.page-title {
+    margin:0;
+    color:#fff;
+    font-size:clamp(1.8rem, 2.6vw, 2.6rem);
+    font-weight:800;
+    line-height:1.1;
+}
+
+.page-subtitle {
+    margin:10px 0 0;
+    font-size:1rem;
+    color:rgba(255,255,255,0.82);
+    max-width:720px;
+}
+
+.page-content {
+    padding:24px 28px 30px;
+}
+
+.toolbar {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    margin-bottom:20px;
+    padding:16px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:var(--surface-soft);
+}
+
+.toolbar input {
+    flex:1 1 320px;
+    min-height:46px;
+    border:1px solid #d6e0da;
+    border-radius:14px;
+    padding:0 12px;
+    font-size:15px;
+    background:#fff;
+    outline:none;
+    transition:border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.toolbar input:focus {
+    border-color:rgba(43, 143, 84, 0.55);
+    box-shadow:0 0 0 4px rgba(43, 143, 84, 0.12);
+}
+
+.btn {
+    border:none;
+    border-radius:999px;
+    cursor:pointer;
+    font-weight:700;
+    text-decoration:none;
+    min-height:46px;
+    padding:0 18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn:hover {
+    transform:translateY(-1px);
+}
+
+.btn-search { background:linear-gradient(135deg, var(--green-900), var(--green-800)); color:#fff; box-shadow:0 10px 20px rgba(29,95,58,0.15); }
+.btn-refresh { background:#1976d2; color:#fff; box-shadow:0 10px 20px rgba(25,118,210,0.12); }
+.btn-profile { background:#fff; color:var(--green-900); border:1px solid #cfe0d6; }
+.btn-approve { background:linear-gradient(135deg, #2e7d32, #4d9a50); color:#fff; }
+.btn-reject { background:linear-gradient(135deg, #e67a00, #f59e0b); color:#fff; }
+.btn-delete { background:linear-gradient(135deg, #c62828, #e53935); color:#fff; }
+
+.btn:disabled {
+    opacity:0.55;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+.alert {
+    border-radius:14px;
+    padding:10px 12px;
+    font-size:14px;
+    margin-bottom:12px;
+}
+
+.alert-danger {
+    background:var(--danger-bg);
+    color:var(--danger);
+}
+
+.alert-success {
+    background:var(--success-bg);
+    color:var(--success);
+}
+
+.table-wrap {
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow-x:hidden;
+    background:#fff;
+    box-shadow:0 10px 30px rgba(16, 37, 25, 0.05);
+}
+
+table {
+    width:100%;
+    min-width:0;
+    table-layout:fixed;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+thead th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#f4f7f5;
+    color:#30404a;
+    border-bottom:1px solid var(--line);
+    font-weight:800;
+    text-align:left;
+    padding:13px 10px;
+    white-space:nowrap;
+}
+
+tbody td {
+    border-bottom:1px solid #eef2f5;
+    padding:11px 10px;
+    vertical-align:middle;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
+
+tbody tr:hover {
+    background:#fbfdfb;
+}
+
+tbody tr:nth-child(even) {
+    background:#fcfdfc;
+}
+
+.cell-name {
+    font-weight:700;
+    color:#1c2c23;
+}
+
+.cell-muted {
+    color:var(--muted);
+}
+
+.pill {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:30px;
+    padding:0 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0.02em;
+    white-space:nowrap;
+}
+
+.pill-role-admin {
+    color:var(--admin);
+    background:#e8f4ed;
+}
+
+.pill-role-expert {
+    color:var(--expert);
+    background:#eaf2fb;
+}
+
+.pill-role-agriculteur {
+    color:var(--farmer);
+    background:#f4ece8;
+}
+
+.pill-success {
+    color:var(--success);
+    background:var(--success-bg);
+}
+
+.pill-danger {
+    color:var(--danger);
+    background:var(--danger-bg);
+}
+
+.image-thumb {
+    width:74px;
+    height:48px;
+    border-radius:8px;
+    border:1px solid #dfe5ea;
+    object-fit:contain;
+    background:#fafcfd;
+    display:block;
+}
+
+.zoom-trigger {
+    border:0;
+    background:transparent;
+    padding:0;
+    cursor:zoom-in;
+    border-radius:8px;
+}
+
+.zoom-trigger:focus-visible {
+    outline:3px solid rgba(25, 118, 210, 0.45);
+    outline-offset:2px;
+}
+
+.image-lightbox {
+    position:fixed;
+    inset:0;
+    z-index:1200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:32px;
+    background:rgba(11, 24, 18, 0.82);
+    backdrop-filter:blur(3px);
+}
+
+.image-lightbox.is-open {
+    display:flex;
+}
+
+.image-lightbox__dialog {
+    position:relative;
+    width:min(92vw, 1100px);
+    max-height:88vh;
+    border-radius:18px;
+    border:1px solid rgba(255, 255, 255, 0.18);
+    background:#0f1512;
+    box-shadow:0 28px 70px rgba(0, 0, 0, 0.42);
+    overflow:hidden;
+}
+
+.image-lightbox__header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 14px;
+    color:#ecf4ef;
+    border-bottom:1px solid rgba(255, 255, 255, 0.10);
+    background:rgba(255, 255, 255, 0.04);
+}
+
+.image-lightbox__title {
+    font-weight:700;
+    font-size:0.95rem;
+}
+
+.image-lightbox__close {
+    border:0;
+    width:34px;
+    height:34px;
+    border-radius:999px;
+    cursor:pointer;
+    color:#ecf4ef;
+    background:rgba(255, 255, 255, 0.12);
+    font-size:1.25rem;
+    line-height:1;
+}
+
+.image-lightbox__close:hover {
+    background:rgba(255, 255, 255, 0.2);
+}
+
+.image-lightbox__body {
+    display:grid;
+    place-items:center;
+    padding:18px;
+    max-height:calc(88vh - 60px);
+    overflow:auto;
+}
+
+.image-lightbox__img {
+    max-width:100%;
+    max-height:calc(88vh - 100px);
+    width:auto;
+    height:auto;
+    object-fit:contain;
+    border-radius:12px;
+    background:#fff;
+}
+
+.lightbox-open {
+    overflow:hidden;
+}
+
+.actions {
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.actions form {
+    margin:0;
+}
+
+.count {
+    margin-top:14px;
+    color:#5f6f64;
+    font-size:15px;
+    text-align:right;
+}
+
+th:nth-child(1), td:nth-child(1),
+th:nth-child(2), td:nth-child(2) {
+    width:9%;
+}
+
+th:nth-child(3), td:nth-child(3) {
+    width:7%;
+}
+
+th:nth-child(4), td:nth-child(4) {
+    width:14%;
+}
+
+th:nth-child(5), td:nth-child(5) {
+    width:10%;
+}
+
+th:nth-child(6), td:nth-child(6) {
+    width:9%;
+}
+
+th:nth-child(7), td:nth-child(7) {
+    width:9%;
+}
+
+th:nth-child(8), td:nth-child(8),
+th:nth-child(9), td:nth-child(9),
+th:nth-child(10), td:nth-child(10) {
+    width:8%;
+}
+
+th:nth-child(11), td:nth-child(11) {
+    width:8%;
+}
+
+th:nth-child(12), td:nth-child(12) {
+    width:11%;
+}
+
+@media (max-width: 900px) {
+    .page-header,
+    .page-content {
+        padding-left:18px;
+        padding-right:18px;
+    }
+
+    .toolbar {
+        padding:14px;
+    }
+
+    .toolbar input,
+    .btn,
+    .btn-profile {
+        width:100%;
+    }
+
+    .actions {
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .actions .btn,
+    .actions form,
+    .actions form .btn {
+        width:100%;
+    }
+
+    .count {
+        text-align:left;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell">
+    <header class="page-header">
+        <div>
+            <!-- <h1 class="page-title">Liste Des Utilisateurs</h1> -->
+            <p class="page-subtitle">Espace d’administration pour consulter et gérer les comptes enregistrés dans la base de données.</p>
+        </div>
+    </header>
+
+    <section class="page-content">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="toolbar">
+            <input id="searchField" type="text" placeholder="Rechercher par nom, prenom, email ou role...">
+            <button id="searchBtn" class="btn btn-search" type="button">Rechercher</button>
+            <button id="refreshBtn" class="btn btn-refresh" type="button">Rafraichir</button>
+            <a class="btn btn-profile" href="{{ path('app_profile') }}">Retour profil</a>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prenom</th>
+                        <th>CIN</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Date creation</th>
+                        <th>Verification</th>
+                        <th>Signature</th>
+                        <th>Carte pro</th>
+                        <th>Certification</th>
+                        <th>Adresse</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% for u in users %}
+                        {% set rowRoleRaw = (u.role ?? '')|upper %}
+                        {% set rowRole = rowRoleRaw starts with 'ROLE_' ? rowRoleRaw|replace({'ROLE_': ''}) : rowRoleRaw %}
+                        <tr class="user-row" data-search="{{ (u.nom ~ ' ' ~ u.prenom ~ ' ' ~ u.email ~ ' ' ~ rowRole)|lower }}">
+                            <td class="cell-name">{{ u.nom ?: '-' }}</td>
+                            <td class="cell-name">{{ u.prenom ?: '-' }}</td>
+                            <td class="cell-muted">{{ u.cin ?: '-' }}</td>
+                            <td>{{ u.email ?: '-' }}</td>
+                            <td>
+                                {% if rowRole == 'ADMIN' %}
+                                    <span class="pill pill-role-admin">ADMIN</span>
+                                {% elseif rowRole == 'EXPERT' %}
+                                    <span class="pill pill-role-expert">EXPERT</span>
+                                {% elseif rowRole == 'AGRICULTEUR' %}
+                                    <span class="pill pill-role-agriculteur">AGRICULTEUR</span>
+                                {% else %}
+                                    <span class="pill">{{ rowRole ?: '-' }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ u.dateCreation ? u.dateCreation|date('d/m/Y') : '-' }}</td>
+                            <td>
+                                {% if u.verificationStatus %}
+                                        <span class="pill {{ u.verificationStatus|lower in ['ok', 'valide', 'verified', 'active', 'approved'] ? 'pill-success' : 'pill-danger' }}">{{ u.verificationStatus|upper }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if u.signature %}
+                                    <button type="button" class="zoom-trigger" data-zoom-src="{{ path('app_admin_user_image', {id: u.id, type: 'signature'}) }}" data-zoom-title="Signature - {{ (u.nom ~ ' ' ~ u.prenom)|trim ?: 'Utilisateur' }}">
+                                        <img class="image-thumb" src="{{ path('app_admin_user_image', {id: u.id, type: 'signature'}) }}" alt="Signature">
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rowRole == 'AGRICULTEUR' and u.cartePro %}
+                                    <button type="button" class="zoom-trigger" data-zoom-src="{{ path('app_admin_user_image', {id: u.id, type: 'carte'}) }}" data-zoom-title="Carte professionnelle - {{ (u.nom ~ ' ' ~ u.prenom)|trim ?: 'Utilisateur' }}">
+                                        <img class="image-thumb" src="{{ path('app_admin_user_image', {id: u.id, type: 'carte'}) }}" alt="Carte pro">
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if rowRole == 'EXPERT' and u.certification %}
+                                    <button type="button" class="zoom-trigger" data-zoom-src="{{ path('app_admin_user_image', {id: u.id, type: 'certification'}) }}" data-zoom-title="Certification - {{ (u.nom ~ ' ' ~ u.prenom)|trim ?: 'Utilisateur' }}">
+                                        <img class="image-thumb" src="{{ path('app_admin_user_image', {id: u.id, type: 'certification'}) }}" alt="Certification">
+                                    </button>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ rowRole == 'AGRICULTEUR' ? (u.adresse ?: '-') : '-' }}</td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn btn-approve" type="button" disabled>Approuver</button>
+                                    <button class="btn btn-reject" type="button" disabled>Rejeter</button>
+                                    <form method="post" action="{{ path('app_admin_user_delete', {id: u.id}) }}" onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
+                                        <button class="btn btn-delete" type="submit" {% if app.user and app.user.id == u.id %}disabled{% endif %}>Supprimer</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="12">Aucun utilisateur trouve.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p id="countLabel" class="count">{{ users|length }} utilisateur(s)</p>
+    </section>
+</main>
+
+<div id="imageLightbox" class="image-lightbox" aria-hidden="true">
+    <div class="image-lightbox__dialog" role="dialog" aria-modal="true" aria-labelledby="imageLightboxTitle">
+        <div class="image-lightbox__header">
+            <span id="imageLightboxTitle" class="image-lightbox__title">Apercu image</span>
+            <button type="button" class="image-lightbox__close" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="image-lightbox__body">
+            <img id="imageLightboxImg" class="image-lightbox__img" src="" alt="Apercu">
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const searchField = document.getElementById('searchField');
+    const searchBtn = document.getElementById('searchBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const rows = Array.from(document.querySelectorAll('.user-row'));
+    const countLabel = document.getElementById('countLabel');
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImg = document.getElementById('imageLightboxImg');
+    const lightboxTitle = document.getElementById('imageLightboxTitle');
+    const lightboxClose = lightbox ? lightbox.querySelector('.image-lightbox__close') : null;
+
+    function openLightbox(src, title) {
+        if (!lightbox || !lightboxImg || !lightboxTitle) {
+            return;
+        }
+
+        lightboxImg.setAttribute('src', src);
+        lightboxImg.setAttribute('alt', title || 'Apercu image');
+        lightboxTitle.textContent = title || 'Apercu image';
+        lightbox.classList.add('is-open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('lightbox-open');
+    }
+
+    function closeLightbox() {
+        if (!lightbox || !lightboxImg) {
+            return;
+        }
+
+        lightbox.classList.remove('is-open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightboxImg.setAttribute('src', '');
+        document.body.classList.remove('lightbox-open');
+    }
+
+    function updateCount() {
+        const visible = rows.filter(row => row.style.display !== 'none').length;
+        countLabel.textContent = visible + ' utilisateur(s)';
+    }
+
+    function applyFilter() {
+        const query = (searchField.value || '').trim().toLowerCase();
+
+        rows.forEach(row => {
+            const haystack = row.getAttribute('data-search') || '';
+            row.style.display = haystack.includes(query) ? '' : 'none';
+        });
+
+        updateCount();
+    }
+
+    searchBtn.addEventListener('click', applyFilter);
+    searchField.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            applyFilter();
+        }
+    });
+
+    refreshBtn.addEventListener('click', function () {
+        searchField.value = '';
+        rows.forEach(row => {
+            row.style.display = '';
+        });
+        updateCount();
+    });
+
+    document.addEventListener('click', function (event) {
+        const trigger = event.target.closest('.zoom-trigger');
+        if (trigger) {
+            const src = trigger.getAttribute('data-zoom-src');
+            const title = trigger.getAttribute('data-zoom-title');
+
+            if (src) {
+                openLightbox(src, title);
+            }
+            return;
+        }
+
+        if (lightbox && event.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    if (lightboxClose) {
+        lightboxClose.addEventListener('click', closeLightbox);
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeLightbox();
+        }
+    });
+
+    updateCount();
+})();
+</script>
+{% endblock %}
