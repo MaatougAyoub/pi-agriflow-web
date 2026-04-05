@@ -24,10 +24,16 @@ class AnnonceFormType extends AbstractType
         $builder
             ->add('titre', TextType::class, [
                 'label' => 'Titre',
+                'attr' => [
+                    'placeholder' => 'Ex: Tracteur New Holland T5',
+                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
-                'attr' => ['rows' => 5],
+                'attr' => [
+                    'rows' => 6,
+                    'placeholder' => 'Decrivez clairement l offre, l etat du produit et les conditions.',
+                ],
             ])
             ->add('type', EnumType::class, [
                 'class' => AnnonceType::class,
@@ -43,24 +49,40 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Prix',
                 'currency' => 'TND',
                 'divisor' => 1,
+                'attr' => [
+                    'min' => 0,
+                    'step' => '0.01',
+                ],
             ])
             ->add('unitePrix', TextType::class, [
                 'label' => 'Unite du prix',
+                'attr' => [
+                    'placeholder' => 'jour / piece / semaine',
+                ],
             ])
             ->add('categorie', TextType::class, [
                 'label' => 'Categorie',
+                'attr' => [
+                    'placeholder' => 'Materiel, Fruits, Irrigation...',
+                ],
             ])
             ->add('imageUrl', UrlType::class, [
                 'label' => 'URL image',
+                'attr' => [
+                    'placeholder' => 'https://...',
+                ],
             ])
             ->add('localisation', TextType::class, [
                 'label' => 'Localisation',
-            ])
-            ->add('proprietaireId', IntegerType::class, [
-                'label' => 'ID proprietaire',
+                'attr' => [
+                    'placeholder' => 'Nabeul, Sousse, Ariana...',
+                ],
             ])
             ->add('quantiteDisponible', IntegerType::class, [
                 'label' => 'Quantite disponible',
+                'attr' => [
+                    'min' => 1,
+                ],
             ]);
     }
 

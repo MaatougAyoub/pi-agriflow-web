@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Annonce;
+use App\Entity\Utilisateur;
 use App\Form\AnnonceFormType;
 use App\Repository\AnnonceRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,8 +14,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/annonces', name: 'app_admin_annonce_')]
+#[IsGranted('ROLE_ADMIN')]
 final class AdminAnnonceController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -29,6 +32,12 @@ final class AdminAnnonceController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $annonce = new Annonce();
+
+        if (($user = $this->getUser()) instanceof Utilisateur && null !== $user->getId()) {
+            // houni n7otou proprietaire mta3 l admin connecte automatiquement bech ma n5alliwch champ technique yban
+            $annonce->setProprietaireId($user->getId());
+        }
+
         $form = $this->createForm(AnnonceFormType::class, $annonce);
         $form->handleRequest($request);
 
@@ -52,8 +61,7 @@ final class AdminAnnonceController extends AbstractController
         Request $request,
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
         EntityManagerInterface $entityManager
-    ): Response
-    {
+    ): Response {
         $form = $this->createForm(AnnonceFormType::class, $annonce);
         $form->handleRequest($request);
 
@@ -76,8 +84,7 @@ final class AdminAnnonceController extends AbstractController
         Request $request,
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
         EntityManagerInterface $entityManager
-    ): Response
-    {
+    ): Response {
         if ($this->isCsrfTokenValid('delete-annonce-'.$annonce->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($annonce);
             $entityManager->flush();
