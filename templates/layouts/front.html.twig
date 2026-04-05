@@ -38,7 +38,7 @@
                     {% endif %}
                     {% if is_granted('ROLE_ADMIN') %}
                         <li class="d-xl-none"><a href="{{ path('app_admin_dashboard') }}" class="{{ current_route starts with 'app_admin_' ? 'active' : '' }}">Espace admin</a></li>
-                        <li><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste des utilisateurs</a></li>
+                        <li class="d-xl-none"><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste des utilisateurs</a></li>
                     {% endif %}
                     {% if app.user %}
                         <li class="d-xl-none"><a href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Deconnexion</a></li>
@@ -51,16 +51,23 @@
 
             <div class="agf-header-actions d-none d-xl-flex">
                 {% if is_granted('ROLE_AGRICULTEUR') %}
-                    <a href="{{ path('app_seller_annonce_index') }}" class="agf-pro-link {{ current_route starts with 'app_seller_' ? 'active' : '' }}">
-                        Mon espace vendeur
+                    <a href="{{ path('app_seller_annonce_index') }}" class="agf-pro-link agf-pro-link--seller {{ current_route starts with 'app_seller_' ? 'active' : '' }}">
+                        <i class="bi bi-shop-window"></i>
+                        <span>Mon espace vendeur</span>
                     </a>
-                    <a href="{{ path('app_reservation_my') }}" class="agf-pro-link {{ current_route == 'app_reservation_my' ? 'active' : '' }}">
-                        Mes reservations
+                    <a href="{{ path('app_reservation_my') }}" class="agf-pro-link agf-pro-link--reservations {{ current_route == 'app_reservation_my' ? 'active' : '' }}">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Mes reservations</span>
                     </a>
                 {% endif %}
                 {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_admin_dashboard') }}" class="agf-pro-link {{ current_route starts with 'app_admin_' ? 'active' : '' }}">
-                        Espace vendeur
+                    <a href="{{ path('app_admin_dashboard') }}" class="agf-pro-link agf-pro-link--admin {{ current_route starts with 'app_admin_' ? 'active' : '' }}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard admin</span>
+                    </a>
+                    <a href="{{ path('app_admin_users') }}" class="agf-pro-link agf-pro-link--users {{ current_route starts with 'app_admin_user' ? 'active' : '' }}">
+                        <i class="bi bi-people"></i>
+                        <span>Utilisateurs</span>
                     </a>
                 {% endif %}
                 {% if app.user %}

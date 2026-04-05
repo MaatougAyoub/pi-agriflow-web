@@ -401,7 +401,13 @@ body {
         </form>
 
         <div class="helper-row">
-            Vous avez deja un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+            {% if is_granted('ROLE_ADMIN') %}
+                Vous avez deja un compte ? <a href="{{ path('app_admin_dashboard') }}">Se connecter</a>
+            {% elseif is_granted('ROLE_AGRICULTEUR') %}
+                Vous avez deja un compte ? <a href="{{ path('app_marketplace_index') }}">Se connecter</a>
+            {% else %}
+                Vous avez deja un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+            {% endif %}
         </div>
     </section>
 </main>

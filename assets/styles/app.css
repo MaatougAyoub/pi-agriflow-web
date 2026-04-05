@@ -8,6 +8,23 @@
     font-family: 'Open Sans', sans-serif;
 }
 
+.agf-front .header .container-xl {
+    max-width: 1460px;
+}
+
+@media (min-width: 1200px) and (max-width: 1440px) {
+    .agf-front .header .container-xl {
+        max-width: 1320px;
+    }
+
+    .agf-front .navmenu a,
+    .agf-front .navmenu a:focus {
+        padding-left: 10px;
+        padding-right: 10px;
+        font-size: 15px;
+    }
+}
+
 .agf-front .header .logo img {
     max-height: 86px;
     width: auto;
@@ -23,29 +40,62 @@
 
 .agf-header-actions {
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    margin-left: 12px;
+    flex-shrink: 0;
 }
 
 .agf-pro-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
-    padding: 0 18px;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 16px;
     border-radius: 999px;
     border: 1px solid #cde4d4;
     background: #eef6f0;
     color: #1d5f3a;
     font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
     text-decoration: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.agf-pro-link i {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.agf-pro-link--seller {
+    background: #e9f5ec;
+    border-color: #c2ddca;
+}
+
+.agf-pro-link--reservations {
+    background: #edf4ef;
+    border-color: #cdded3;
+}
+
+.agf-pro-link--admin {
+    background: #e7f0eb;
+    border-color: #c3d7cc;
+}
+
+.agf-pro-link--users {
+    background: #eef3f1;
+    border-color: #d3e0da;
 }
 
 .agf-pro-link:hover,
 .agf-pro-link.active {
     background: #e1f0e5;
-    border-color: #b9d7c2;
+    border-color: #b2d1bc;
     color: #154c2d;
+    box-shadow: 0 8px 20px rgba(29, 95, 58, 0.15);
 }
 
 .agf-auth-link {

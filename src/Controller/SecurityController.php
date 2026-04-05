@@ -37,20 +37,62 @@ final class SecurityController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        $roles = $this->resolveUserRoles($user);
+
+        if (in_array('ROLE_ADMIN', $roles, true)) {
             $this->addFlash('login_status', 'Connecte comme administrateur.');
 
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        if ($this->isGranted('ROLE_AGRICULTEUR')) {
+        if (in_array('ROLE_AGRICULTEUR', $roles, true)) {
             $this->addFlash('login_status', 'Connecte comme agriculteur.');
 
             return $this->redirectToRoute('app_marketplace_index');
         }
 
+        if (in_array('ROLE_EXPERT', $roles, true)) {
+            $this->addFlash('login_status', 'Connecte comme expert.');
+
+            return $this->redirectToRoute('site_home');
+        }
+
         $this->addFlash('login_status', 'Connecte avec votre compte.');
 
         return $this->redirectToRoute('site_home');
+    }
+
+    /**
+     * @return string[]
+     */
+    private function resolveUserRoles(object $user): array
+    {
+        $roles = [];
+
+        if (method_exists($user, 'getRoles')) {
+            foreach ((array) $user->getRoles() as $role) {
+                $normalizedRole = strtoupper(trim((string) $role));
+
+                if ('' === $normalizedRole) {
+                    continue;
+                }
+
+                $roles[] = str_starts_with($normalizedRole, 'ROLE_')
+                    ? $normalizedRole
+                    : 'ROLE_'.$normalizedRole;
+            }
+        }
+
+        if (method_exists($user, 'getRole')) {
+            $storedRole = strtoupper(trim((string) $user->getRole()));
+
+            if ('' !== $storedRole) {
+                $roles[] = str_starts_with($storedRole, 'ROLE_')
+                    ? $storedRole
+                    : 'ROLE_'.$storedRole;
+            }
+        }
+
+        return array_values(array_unique($roles));
     }
 }
