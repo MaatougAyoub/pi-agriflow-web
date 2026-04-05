@@ -2,8 +2,11 @@
 
 namespace App\Entity;
 
+use App\Entity\Reclamation;
 use App\Enum\Role;
 use App\Repository\UtilisateurRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -74,6 +77,17 @@ class Utilisateur
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $prenom_ar = null;
+
+    /**
+     * @var Collection<int, Reclamation>
+     */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Reclamation::class, orphanRemoval: true)]
+    private Collection $reclamations;
+
+    public function __construct()
+    {
+        $this->reclamations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -329,6 +343,35 @@ class Utilisateur
     public function setPrenomAr(?string $prenom_ar): static
     {
         $this->prenom_ar = $prenom_ar;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reclamation>
+     */
+    public function getReclamations(): Collection
+    {
+        return $this->reclamations;
+    }
+
+    public function addReclamation(Reclamation $reclamation): static
+    {
+        if (!$this->reclamations->contains($reclamation)) {
+            $this->reclamations->add($reclamation);
+            $reclamation->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReclamation(Reclamation $reclamation): static
+    {
+        if ($this->reclamations->removeElement($reclamation)) {
+            if ($reclamation->getUtilisateur() === $this) {
+                $reclamation->setUtilisateur(null);
+            }
+        }
 
         return $this;
     }

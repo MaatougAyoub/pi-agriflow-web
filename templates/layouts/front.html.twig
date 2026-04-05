@@ -18,7 +18,7 @@
     <header class="header d-flex align-items-center position-relative">
         <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
             <a href="{{ path('site_home') }}" class="logo d-flex align-items-center">
-                <img src="{{ asset('template/assets/img/logo.png') }}" alt="AgriFlow">
+                <img src="{{ asset('template/assets/img/logo2.png') }}" alt="AgriFlow">
             </a>
 
             <nav id="navmenu" class="navmenu">
@@ -30,6 +30,7 @@
                     <li><a href="{{ path('site_contact') }}" class="{{ current_route == 'site_contact' ? 'active' : '' }}">Contact</a></li>
                     {% if app.user %}
                         <li><a href="{{ path('app_profile') }}" class="{{ current_route starts with 'app_profile' ? 'active' : '' }}">Profil</a></li>
+                        <li><a href="{{ path('app_reclamation_index') }}" class="{{ current_route starts with 'app_reclamation_' ? 'active' : '' }}">Reclamations</a></li>
                     {% endif %}
                     {% if is_granted('ROLE_ADMIN') %}
                         <li><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste Des Utilisateurs</a></li>

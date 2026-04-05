@@ -3,7 +3,7 @@
 {% block title %}Profil Utilisateur | AgriFlow{% endblock %}
 
 {% block stylesheets %}
-<style>
+<style data-turbo-temporary>
 :root {
     --green-900:#1b5e20;
     --green-800:#2e7d32;
@@ -178,6 +178,7 @@ body {
         <h1 class="brand">AgriFlow - Profil Utilisateur</h1>
         <div class="top-actions">
             <a class="btn btn-secondary" href="{{ path('site_home') }}">Accueil</a>
+            <a class="btn btn-secondary" href="{{ path('app_reclamation_index') }}">Reclamations</a>
             <a class="btn btn-primary" href="{{ path('app_logout') }}">Deconnexion</a>
         </div>
     </div>
