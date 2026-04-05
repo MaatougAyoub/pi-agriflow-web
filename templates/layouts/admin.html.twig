@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{% block page_title %}Espace vendeur AgriFlow{% endblock %}{% endblock %}
+{% block admin_title %}Espace admin{% endblock %}
+{% block admin_heading %}{{ block('admin_title') }}{% endblock %}
+{% block admin_browser_title %}{{ block('admin_title') }} | AgriFlow{% endblock %}
+{% block title %}{% block page_title %}{{ block('admin_browser_title') }}{% endblock %}{% endblock %}
 {% block body_class %}agf-admin bg-light{% endblock %}
 
 {% block stylesheets %}
@@ -12,6 +15,7 @@
 {% endblock %}
 
 {% block body %}
+    {% set current_route = app.request.attributes.get('_route') %}
     <div class="container-fluid">
         <div class="row min-vh-100">
             <aside class="col-lg-2 agf-sidebar text-white p-4">
@@ -21,14 +25,23 @@
                 </a>
 
                 <nav class="nav flex-column gap-2">
-                    <a class="nav-link text-white px-0" href="{{ path('app_admin_dashboard') }}">
+                    <a class="nav-link text-white px-0 {{ current_route == 'app_admin_dashboard' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_dashboard') }}">
                         <i class="bi bi-speedometer2 me-2"></i>Tableau de bord
                     </a>
-                    <a class="nav-link text-white px-0" href="{{ path('app_admin_annonce_index') }}">
+                    <a class="nav-link text-white px-0 {{ current_route starts with 'app_admin_annonce_' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_annonce_index') }}">
                         <i class="bi bi-grid me-2"></i>Annonces
                     </a>
-                    <a class="nav-link text-white px-0" href="{{ path('app_admin_reservation_index') }}">
+                    <a class="nav-link text-white px-0 {{ current_route starts with 'app_admin_reservation_' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_reservation_index') }}">
                         <i class="bi bi-calendar-check me-2"></i>Reservations
+                    </a>
+                    <a class="nav-link text-white px-0 {{ current_route starts with 'app_admin_parcelle_' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_parcelle_index') }}">
+                        <i class="bi bi-bounding-box me-2"></i>Parcelles
+                    </a>
+                    <a class="nav-link text-white px-0 {{ current_route starts with 'app_admin_culture_' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_culture_index') }}">
+                        <i class="bi bi-flower1 me-2"></i>Cultures
+                    </a>
+                    <a class="nav-link text-white px-0 {{ current_route == 'app_admin_users' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_users') }}">
+                        <i class="bi bi-people me-2"></i>Utilisateurs
                     </a>
                     <a class="nav-link text-white px-0" href="{{ path('app_marketplace_index') }}">
                         <i class="bi bi-box-arrow-up-right me-2"></i>Ouvrir le site
@@ -37,14 +50,17 @@
             </aside>
 
             <div class="col-lg-10 p-0">
-                <header class="bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
+                <header class="bg-white border-bottom px-4 py-3 d-flex justify-content-between align-items-center gap-3 flex-wrap">
                     <div>
-                        <h1 class="h4 mb-1">{% block admin_title %}Espace vendeur{% endblock %}</h1>
+                        <h1 class="h4 mb-1">{{ block('admin_heading') }}</h1>
                         <p class="text-muted mb-0">{% block admin_subtitle %}Gestion des annonces et des reservations{% endblock %}</p>
                     </div>
-                    <a href="{{ path('app_marketplace_index') }}" class="btn btn-outline-success">
-                        Retour au site
-                    </a>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        {% block admin_actions %}{% endblock %}
+                        <a href="{{ path('app_marketplace_index') }}" class="btn btn-outline-success">
+                            Retour au site
+                        </a>
+                    </div>
                 </header>
 
                 <div class="p-4">

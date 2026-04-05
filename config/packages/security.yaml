@@ -43,6 +43,8 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/post-login, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/mes-parcelles, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/mes-cultures, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/mon-espace, roles: ROLE_AGRICULTEUR }
         - { path: ^/mes-reservations, roles: ROLE_AGRICULTEUR }
         - { path: ^/marketplace/[0-9]+/reserve, roles: ROLE_AGRICULTEUR }

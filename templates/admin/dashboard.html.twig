@@ -24,19 +24,24 @@
         <div class="col-md-6 col-xl-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <span class="text-muted small d-block mb-2">Commission</span>
-                    <h2 class="display-6 mb-0">5%</h2>
+                    <span class="text-muted small d-block mb-2">Parcelles</span>
+                    <h2 class="display-6 mb-0">{{ parcelleCount }}</h2>
                 </div>
             </div>
         </div>
         <div class="col-md-6 col-xl-3">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <span class="text-muted small d-block mb-2">Etat</span>
-                    <h2 class="display-6 mb-0">Ouvert</h2>
+                    <span class="text-muted small d-block mb-2">Cultures</span>
+                    <h2 class="display-6 mb-0">{{ cultureCount }}</h2>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-4">
+        <a href="{{ path('app_admin_parcelle_index') }}" class="btn btn-outline-success">Gerer les parcelles</a>
+        <a href="{{ path('app_admin_culture_index') }}" class="btn btn-outline-success">Gerer les cultures</a>
     </div>
 
     <div class="row g-4">

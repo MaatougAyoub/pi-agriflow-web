@@ -4,10 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Culture;
 use App\Entity\Parcelle;
+use App\Entity\Utilisateur;
+use App\Enum\Role;
 use App\Form\CultureType;
 use App\Repository\CultureRepository;
 use App\Repository\ParcelleRepository;
-use App\Service\CurrentAgriculteurProvider;
 use App\Service\ParcelleCultureSurfaceService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,25 +16,32 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/mes-cultures', name: 'app_culture_')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class CultureController extends AbstractController
 {
+    private const AGRICULTEUR_ONLY_MESSAGE = "Cette partie n'est accessible qu'aux utilisateurs de type AGRICULTEUR.";
+
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(
         Request $request,
-        CurrentAgriculteurProvider $currentAgriculteurProvider,
         CultureRepository $cultureRepository,
         ParcelleRepository $parcelleRepository,
         ParcelleCultureSurfaceService $surfaceService,
-       ): Response {
-        $agriculteurId = $currentAgriculteurProvider->getCurrentTestUserId();
+    ): Response {
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $agriculteurId = $this->getAuthenticatedUserId();
         $filters = [
             'search' => (string) $request->query->get('search', ''),
             'type_culture' => (string) $request->query->get('type_culture', ''),
             'parcelle_id' => (string) $request->query->get('parcelle_id', ''),
             'etat' => (string) $request->query->get('etat', ''),
-               'sort' => (string) $request->query->get('sort', 'date_creation'),
+            'sort' => (string) $request->query->get('sort', 'date_creation'),
             'direction' => (string) $request->query->get('direction', 'desc'),
         ];
         $cultures = $cultureRepository->findFilteredForProprietaire($agriculteurId, $filters);
@@ -60,12 +68,15 @@ final class CultureController extends AbstractController
     #[Route('/ajouter', name: 'new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
-        CurrentAgriculteurProvider $currentAgriculteurProvider,
         ParcelleRepository $parcelleRepository,
         ParcelleCultureSurfaceService $surfaceService,
         EntityManagerInterface $entityManager,
     ): Response {
-        $agriculteurId = $currentAgriculteurProvider->getCurrentTestUserId();
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $agriculteurId = $this->getAuthenticatedUserId();
         $parcelles = $parcelleRepository->findByAgriculteurId($agriculteurId);
 
         if ([] === $parcelles) {
@@ -96,11 +107,14 @@ final class CultureController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(
         int $id,
-        CurrentAgriculteurProvider $currentAgriculteurProvider,
         CultureRepository $cultureRepository,
         ParcelleRepository $parcelleRepository,
     ): Response {
-        $agriculteurId = $currentAgriculteurProvider->getCurrentTestUserId();
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $agriculteurId = $this->getAuthenticatedUserId();
         $culture = $this->findOwnedCulture($id, $agriculteurId, $cultureRepository);
         $parcelle = $culture->getParcelleId()
             ? $parcelleRepository->findOneForAgriculteur($culture->getParcelleId(), $agriculteurId)
@@ -116,13 +130,16 @@ final class CultureController extends AbstractController
     public function edit(
         int $id,
         Request $request,
-        CurrentAgriculteurProvider $currentAgriculteurProvider,
         CultureRepository $cultureRepository,
         ParcelleRepository $parcelleRepository,
         ParcelleCultureSurfaceService $surfaceService,
         EntityManagerInterface $entityManager,
     ): Response {
-        $agriculteurId = $currentAgriculteurProvider->getCurrentTestUserId();
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $agriculteurId = $this->getAuthenticatedUserId();
         $culture = $this->findOwnedCulture($id, $agriculteurId, $cultureRepository);
         $parcelles = $parcelleRepository->findByAgriculteurId($agriculteurId);
 
@@ -142,11 +159,14 @@ final class CultureController extends AbstractController
     public function delete(
         int $id,
         Request $request,
-        CurrentAgriculteurProvider $currentAgriculteurProvider,
         CultureRepository $cultureRepository,
         EntityManagerInterface $entityManager,
     ): Response {
-        $culture = $this->findOwnedCulture($id, $currentAgriculteurProvider->getCurrentTestUserId(), $cultureRepository);
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $culture = $this->findOwnedCulture($id, $this->getAuthenticatedUserId(), $cultureRepository);
 
         if ($this->isCsrfTokenValid('delete_culture_'.$culture->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($culture);
@@ -284,7 +304,7 @@ final class CultureController extends AbstractController
     /**
      * @param Parcelle[] $parcelles
      */
- private function extractPreselectedParcelleId(Request $request, array $parcelles): ?int
+    private function extractPreselectedParcelleId(Request $request, array $parcelles): ?int
     {
         $preselectedParcelleId = $request->query->getInt('parcelle');
 
@@ -299,5 +319,27 @@ final class CultureController extends AbstractController
         }
 
         return null;
+    }
+
+    private function redirectUnlessAgriculteur(): ?Response
+    {
+        if ($this->isGranted(Role::AGRICULTEUR->value)) {
+            return null;
+        }
+
+        $this->addFlash('danger', self::AGRICULTEUR_ONLY_MESSAGE);
+
+        return $this->redirectToRoute('site_home');
+    }
+
+    private function getAuthenticatedUserId(): int
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof Utilisateur || null === $user->getId()) {
+            throw $this->createAccessDeniedException('Utilisateur non connecte.');
+        }
+
+        return $user->getId();
     }
 }
