@@ -29,6 +29,10 @@ class ReservationFormType extends AbstractType
             ])
             ->add('clientId', IntegerType::class, [
                 'label' => 'Reference client',
+                'empty_data' => '0',
+                'attr' => [
+                    'min' => 1,
+                ],
             ])
             ->add('dateDebut', DateType::class, [
                 'label' => 'Date debut',
@@ -40,6 +44,10 @@ class ReservationFormType extends AbstractType
             ])
             ->add('quantite', IntegerType::class, [
                 'label' => 'Quantite',
+                'empty_data' => '0',
+                'attr' => [
+                    'min' => 1,
+                ],
             ])
             ->add('statut', EnumType::class, [
                 'class' => ReservationStatut::class,
@@ -49,7 +57,10 @@ class ReservationFormType extends AbstractType
             ->add('message', TextareaType::class, [
                 'label' => 'Message',
                 'required' => false,
-                'attr' => ['rows' => 4],
+                'attr' => [
+                    'rows' => 4,
+                    'maxlength' => 1000,
+                ],
             ]);
     }
 

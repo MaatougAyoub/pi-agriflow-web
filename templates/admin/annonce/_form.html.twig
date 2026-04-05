@@ -1,5 +1,5 @@
 {{ form_start(form, {attr: {class: 'agf-admin-form'}}) }}
-    {{ form_errors(form) }}
+    {{ include('partials/_form_error_summary.html.twig', {form: form}) }}
 
     <div class="row g-4">
         <div class="col-lg-8">{{ form_row(form.titre) }}</div>

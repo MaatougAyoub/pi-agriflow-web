@@ -3,15 +3,17 @@
 {% block page_title %}{{ annonce.titre }} - AgriFlow{% endblock %}
 
 {% block front_body %}
+    {% set visualSrc = visual.isExternal ? visual.image : asset(visual.image) %}
     <section class="section pt-5">
         <div class="container">
             <div class="row g-5">
                 <div class="col-lg-7">
                     <div class="agf-detail-image-wrap">
                         <img
-                            src="{{ asset(visual.image) }}"
+                            src="{{ visualSrc }}"
                             alt="{{ visual.alt }}"
                             class="agf-detail-image"
+                            referrerpolicy="no-referrer"
                             style="object-position: {{ visual.position }};"
                         >
                     </div>

@@ -109,7 +109,7 @@ final class MarketplaceController extends AbstractController
     /**
      * @param list<Annonce> $annonces
      *
-     * @return array<int, array{image: string, alt: string, position: string}>
+     * @return array<int, array{image: string, alt: string, position: string, isExternal: bool}>
      */
     private function buildAnnonceVisuals(array $annonces): array
     {
@@ -123,12 +123,27 @@ final class MarketplaceController extends AbstractController
     }
 
     /**
-     * @return array{image: string, alt: string, position: string}
+     * @return array{image: string, alt: string, position: string, isExternal: bool}
      */
     private function buildAnnonceVisual(Annonce $annonce): array
     {
         $title = strtolower((string) $annonce->getTitre());
         $category = strtolower((string) $annonce->getCategorie());
+        $imageUrl = trim((string) ($annonce->getImageUrl() ?? ''));
+
+        // ken seller 7at image valide, n5admouha direct 5ir men image par defaut
+        if ('' !== $imageUrl && false !== filter_var($imageUrl, FILTER_VALIDATE_URL)) {
+            $host = strtolower((string) parse_url($imageUrl, PHP_URL_HOST));
+
+            if (!in_array($host, ['example.com', 'www.example.com'], true)) {
+                return [
+                    'image' => $imageUrl,
+                    'alt' => (string) $annonce->getTitre(),
+                    'position' => 'center center',
+                    'isExternal' => true,
+                ];
+            }
+        }
 
         // houni na3ti kol annonce image local mefhoma bech ma ykounch visuel 3achwa2i
         if (str_contains($title, 'tracteur') || str_contains($category, 'materiel')) {
@@ -136,6 +151,7 @@ final class MarketplaceController extends AbstractController
                 'image' => 'uploads/marketplace/tracteur-cover.jpg',
                 'alt' => 'Tracteur agricole sur terrain laboure',
                 'position' => 'center center',
+                'isExternal' => false,
             ];
         }
 
@@ -144,6 +160,7 @@ final class MarketplaceController extends AbstractController
                 'image' => 'uploads/marketplace/pompe-irrigation-cover.jpg',
                 'alt' => 'Pompe d irrigation mobile',
                 'position' => 'center center',
+                'isExternal' => false,
             ];
         }
 
@@ -152,6 +169,7 @@ final class MarketplaceController extends AbstractController
                 'image' => 'uploads/marketplace/tomates-caisses-cover.jpg',
                 'alt' => 'Caisses de tomates fraiches',
                 'position' => 'center center',
+                'isExternal' => false,
             ];
         }
 
@@ -159,6 +177,7 @@ final class MarketplaceController extends AbstractController
             'image' => 'template/assets/img/hero_4.jpg',
             'alt' => (string) $annonce->getTitre(),
             'position' => 'center center',
+            'isExternal' => false,
         ];
     }
 }

@@ -33,10 +33,11 @@
                         <li><a href="{{ path('app_reclamation_index') }}" class="{{ current_route starts with 'app_reclamation_' ? 'active' : '' }}">Reclamations</a></li>
                     {% endif %}
                     {% if is_granted('ROLE_AGRICULTEUR') %}
-                        <li><a href="{{ path('app_seller_annonce_index') }}" class="{{ current_route starts with 'app_seller_' ? 'active' : '' }}">Mon espace vendeur</a></li>
-                        <li><a href="{{ path('app_reservation_my') }}" class="{{ current_route == 'app_reservation_my' ? 'active' : '' }}">Mes reservations</a></li>
+                        <li class="d-xl-none"><a href="{{ path('app_seller_annonce_index') }}" class="{{ current_route starts with 'app_seller_' ? 'active' : '' }}">Mon espace vendeur</a></li>
+                        <li class="d-xl-none"><a href="{{ path('app_reservation_my') }}" class="{{ current_route == 'app_reservation_my' ? 'active' : '' }}">Mes reservations</a></li>
                     {% endif %}
                     {% if is_granted('ROLE_ADMIN') %}
+                        <li class="d-xl-none"><a href="{{ path('app_admin_dashboard') }}" class="{{ current_route starts with 'app_admin_' ? 'active' : '' }}">Espace admin</a></li>
                         <li><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste des utilisateurs</a></li>
                     {% endif %}
                     {% if app.user %}

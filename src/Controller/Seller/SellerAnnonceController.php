@@ -6,6 +6,7 @@ namespace App\Controller\Seller;
 
 use App\Entity\Annonce;
 use App\Entity\Utilisateur;
+use App\Enum\AnnonceStatut;
 use App\Form\AnnonceFormType;
 use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
@@ -61,14 +62,22 @@ final class SellerAnnonceController extends AbstractController
             $entityManager->persist($annonce);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Annonce publiee avec succes.');
+            $message = 'Annonce publiee avec succes.';
+
+            if ($annonce->getStatut() === AnnonceStatut::DISPONIBLE) {
+                $message .= ' Elle apparait maintenant dans le marketplace public.';
+            } else {
+                $message .= ' Elle reste visible dans votre espace vendeur tant que son statut n est pas Disponible.';
+            }
+
+            $this->addFlash('success', $message);
 
             return $this->redirectToRoute('app_seller_annonce_index');
         }
 
         return $this->render('seller/annonce/new.html.twig', [
             'form' => $form->createView(),
-        ]);
+        ], $form->isSubmitted() ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
 
     #[Route('/{id}/modifier', name: 'edit', methods: ['GET', 'POST'])]
@@ -87,7 +96,15 @@ final class SellerAnnonceController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            $this->addFlash('success', 'Annonce modifiee avec succes.');
+            $message = 'Annonce modifiee avec succes.';
+
+            if ($annonce->getStatut() === AnnonceStatut::DISPONIBLE) {
+                $message .= ' La fiche reste visible dans le marketplace public.';
+            } else {
+                $message .= ' Elle n apparait plus dans le marketplace public tant que son statut n est pas Disponible.';
+            }
+
+            $this->addFlash('success', $message);
 
             return $this->redirectToRoute('app_seller_annonce_index');
         }
@@ -95,7 +112,7 @@ final class SellerAnnonceController extends AbstractController
         return $this->render('seller/annonce/edit.html.twig', [
             'annonce' => $annonce,
             'form' => $form->createView(),
-        ]);
+        ], $form->isSubmitted() ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
 
     #[Route('/{id}/supprimer', name: 'delete', methods: ['POST'])]
