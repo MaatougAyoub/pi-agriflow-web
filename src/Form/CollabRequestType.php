@@ -1,13 +1,21 @@
 <?php
 
+<<<<<<< HEAD
 declare(strict_types=1);
 
+=======
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 namespace App\Form;
 
 use App\Entity\CollabRequest;
 use Symfony\Component\Form\AbstractType;
+<<<<<<< HEAD
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+=======
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -20,6 +28,7 @@ class CollabRequestType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
+<<<<<<< HEAD
                 'label'       => 'Titre de la demande',
                 'attr'        => ['placeholder' => 'Ex: Besoin d\'aide pour la récolte d\'olives'],
             ])
@@ -58,6 +67,57 @@ class CollabRequestType extends AbstractType
                 'label'   => 'Statut',
                 'choices' => CollabRequest::STATUSES,
             ]);
+=======
+                'label' => 'Titre de la demande',
+                'attr' => [
+                    'placeholder' => 'Ex: Récolte des tomates',
+                    'class' => 'form-control',
+                ],
+            ])
+            ->add('description', TextareaType::class, [
+                'label' => 'Description',
+                'attr' => [
+                    'placeholder' => 'Décrivez le travail recherché, les compétences souhaitées...',
+                    'class' => 'form-control',
+                    'rows' => 5,
+                ],
+            ])
+            ->add('location', TextType::class, [
+                'label' => 'Localisation',
+                'attr' => [
+                    'placeholder' => 'Ex: Tunis, Sousse, Sfax...',
+                    'class' => 'form-control',
+                ],
+            ])
+            ->add('startDate', DateType::class, [
+                'label' => 'Date de début',
+                'widget' => 'single_text',
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('endDate', DateType::class, [
+                'label' => 'Date de fin',
+                'widget' => 'single_text',
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('neededPeople', IntegerType::class, [
+                'label' => 'Nombre de personnes recherchées',
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => 1,
+                    'max' => 50,
+                ],
+            ])
+            ->add('salary', NumberType::class, [
+                'label' => 'Salaire par jour (DT)',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ex: 50.00',
+                    'min' => 0,
+                    'step' => '0.01',
+                ],
+            ])
+        ;
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     }
 
     public function configureOptions(OptionsResolver $resolver): void

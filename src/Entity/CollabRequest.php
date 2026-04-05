@@ -1,5 +1,6 @@
 <?php
 
+<<<<<<< HEAD
 declare(strict_types=1);
 
 namespace App\Entity;
@@ -7,12 +8,18 @@ namespace App\Entity;
 use App\Repository\CollabRequestRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+=======
+namespace App\Entity;
+
+use App\Repository\CollabRequestRepository;
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CollabRequestRepository::class)]
 #[ORM\Table(name: 'collab_requests')]
+<<<<<<< HEAD
 #[ORM\Index(columns: ['status'], name: 'idx_collab_req_status')]
 #[ORM\Index(columns: ['end_date'], name: 'idx_collab_req_end_date')]
 #[ORM\HasLifecycleCallbacks]
@@ -82,6 +89,28 @@ class CollabRequest
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $publisher = null;
+=======
+#[ORM\HasLifecycleCallbacks]
+class CollabRequest
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: "IDENTITY")]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[Assert\Length(min: 3, minMessage: 'Le titre doit faire au moins {{ limit }} caractères.')]
+    private ?string $title = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'La description est obligatoire.')]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'La localisation est obligatoire.')]
+    private ?string $location = null;
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
     private ?string $latitude = null;
@@ -89,6 +118,7 @@ class CollabRequest
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
     private ?string $longitude = null;
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private ?\DateTime $createdAt = null;
 
@@ -108,6 +138,48 @@ class CollabRequest
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
+=======
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: 'La date de début est obligatoire.')]
+    private ?\DateTimeInterface $startDate = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotNull(message: 'La date de fin est obligatoire.')]
+    #[Assert\Expression(
+        "this.getStartDate() === null or value > this.getStartDate()",
+        message: 'La date de fin doit être ultérieure à la date de début.'
+    )]
+    private ?\DateTimeInterface $endDate = null;
+
+    #[ORM\Column(options: ['default' => 1])]
+    #[Assert\NotBlank(message: 'Le nombre de personnes est obligatoire.')]
+    #[Assert\Positive(message: 'Le nombre de personnes doit être au moins de 1.')]
+    private ?int $neededPeople = 1;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
+    #[Assert\PositiveOrZero(message: 'Le salaire ne peut pas être négatif.')]
+    private ?string $salary = '0.00';
+
+    #[ORM\Column(length: 50, options: ['default' => 'PENDING'])]
+    private ?string $status = 'PENDING';
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'requester_id', referencedColumnName: 'id', nullable: false)]
+    private ?Utilisateur $requester = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $publisher = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeInterface $updatedAt = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         $this->updatedAt = new \DateTime();
     }
 
@@ -116,6 +188,119 @@ class CollabRequest
         return $this->id;
     }
 
+<<<<<<< HEAD
+=======
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): static
+    {
+        $this->title = $title;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getLocation(): ?string
+    {
+        return $this->location;
+    }
+
+    public function setLocation(string $location): static
+    {
+        $this->location = $location;
+        return $this;
+    }
+
+    public function getLatitude(): ?string
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?string $latitude): static
+    {
+        $this->latitude = $latitude;
+        return $this;
+    }
+
+    public function getLongitude(): ?string
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?string $longitude): static
+    {
+        $this->longitude = $longitude;
+        return $this;
+    }
+
+    public function getStartDate(): ?\DateTimeInterface
+    {
+        return $this->startDate;
+    }
+
+    public function setStartDate(\DateTimeInterface $startDate): static
+    {
+        $this->startDate = $startDate;
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeInterface
+    {
+        return $this->endDate;
+    }
+
+    public function setEndDate(\DateTimeInterface $endDate): static
+    {
+        $this->endDate = $endDate;
+        return $this;
+    }
+
+    public function getNeededPeople(): ?int
+    {
+        return $this->neededPeople;
+    }
+
+    public function setNeededPeople(int $neededPeople): static
+    {
+        $this->neededPeople = $neededPeople;
+        return $this;
+    }
+
+    public function getSalary(): ?string
+    {
+        return $this->salary;
+    }
+
+    public function setSalary(string $salary): static
+    {
+        $this->salary = $salary;
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     public function getRequester(): ?Utilisateur
     {
         return $this->requester;
@@ -124,6 +309,7 @@ class CollabRequest
     public function setRequester(?Utilisateur $requester): static
     {
         $this->requester = $requester;
+<<<<<<< HEAD
 
         return $this;
     }
@@ -243,6 +429,8 @@ class CollabRequest
     {
         $this->salaryPerDay = $salaryPerDay !== null ? (string) $salaryPerDay : null;
 
+=======
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -254,6 +442,7 @@ class CollabRequest
     public function setPublisher(?string $publisher): static
     {
         $this->publisher = $publisher;
+<<<<<<< HEAD
 
         return $this;
     }
@@ -283,15 +472,32 @@ class CollabRequest
     }
 
     public function getCreatedAt(): ?\DateTime
+=======
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     {
         return $this->createdAt;
     }
 
+<<<<<<< HEAD
     public function getUpdatedAt(): ?\DateTime
+=======
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     {
         return $this->updatedAt;
     }
 
+<<<<<<< HEAD
     /** @return Collection<int, CollabApplication> */
     public function getApplications(): Collection
     {
@@ -306,5 +512,17 @@ class CollabRequest
     public function isExpired(): bool
     {
         return $this->endDate !== null && $this->endDate < new \DateTime('today');
+=======
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTime();
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     }
 }

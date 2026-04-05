@@ -1,17 +1,25 @@
 <?php
 
+<<<<<<< HEAD
 declare(strict_types=1);
 
+=======
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 namespace App\Repository;
 
 use App\Entity\CollabApplication;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+<<<<<<< HEAD
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<CollabApplication>
  */
+=======
+use Doctrine\Persistence\ManagerRegistry;
+
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 class CollabApplicationRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -19,6 +27,7 @@ class CollabApplicationRepository extends ServiceEntityRepository
         parent::__construct($registry, CollabApplication::class);
     }
 
+<<<<<<< HEAD
     /**
      * Returns all applications submitted by a specific user.
      *
@@ -31,12 +40,57 @@ class CollabApplicationRepository extends ServiceEntityRepository
             ->addSelect('r')
             ->where('a.candidate = :uid')
             ->setParameter('uid', $candidateId)
+=======
+    private const SORT_MY_APPLICATIONS = [
+        'date_desc' => ['a.appliedAt', 'DESC'],
+        'date_asc' => ['a.appliedAt', 'ASC'],
+        'status_asc' => ['a.status', 'ASC'],
+    ];
+
+    /**
+     * Candidatures d'un utilisateur
+     */
+    public function findByCandidate($candidate): array
+    {
+        return $this->findByCandidateFiltered($candidate, null, 'date_desc');
+    }
+
+    /**
+     * Candidatures d'un utilisateur avec filtre statut et tri
+     */
+    public function findByCandidateFiltered($candidate, ?string $status, string $sortKey): array
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->where('a.candidate = :candidate')
+            ->setParameter('candidate', $candidate);
+
+        if ($status !== null && $status !== '' && strtoupper($status) !== 'ALL') {
+            $qb->andWhere('a.status = :st')
+                ->setParameter('st', strtoupper($status));
+        }
+
+        [$field, $dir] = self::SORT_MY_APPLICATIONS[$sortKey] ?? self::SORT_MY_APPLICATIONS['date_desc'];
+        $qb->orderBy($field, $dir);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Candidatures pour une demande spécifique
+     */
+    public function findByRequest($request): array
+    {
+        return $this->createQueryBuilder('a')
+            ->where('a.request = :request')
+            ->setParameter('request', $request)
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
             ->orderBy('a.appliedAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
     /**
+<<<<<<< HEAD
      * Returns all applications for a specific collaboration request.
      *
      * @return CollabApplication[]
@@ -89,5 +143,50 @@ class CollabApplicationRepository extends ServiceEntityRepository
         }
 
         return new Paginator($qb);
+=======
+     * Compter les candidatures pour une demande
+     */
+    public function countByRequest($request): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.request = :request')
+            ->setParameter('request', $request)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Vérifier si un candidat a déjà postulé
+     */
+    public function hasApplied($candidate, $request): bool
+    {
+        $count = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidate')
+            ->andWhere('a.request = :request')
+            ->setParameter('candidate', $candidate)
+            ->setParameter('request', $request)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $count > 0;
+    }
+
+    public function save(CollabApplication $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(CollabApplication $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+>>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     }
 }

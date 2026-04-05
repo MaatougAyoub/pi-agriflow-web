@@ -1,0 +1,66 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Nouvelle demande - Collaborations{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                    <div class="card-header bg-success text-white py-3" style="border-radius: 16px 16px 0 0;">
+                        <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Publier une demande de collaboration</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        {% form_theme form 'bootstrap_5_layout.html.twig' %}
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        <div class="mb-3">
+                            {{ form_row(form.title) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(form.description) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(form.location) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.startDate) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.endDate) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.neededPeople) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.salary) }}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                <i class="bi bi-check-circle me-1"></i>Publier la demande
+                            </button>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
