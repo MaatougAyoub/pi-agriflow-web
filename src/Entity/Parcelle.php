@@ -2,136 +2,151 @@
 
 namespace App\Entity;
 
-use App\Enum\TypeTerre;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity]
+use App\Repository\ParcelleRepository;
+
+#[ORM\Entity(repositoryClass: ParcelleRepository::class)]
+#[ORM\Table(name: 'parcelle')]
 class Parcelle
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
-
-    #[ORM\Column(length: 150)]
-    #[Assert\NotBlank]
-    private ?string $nom = null;
-
-    #[ORM\Column]
-    #[Assert\Positive]
-    private ?float $superficie = null;
-
-    #[ORM\Column]
-    private ?int $agriculteurId = null;
-
-    #[ORM\Column(enumType: TypeTerre::class)]
-    private TypeTerre $typeTerre = TypeTerre::AUTRE;
-
-    #[ORM\Column]
-    private \DateTimeImmutable $dateCreation;
-
-    /**
-     * @var Collection<int, Culture>
-     */
-    #[ORM\OneToMany(mappedBy: 'parcelle', targetEntity: Culture::class, orphanRemoval: false)]
-    private Collection $cultures;
-
-    public function __construct()
-    {
-        $this->cultures = new ArrayCollection();
-        $this->dateCreation = new \DateTimeImmutable();
-    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $agriculteur_id = null;
+
+    public function getAgriculteur_id(): ?int
+    {
+        return $this->agriculteur_id;
+    }
+
+    public function setAgriculteur_id(int $agriculteur_id): self
+    {
+        $this->agriculteur_id = $agriculteur_id;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $nom = null;
+
     public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): static
+    public function setNom(?string $nom): self
     {
         $this->nom = $nom;
-
         return $this;
     }
+
+    #[ORM\Column(type: 'decimal', nullable: true)]
+    private ?float $superficie = null;
 
     public function getSuperficie(): ?float
     {
         return $this->superficie;
     }
 
-    public function setSuperficie(float $superficie): static
+    public function setSuperficie(?float $superficie): self
     {
         $this->superficie = $superficie;
+        return $this;
+    }
 
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $type_terre = null;
+
+    public function getType_terre(): ?string
+    {
+        return $this->type_terre;
+    }
+
+    public function setType_terre(?string $type_terre): self
+    {
+        $this->type_terre = $type_terre;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $localisation = null;
+
+    public function getLocalisation(): ?string
+    {
+        return $this->localisation;
+    }
+
+    public function setLocalisation(?string $localisation): self
+    {
+        $this->localisation = $localisation;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_creation = null;
+
+    public function getDate_creation(): ?\DateTimeInterface
+    {
+        return $this->date_creation;
+    }
+
+    public function setDate_creation(?\DateTimeInterface $date_creation): self
+    {
+        $this->date_creation = $date_creation;
         return $this;
     }
 
     public function getAgriculteurId(): ?int
     {
-        return $this->agriculteurId;
+        return $this->agriculteur_id;
     }
 
-    public function setAgriculteurId(int $agriculteurId): static
+    public function setAgriculteurId(int $agriculteur_id): static
     {
-        $this->agriculteurId = $agriculteurId;
+        $this->agriculteur_id = $agriculteur_id;
 
         return $this;
     }
 
-    public function getTypeTerre(): TypeTerre
+    public function getTypeTerre(): ?string
     {
-        return $this->typeTerre;
+        return $this->type_terre;
     }
 
-    public function setTypeTerre(TypeTerre $typeTerre): static
+    public function setTypeTerre(?string $type_terre): static
     {
-        $this->typeTerre = $typeTerre;
+        $this->type_terre = $type_terre;
 
         return $this;
     }
 
-    public function getDateCreation(): \DateTimeImmutable
+    public function getDateCreation(): ?\DateTime
     {
-        return $this->dateCreation;
+        return $this->date_creation;
     }
 
-    public function setDateCreation(\DateTimeImmutable $dateCreation): static
+    public function setDateCreation(?\DateTime $date_creation): static
     {
-        $this->dateCreation = $dateCreation;
+        $this->date_creation = $date_creation;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, Culture>
-     */
-    public function getCultures(): Collection
-    {
-        return $this->cultures;
-    }
-
-    public function addCulture(Culture $culture): static
-    {
-        if (!$this->cultures->contains($culture)) {
-            $this->cultures->add($culture);
-            $culture->setParcelle($this);
-        }
-
-        return $this;
-    }
-
-public function removeCulture(Culture $culture): static
-{
-    $this->cultures->removeElement($culture);
-
-    return $this;
-}
 }

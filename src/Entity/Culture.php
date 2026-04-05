@@ -2,168 +2,322 @@
 
 namespace App\Entity;
 
-use App\Enum\EtatCulture;
-use App\Enum\TypeCulture;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
-#[ORM\Entity]
-#[Assert\Callback('validateDates')]
+use App\Repository\CultureRepository;
+
+#[ORM\Entity(repositoryClass: CultureRepository::class)]
+#[ORM\Table(name: 'cultures')]
 class Culture
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
-
-    #[ORM\Column(length: 150)]
-    #[Assert\NotBlank]
-    private ?string $nom = null;
-
-    #[ORM\Column]
-    #[Assert\Positive]
-    private ?float $superficie = null;
-
-    #[ORM\Column]
-    private ?int $proprietaireId = null;
-
-    #[ORM\Column(enumType: TypeCulture::class)]
-    private TypeCulture $typeCulture = TypeCulture::AUTRE;
-
-    #[ORM\Column(enumType: EtatCulture::class)]
-    private EtatCulture $etat = EtatCulture::EN_COURS;
-
-    #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $dateRecolte = null;
-
-    #[ORM\Column]
-    private \DateTimeImmutable $dateCreation;
-
-    #[ORM\ManyToOne(inversedBy: 'cultures')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Parcelle $parcelle = null;
-
-    public function __construct()
-    {
-        $this->dateCreation = new \DateTimeImmutable();
-    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $parcelle_id = null;
+
+    public function getParcelle_id(): ?int
+    {
+        return $this->parcelle_id;
+    }
+
+    public function setParcelle_id(int $parcelle_id): self
+    {
+        $this->parcelle_id = $parcelle_id;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $proprietaire_id = null;
+
+    public function getProprietaire_id(): ?int
+    {
+        return $this->proprietaire_id;
+    }
+
+    public function setProprietaire_id(int $proprietaire_id): self
+    {
+        $this->proprietaire_id = $proprietaire_id;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $nom = null;
+
     public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): static
+    public function setNom(?string $nom): self
     {
         $this->nom = $nom;
-
         return $this;
     }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $type_culture = null;
+
+    public function getType_culture(): ?string
+    {
+        return $this->type_culture;
+    }
+
+    public function setType_culture(?string $type_culture): self
+    {
+        $this->type_culture = $type_culture;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'decimal', nullable: true)]
+    private ?float $superficie = null;
 
     public function getSuperficie(): ?float
     {
         return $this->superficie;
     }
 
-    public function setSuperficie(float $superficie): static
+    public function setSuperficie(?float $superficie): self
     {
         $this->superficie = $superficie;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $etat = null;
+
+    public function getEtat(): ?string
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(?string $etat): self
+    {
+        $this->etat = $etat;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $date_recolte = null;
+
+    public function getDate_recolte(): ?\DateTimeInterface
+    {
+        return $this->date_recolte;
+    }
+
+    public function setDate_recolte(?\DateTimeInterface $date_recolte): self
+    {
+        $this->date_recolte = $date_recolte;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'decimal', nullable: true)]
+    private ?float $recolte_estime = null;
+
+    public function getRecolte_estime(): ?float
+    {
+        return $this->recolte_estime;
+    }
+
+    public function setRecolte_estime(?float $recolte_estime): self
+    {
+        $this->recolte_estime = $recolte_estime;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_creation = null;
+
+    public function getDate_creation(): ?\DateTimeInterface
+    {
+        return $this->date_creation;
+    }
+
+    public function setDate_creation(?\DateTimeInterface $date_creation): self
+    {
+        $this->date_creation = $date_creation;
+        return $this;
+    }
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'cultures')]
+    #[ORM\JoinColumn(name: 'id_acheteur', referencedColumnName: 'id')]
+    private ?Utilisateur $utilisateur = null;
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $date_vente = null;
+
+    public function getDate_vente(): ?\DateTimeInterface
+    {
+        return $this->date_vente;
+    }
+
+    public function setDate_vente(?\DateTimeInterface $date_vente): self
+    {
+        $this->date_vente = $date_vente;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $date_publication = null;
+
+    public function getDate_publication(): ?\DateTimeInterface
+    {
+        return $this->date_publication;
+    }
+
+    public function setDate_publication(?\DateTimeInterface $date_publication): self
+    {
+        $this->date_publication = $date_publication;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'decimal', nullable: true)]
+    private ?float $prix_vente = null;
+
+    public function getPrix_vente(): ?float
+    {
+        return $this->prix_vente;
+    }
+
+    public function setPrix_vente(?float $prix_vente): self
+    {
+        $this->prix_vente = $prix_vente;
+        return $this;
+    }
+
+    public function getParcelleId(): ?int
+    {
+        return $this->parcelle_id;
+    }
+
+    public function setParcelleId(int $parcelle_id): static
+    {
+        $this->parcelle_id = $parcelle_id;
 
         return $this;
     }
 
     public function getProprietaireId(): ?int
     {
-        return $this->proprietaireId;
+        return $this->proprietaire_id;
     }
 
-    public function setProprietaireId(int $proprietaireId): static
+    public function setProprietaireId(int $proprietaire_id): static
     {
-        $this->proprietaireId = $proprietaireId;
+        $this->proprietaire_id = $proprietaire_id;
 
         return $this;
     }
 
-    public function getTypeCulture(): TypeCulture
+    public function getTypeCulture(): ?string
     {
-        return $this->typeCulture;
+        return $this->type_culture;
     }
 
-    public function setTypeCulture(TypeCulture $typeCulture): static
+    public function setTypeCulture(?string $type_culture): static
     {
-        $this->typeCulture = $typeCulture;
+        $this->type_culture = $type_culture;
 
         return $this;
     }
 
-    public function getEtat(): EtatCulture
+    public function getDateRecolte(): ?\DateTime
     {
-        return $this->etat;
+        return $this->date_recolte;
     }
 
-    public function setEtat(EtatCulture $etat): static
+    public function setDateRecolte(?\DateTime $date_recolte): static
     {
-        $this->etat = $etat;
+        $this->date_recolte = $date_recolte;
 
         return $this;
     }
 
-    public function getDateRecolte(): ?\DateTimeInterface
+    public function getRecolteEstime(): ?string
     {
-        return $this->dateRecolte;
+        return $this->recolte_estime;
     }
 
-    public function setDateRecolte(?\DateTimeInterface $dateRecolte): static
+    public function setRecolteEstime(?string $recolte_estime): static
     {
-        $this->dateRecolte = $dateRecolte;
+        $this->recolte_estime = $recolte_estime;
 
         return $this;
     }
 
-    public function getDateCreation(): \DateTimeImmutable
+    public function getDateCreation(): ?\DateTime
     {
-        return $this->dateCreation;
+        return $this->date_creation;
     }
 
-    public function setDateCreation(\DateTimeImmutable $dateCreation): static
+    public function setDateCreation(?\DateTime $date_creation): static
     {
-        $this->dateCreation = $dateCreation;
+        $this->date_creation = $date_creation;
 
         return $this;
     }
 
-    public function getParcelle(): ?Parcelle
+    public function getDateVente(): ?\DateTime
     {
-        return $this->parcelle;
+        return $this->date_vente;
     }
 
-    public function setParcelle(?Parcelle $parcelle): static
+    public function setDateVente(?\DateTime $date_vente): static
     {
-        $this->parcelle = $parcelle;
+        $this->date_vente = $date_vente;
 
         return $this;
     }
 
-    public function validateDates(ExecutionContextInterface $context): void
+    public function getDatePublication(): ?\DateTime
     {
-        if (null === $this->dateRecolte) {
-            return;
-        }
-
-        $dateRecolte = \DateTimeImmutable::createFromInterface($this->dateRecolte)->setTime(0, 0);
-        $dateCreation = $this->dateCreation->setTime(0, 0);
-
-        if ($dateRecolte < $dateCreation) {
-            $context
-                ->buildViolation('La date de recolte doit etre superieure ou egale a la date de creation.')
-                ->atPath('dateRecolte')
-                ->addViolation();
-        }
+        return $this->date_publication;
     }
+
+    public function setDatePublication(?\DateTime $date_publication): static
+    {
+        $this->date_publication = $date_publication;
+
+        return $this;
+    }
+
+    public function getPrixVente(): ?string
+    {
+        return $this->prix_vente;
+    }
+
+    public function setPrixVente(?string $prix_vente): static
+    {
+        $this->prix_vente = $prix_vente;
+
+        return $this;
+    }
+
 }

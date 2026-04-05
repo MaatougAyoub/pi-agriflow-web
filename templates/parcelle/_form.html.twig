@@ -1,0 +1,33 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{{ form_start(form) }}
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      {{ form_row(form.nom) }}
+      <div class="row">
+        <div class="col-md-6">
+          {{ form_row(form.superficie) }}
+        </div>
+        <div class="col-md-6">
+          {{ form_row(form.typeTerre) }}
+        </div>
+      </div>
+      {{ form_row(form.localisation) }}
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <button class="btn btn-success">{{ submit_label|default('Enregistrer') }}</button>
+ 
+ {% if parcelle is defined and parcelle.id %}
+      <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="btn btn-outline-secondary mt-3 mt-lg-0">Annuler les modifications</a>
+
+{% else %}
+  <a href="{{ path('app_parcelle_index') }}" class="btn btn-outline-secondary">
+    Annuler
+  </a>
+{% endif %}
+
+
+  </div>
+{{ form_end(form) }}

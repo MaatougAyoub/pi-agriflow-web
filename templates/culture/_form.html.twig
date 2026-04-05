@@ -1,0 +1,101 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{{ form_start(form) }}
+  {% if selected_parcelle %}
+    <div class="alert alert-info" id="culture-surface-alert">
+      Surface disponible pour <strong id="selected-parcelle-name">{{ selected_parcelle.nom ?: 'Parcelle #' ~ selected_parcelle.id }}</strong>:
+      <span id="selected-available-surface">{{ selected_available_surface|default(0)|number_format(0, '.', ' ') }}</span> m&sup2;
+    </div>
+  {% else %}
+    <div class="alert alert-secondary" id="culture-surface-alert">
+      Selectionnez une parcelle. Les surfaces disponibles actuelles sont rappelees ci-dessous.
+    </div>
+  {% endif %}
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      {{ form_row(form.parcelleId) }}
+      <div class="row">
+        <div class="col-md-6">
+          {{ form_row(form.nom) }}
+        </div>
+        <div class="col-md-6">
+          {{ form_row(form.typeCulture) }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          {{ form_row(form.superficie) }}
+        </div>
+        <div class="col-md-6">
+          {{ form_row(form.etat) }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          {{ form_row(form.dateRecolte) }}
+        </div>
+        <div class="col-md-6">
+          {{ form_row(form.recolteEstime) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-3">Surfaces disponibles par parcelle</h2>
+      <div class="row g-3">
+        {% for parcelle in parcelles %}
+          <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+              <div class="fw-semibold">{{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}</div>
+              <div class="text-muted small">{{ parcelle.localisation ?: 'Sans localisation' }}</div>
+              <div class="mt-2">{{ (available_surface_map[parcelle.id] ?? 0)|number_format(0, '.', ' ') }} m&sup2; disponibles</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <button class="btn btn-success">{{ submit_label|default('Enregistrer') }}</button>
+    <a href="{{ path('app_culture_index') }}" class="btn btn-outline-secondary">Retour a la liste</a>
+  </div>
+{{ form_end(form) }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const parcelleSelect = document.getElementById('{{ form.parcelleId.vars.id }}');
+    const surfaceAlert = document.getElementById('culture-surface-alert');
+    const surfaceMap = {{ available_surface_map|json_encode|raw }};
+    const parcelleNames = {
+      {% for parcelle in parcelles %}
+        '{{ parcelle.id }}': '{{ (parcelle.nom ?: 'Parcelle #' ~ parcelle.id)|e('js') }}'{% if not loop.last %},{% endif %}
+      {% endfor %}
+    };
+
+    if (!parcelleSelect || !surfaceAlert) {
+      return;
+    }
+
+    const updateAvailableSurface = function () {
+      const parcelleId = parcelleSelect.value;
+
+      if (!parcelleId || typeof surfaceMap[parcelleId] === 'undefined') {
+        surfaceAlert.className = 'alert alert-secondary';
+        surfaceAlert.innerHTML = 'Selectionnez une parcelle. Les surfaces disponibles actuelles sont rappelees ci-dessous.';
+        return;
+      }
+
+      surfaceAlert.className = 'alert alert-info';
+      surfaceAlert.innerHTML = 'Surface disponible pour <strong id="selected-parcelle-name"></strong>: <span id="selected-available-surface"></span> m&sup2;';
+      document.getElementById('selected-parcelle-name').textContent = parcelleNames[parcelleId] || ('Parcelle #' + parcelleId);
+      document.getElementById('selected-available-surface').textContent = Number(surfaceMap[parcelleId]).toFixed(0);
+    };
+
+    parcelleSelect.addEventListener('change', updateAvailableSurface);
+    updateAvailableSurface();
+  });
+</script>
