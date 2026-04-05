@@ -45,7 +45,7 @@ final class SecurityController extends AbstractController
             $message = 'Connecte en tant qu\'AGRICULTEUR.';
         }
 
-        $this->addFlash('success', $message);
+        $this->addFlash('login_status', $message);
 
         return $this->redirectToRoute('site_home');
     }

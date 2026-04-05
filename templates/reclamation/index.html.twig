@@ -1,0 +1,563 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Reclamations | AgriFlow{% endblock %}
+
+{% block stylesheets %}
+<style data-turbo-temporary>
+:root {
+    --green-900:#1f6f34;
+    --green-800:#2e7d32;
+    --ink:#263238;
+    --muted:#637381;
+    --line:#e2e8ee;
+    --danger:#c62828;
+    --danger-bg:#ffebee;
+    --success:#1b5e20;
+    --success-bg:#e8f5e9;
+    --tab-bg:#f0f4f7;
+}
+
+* { box-sizing:border-box; }
+
+body {
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:#f5f5f5;
+    padding:18px;
+}
+
+.page-shell {
+    width:100%;
+    max-width:none;
+    margin:0 auto;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.14);
+    overflow:hidden;
+}
+
+.page-header {
+    padding:20px 24px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    border-bottom:1px solid var(--line);
+    background:#fff;
+}
+
+.page-title {
+    margin:0;
+    font-size:28px;
+    color:var(--green-900);
+    font-weight:800;
+}
+
+.page-subtitle {
+    margin:0;
+    color:var(--green-800);
+    font-size:18px;
+}
+
+.page-content {
+    padding:20px 24px 26px;
+    display:grid;
+    gap:14px;
+}
+
+.tab-nav {
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    background:var(--tab-bg);
+    border-radius:12px;
+    padding:8px;
+}
+
+.tab-btn {
+    border:1px solid #d7dfe6;
+    border-radius:10px;
+    min-height:40px;
+    padding:0 16px;
+    text-decoration:none;
+    color:#52626d;
+    background:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+}
+
+.tab-btn.is-active {
+    color:#fff;
+    border-color:transparent;
+    background:linear-gradient(90deg, var(--green-900), var(--green-800));
+}
+
+.toolbar {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+.toolbar label {
+    font-weight:700;
+}
+
+.toolbar input,
+.toolbar select {
+    min-height:40px;
+    border:1.5px solid #dfe3e8;
+    border-radius:10px;
+    padding:0 12px;
+    font-size:15px;
+}
+
+.toolbar .search-input {
+    flex:1 1 340px;
+}
+
+.toolbar .spacer {
+    flex:1 1 auto;
+}
+
+.btn {
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:0 16px;
+}
+
+.btn-primary {
+    color:#fff;
+    background:#2e7d32;
+}
+
+.btn-search {
+    background:#2e7d32;
+    color:#fff;
+}
+
+.btn-refresh {
+    background:#1976d2;
+    color:#fff;
+}
+
+.btn-profile {
+    background:#757575;
+    color:#fff;
+}
+
+.btn-add {
+    background:#1f6f34;
+    color:#fff;
+}
+
+.btn-delete {
+    background:#d32f2f;
+    color:#fff;
+    min-height:34px;
+    padding:0 10px;
+    font-size:13px;
+}
+
+.btn-reply {
+    background:#1976d2;
+    color:#fff;
+    min-height:34px;
+    padding:0 10px;
+    font-size:13px;
+}
+
+.btn:disabled {
+    opacity:0.55;
+    cursor:not-allowed;
+}
+
+.alert {
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+}
+
+.alert-danger {
+    background:var(--danger-bg);
+    color:var(--danger);
+}
+
+.alert-success {
+    background:var(--success-bg);
+    color:var(--success);
+}
+
+.table-wrap {
+    overflow:auto;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fff;
+}
+
+table {
+    width:100%;
+    border-collapse:collapse;
+    min-width:100%;
+}
+
+th,
+td {
+    border-bottom:1px solid #ebf0f4;
+    padding:10px;
+    text-align:left;
+    vertical-align:top;
+    font-size:14px;
+}
+
+th {
+    background:#f7f9fb;
+    color:#4d5a65;
+    font-weight:800;
+}
+
+.badge {
+    display:inline-flex;
+    border-radius:999px;
+    background:#eef7ef;
+    color:var(--green-900);
+    padding:4px 10px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.reponse-cell {
+    white-space:pre-wrap;
+    max-width:320px;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+}
+
+.description-cell {
+    white-space:pre-wrap;
+    max-width:360px;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+}
+
+.actions-cell {
+    min-width:280px;
+}
+
+.actions-stack {
+    display:grid;
+    gap:8px;
+}
+
+.actions-row {
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.reply-input {
+    min-height:34px;
+    border:1px solid #dfe3e8;
+    border-radius:8px;
+    padding:0 10px;
+    min-width:150px;
+}
+
+.count-label {
+    color:#616161;
+    font-size:15px;
+}
+
+.add-card {
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    background:#fff;
+}
+
+.add-title {
+    margin:0 0 14px;
+    color:var(--green-900);
+    font-size:22px;
+    font-weight:800;
+}
+
+.form-grid {
+    display:grid;
+    gap:12px;
+}
+
+.form-grid label {
+    font-weight:700;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+    width:100%;
+    border:1.5px solid #dfe3e8;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:15px;
+}
+
+.form-grid textarea {
+    min-height:180px;
+    resize:vertical;
+}
+
+.add-actions {
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.form-error-list {
+    margin:0;
+    padding-left:18px;
+    display:grid;
+    gap:4px;
+}
+
+@media (max-width: 740px) {
+    .toolbar .spacer { display:none; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell">
+    <header class="page-header">
+        <p class="page-subtitle">Gestion des reclamations</p>
+    </header>
+
+    <section class="page-content">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="tab-nav">
+            <a class="tab-btn {{ active_tab == 'liste' ? 'is-active' : '' }}" href="{{ path('app_reclamation_index', {tab: 'liste', q: search_query, categorie: selected_category}) }}">Liste des reclamations</a>
+            <a class="tab-btn {{ active_tab == 'ajouter' ? 'is-active' : '' }}" href="{{ path('app_reclamation_index', {tab: 'ajouter'}) }}">Ajouter reclamation</a>
+        </div>
+
+        {% if active_tab == 'liste' %}
+            <form class="toolbar" method="get" action="{{ path('app_reclamation_index') }}">
+                <input type="hidden" name="tab" value="liste">
+
+                <label for="categorie">Categorie:</label>
+                <select id="categorie" name="categorie">
+                    <option value="TOUTES" {% if selected_category == 'TOUTES' %}selected{% endif %}>Toutes</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+
+                <input class="search-input" type="text" name="q" value="{{ search_query }}" placeholder="Rechercher par titre / description / email...">
+
+                <button class="btn btn-search" type="submit">Rechercher</button>
+                <a class="btn btn-refresh" href="{{ path('app_reclamation_index', {tab: 'liste'}) }}">Rafraichir</a>
+
+                <span class="spacer"></span>
+                <a class="btn btn-profile" href="{{ path('site_home') }}">Retour Accueil</a>
+            </form>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prenom</th>
+                            <th>Role</th>
+                            <th>Email</th>
+                            <th>Categorie</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Date creation</th>
+                            <th>Statut</th>
+                            <th>Reponse</th>
+                            {% if show_actions_column %}
+                                <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reclamation in reclamations %}
+                            {% set owner = reclamation.utilisateur %}
+                            {% set roleRaw = owner ? (owner.role ?? '')|upper : '' %}
+                            {% set role = roleRaw starts with 'ROLE_' ? roleRaw|replace({'ROLE_': ''}) : roleRaw %}
+                            {% set can_delete = connected_is_admin or (owner and owner.id == connected_user_id) %}
+
+                            <tr>
+                                <td>{{ owner ? (owner.nom ?: '-') : '-' }}</td>
+                                <td>{{ owner ? (owner.prenom ?: '-') : '-' }}</td>
+                                <td>{{ role ?: '-' }}</td>
+                                <td>{{ owner ? (owner.email ?: '-') : '-' }}</td>
+                                <td>{{ reclamation.categorie ?: '-' }}</td>
+                                <td>{{ reclamation.titre ?: '-' }}</td>
+                                <td class="description-cell">{{ reclamation.description ?: '-' }}</td>
+                                <td>{{ reclamation.dateCreation ? reclamation.dateCreation|date('Y-m-d H:i') : '-' }}</td>
+                                <td><span class="badge">{{ reclamation.statut ?: '-' }}</span></td>
+                                <td class="reponse-cell">{{ reclamation.reponse ?: '-' }}</td>
+                                {% if show_actions_column %}
+                                    <td class="actions-cell">
+                                        <div class="actions-stack">
+                                            {% if connected_is_admin %}
+                                                <form class="actions-row" method="post" action="{{ path('app_reclamation_reply', {id: reclamation.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('reply_reclamation_' ~ reclamation.id) }}">
+                                                    <input class="reply-input" type="text" name="reponse_message" placeholder="Votre reponse..." required>
+                                                    <button class="btn btn-reply" type="submit">Repondre</button>
+                                                </form>
+                                            {% endif %}
+
+                                            {% if can_delete %}
+                                                <form method="post" action="{{ path('app_reclamation_delete', {id: reclamation.id}) }}" onsubmit="return confirm('Supprimer cette reclamation ?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_reclamation_' ~ reclamation.id) }}">
+                                                    <button class="btn btn-delete" type="submit">Supprimer</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="{{ show_actions_column ? 11 : 10 }}">Aucune reclamation trouvee.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="count-label">{{ reclamations|length }} reclamation(s)</p>
+        {% else %}
+            <div class="add-card">
+                <h2 class="add-title">Nouvelle reclamation</h2>
+
+                <div id="reclamationClientErrors"></div>
+
+                {% if form.vars.submitted and not form.vars.valid %}
+                    <div class="alert alert-danger">
+                        <ul class="form-error-list">
+                            {% for error in form.categorie.vars.errors %}
+                                <li>{{ error.message }}</li>
+                            {% endfor %}
+                            {% for error in form.titre.vars.errors %}
+                                <li>{{ error.message }}</li>
+                            {% endfor %}
+                            {% for error in form.description.vars.errors %}
+                                <li>{{ error.message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {{ form_start(form, {action: path('app_reclamation_index', {tab: 'ajouter'}), attr: {class: 'form-grid', id: 'reclamationAddForm', novalidate: 'novalidate'}}) }}
+                    {{ form_row(form.categorie) }}
+                    {{ form_row(form.titre) }}
+                    {{ form_row(form.description) }}
+
+                    <div class="add-actions">
+                        <a class="btn btn-profile" href="{{ path('app_reclamation_index', {tab: 'liste'}) }}">Annuler</a>
+                        <a class="btn btn-profile" href="{{ path('site_home') }}">Retour Accueil</a>
+                        <button class="btn btn-primary" type="submit">Valider reclamation</button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        {% endif %}
+    </section>
+</main>
+
+<script data-turbo-temporary>
+(function () {
+    function initReclamationValidation() {
+        const form = document.getElementById('reclamationAddForm');
+        if (!form || form.dataset.validationBound === '1') {
+            return;
+        }
+
+        form.dataset.validationBound = '1';
+
+        const clientErrors = document.getElementById('reclamationClientErrors');
+        const categorieInput = form.querySelector('#reclamation_categorie');
+        const titreInput = form.querySelector('#reclamation_titre');
+        const descriptionInput = form.querySelector('#reclamation_description');
+
+        function renderClientError(message) {
+            if (!clientErrors) {
+                return;
+            }
+
+            clientErrors.innerHTML = '';
+            if (!message) {
+                return;
+            }
+
+            const errorBox = document.createElement('div');
+            errorBox.className = 'alert alert-danger';
+            errorBox.textContent = message;
+            clientErrors.appendChild(errorBox);
+        }
+
+        function getFirstValidationError() {
+            if (!categorieInput || categorieInput.value.trim() === '') {
+                return 'Veuillez choisir une categorie.';
+            }
+
+            if (!titreInput || titreInput.value.trim() === '') {
+                return 'Veuillez entrer un titre.';
+            }
+
+            if (!descriptionInput || descriptionInput.value.trim() === '') {
+                return 'Veuillez entrer une description.';
+            }
+
+            return null;
+        }
+
+        form.addEventListener('submit', function (event) {
+            const errorMessage = getFirstValidationError();
+            if (errorMessage) {
+                event.preventDefault();
+                renderClientError(errorMessage);
+                return;
+            }
+
+            renderClientError(null);
+        });
+
+        [categorieInput, titreInput, descriptionInput].forEach(function (input) {
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('input', function () {
+                renderClientError(null);
+            });
+
+            input.addEventListener('change', function () {
+                renderClientError(null);
+            });
+        });
+    }
+
+    initReclamationValidation();
+    document.addEventListener('turbo:load', initReclamationValidation);
+})();
+</script>
+{% endblock %}

@@ -1,9 +1,64 @@
+<style>
+.agf-toast-zone {
+    z-index:1085;
+    max-width:min(92vw, 460px);
+}
+
+.agf-login-status-zone {
+    z-index:1086;
+    width:100%;
+    pointer-events:none;
+}
+
+.agf-login-status-pill {
+    pointer-events:auto;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:#f3faf5;
+    color:#1f5e2e;
+    border:1px solid #b9dec4;
+    border-radius:999px;
+    padding:10px 16px;
+    box-shadow:0 14px 30px rgba(16,61,33,0.2);
+    font-size:14px;
+    font-weight:600;
+}
+
+.agf-login-status-pill i {
+    font-size:16px;
+    color:#2e7d32;
+}
+
+@media (max-width: 575.98px) {
+    .agf-login-status-zone {
+        padding:0 12px 12px;
+    }
+
+    .agf-login-status-pill {
+        width:100%;
+        justify-content:center;
+    }
+}
+</style>
+
 {% for type, messages in app.flashes %}
-    <div class="position-fixed top-0 end-0 p-3 agf-toast-zone">
-        {% for message in messages %}
-            <div class="alert alert-{{ type }} shadow-sm mb-2" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
+    {% if type == 'login_status' %}
+        <div class="position-fixed bottom-0 start-50 translate-middle-x p-3 agf-login-status-zone">
+            {% for message in messages %}
+                <div class="agf-login-status-pill" role="status" aria-live="polite">
+                    <i class="bi bi-person-check-fill" aria-hidden="true"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="position-fixed top-0 end-0 p-3 agf-toast-zone">
+            {% for message in messages %}
+                <div class="alert alert-{{ type }} shadow-sm mb-2" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endfor %}
