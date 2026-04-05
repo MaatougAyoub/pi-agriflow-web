@@ -134,6 +134,70 @@ class CultureRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param array<string, string|null> $criteria
+     * @return Culture[]
+     */
+    public function findFilteredForAdmin(array $criteria): array
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+
+        $search = trim((string) ($criteria['search'] ?? ''));
+        if ('' !== $search) {
+            $queryBuilder
+                ->andWhere('LOWER(COALESCE(c.nom, \'\')) LIKE :search')
+                ->setParameter('search', '%'.mb_strtolower($search).'%');
+        }
+
+        $typeCulture = trim((string) ($criteria['type_culture'] ?? ''));
+        if ('' !== $typeCulture) {
+            $queryBuilder
+                ->andWhere('c.type_culture = :typeCulture')
+                ->setParameter('typeCulture', $typeCulture);
+        }
+
+        $parcelleId = trim((string) ($criteria['parcelle_id'] ?? ''));
+        if ('' !== $parcelleId && ctype_digit($parcelleId)) {
+            $queryBuilder
+                ->andWhere('c.parcelle_id = :parcelleId')
+                ->setParameter('parcelleId', (int) $parcelleId);
+        }
+
+        $etat = trim((string) ($criteria['etat'] ?? ''));
+        if ('' !== $etat) {
+            $queryBuilder
+                ->andWhere('c.etat = :etat')
+                ->setParameter('etat', $etat);
+        }
+
+        $sort = (string) ($criteria['sort'] ?? 'date_creation');
+        $direction = strtolower((string) ($criteria['direction'] ?? 'desc'));
+        $sortField = self::ALLOWED_SORT_FIELDS[$sort] ?? self::ALLOWED_SORT_FIELDS['date_creation'];
+        $sortDirection = 'asc' === $direction ? 'ASC' : 'DESC';
+
+        return $queryBuilder
+            ->orderBy($sortField, $sortDirection)
+            ->addOrderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function findTypeCultureChoicesForAdmin(): array
+    {
+        return $this->findDistinctStringValues('c.type_culture', 'typeCulture');
+    }
+
+    /**
+     * @return string[]
+     */
+    public function findEtatChoicesForAdmin(): array
+    {
+        return $this->findDistinctStringValues('c.etat', 'etat');
+    }
+
+    /**
      * @return Culture[]
      */
     public function findByParcelleIdAndProprietaireId(int $parcelleId, int $proprietaireId): array
@@ -143,6 +207,20 @@ class CultureRepository extends ServiceEntityRepository
             ->andWhere('c.proprietaire_id = :proprietaireId')
             ->setParameter('parcelleId', $parcelleId)
             ->setParameter('proprietaireId', $proprietaireId)
+            ->orderBy('c.date_creation', 'DESC')
+            ->addOrderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Culture[]
+     */
+    public function findByParcelleIdForAdmin(int $parcelleId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.parcelle_id = :parcelleId')
+            ->setParameter('parcelleId', $parcelleId)
             ->orderBy('c.date_creation', 'DESC')
             ->addOrderBy('c.id', 'DESC')
             ->getQuery()
@@ -163,6 +241,23 @@ class CultureRepository extends ServiceEntityRepository
         }
 
         return (float) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return string[]
+     */
+    private function findDistinctStringValues(string $field, string $alias): array
+    {
+        $results = $this->createQueryBuilder('c')
+            ->select(sprintf('DISTINCT %s AS %s', $field, $alias))
+            ->andWhere(sprintf('%s IS NOT NULL', $field))
+            ->andWhere(sprintf('%s != :emptyValue', $field))
+            ->setParameter('emptyValue', '')
+            ->orderBy($field, 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): string => (string) $row[$alias], $results);
     }
 
     //    /**

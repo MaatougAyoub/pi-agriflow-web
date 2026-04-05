@@ -1,0 +1,97 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Detail culture admin{% endblock %}
+{% block admin_page_title %}Culture #{{ culture.id }}{% endblock %}
+{% block admin_page_subtitle %}Consultez les informations de cette culture et son lien avec la parcelle associee.{% endblock %}
+{% block admin_page_actions %}
+  <a href="{{ path('app_admin_culture_index') }}" class="btn btn-outline-secondary">Retour a la liste</a>
+{% endblock %}
+
+{% block admin_body %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card admin-card h-100">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between gap-3 flex-wrap mb-4">
+            <div>
+              <h2 class="h4 mb-1">{{ culture.nom ?: 'Culture sans nom' }}</h2>
+              <p class="text-muted mb-0">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
+            </div>
+            {% include 'admin/culture/_delete_form.html.twig' with {culture: culture} %}
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">ID</div>
+                <div class="fw-semibold">{{ culture.id }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Proprietaire ID</div>
+                <div class="fw-semibold">{{ culture.proprietaireId ?: '-' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Parcelle associee</div>
+                <div class="fw-semibold">
+                  {% if parcelle %}
+                    <a href="{{ path('app_admin_parcelle_show', {id: parcelle.id}) }}" class="text-decoration-none">
+                      {{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}
+                    </a>
+                  {% else %}
+                    Introuvable
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Parcelle ID</div>
+                <div class="fw-semibold">{{ culture.parcelleId ?: '-' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Superficie</div>
+                <div class="fw-semibold">{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Etat</div>
+                <div class="fw-semibold">{{ culture.etat ?: 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Type de culture</div>
+                <div class="fw-semibold">{{ culture.typeCulture ?: 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de creation</div>
+                <div class="fw-semibold">{{ culture.dateCreation ? culture.dateCreation|date('d/m/Y H:i') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de recolte</div>
+                <div class="fw-semibold">{{ culture.dateRecolte ? culture.dateRecolte|date('d/m/Y') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Recolte estimee</div>
+                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

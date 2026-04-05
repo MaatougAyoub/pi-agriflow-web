@@ -1,0 +1,4 @@
+<form method="post" action="{{ path('app_admin_culture_delete', {id: culture.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette culture ?');">
+  <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_culture_' ~ culture.id) }}">
+  <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+</form>
