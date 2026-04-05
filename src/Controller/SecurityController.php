@@ -38,14 +38,18 @@ final class SecurityController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_ADMIN')) {
-            $message = 'Connecte en tant qu\'ADMIN.';
-        } elseif ($this->isGranted('ROLE_EXPERT')) {
-            $message = 'Connecte en tant qu\'EXPERT.';
-        } else {
-            $message = 'Connecte en tant qu\'AGRICULTEUR.';
+            $this->addFlash('login_status', 'Connecte comme administrateur.');
+
+            return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        $this->addFlash('login_status', $message);
+        if ($this->isGranted('ROLE_AGRICULTEUR')) {
+            $this->addFlash('login_status', 'Connecte comme agriculteur.');
+
+            return $this->redirectToRoute('app_marketplace_index');
+        }
+
+        $this->addFlash('login_status', 'Connecte avec votre compte.');
 
         return $this->redirectToRoute('site_home');
     }

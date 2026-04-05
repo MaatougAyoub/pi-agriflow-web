@@ -44,4 +44,27 @@ class AnnonceRepository extends ServiceEntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @return Annonce[]
+     */
+    public function findByOwnerId(int $ownerId): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.proprietaireId = :ownerId')
+            ->setParameter('ownerId', $ownerId)
+            ->orderBy('a.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByOwnerId(int $ownerId): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->andWhere('a.proprietaireId = :ownerId')
+            ->setParameter('ownerId', $ownerId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

@@ -6,10 +6,13 @@ namespace App\Controller;
 
 use App\Entity\Annonce;
 use App\Entity\Reservation;
+use App\Entity\Utilisateur;
+use App\Enum\AnnonceStatut;
 use App\Enum\AnnonceType;
 use App\Form\FrontReservationType;
 use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
+use App\Service\SellerMarketplaceService;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -61,25 +64,43 @@ final class MarketplaceController extends AbstractController
     #[Route('/annonce/{id}', name: 'show', methods: ['GET'])]
     public function show(
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
-        ReservationRepository $reservationRepository
-    ): Response
-    {
+        ReservationRepository $reservationRepository,
+        SellerMarketplaceService $sellerMarketplaceService
+    ): Response {
+        $user = $this->getUser();
+        $isAgriculteurViewer = $user instanceof Utilisateur && $this->isGranted('ROLE_AGRICULTEUR');
+        $isOwnerViewer = $sellerMarketplaceService->isAnnonceOwner(
+            $user instanceof Utilisateur ? $user : null,
+            $annonce
+        );
+        $canReserve = $isAgriculteurViewer
+            && !$isOwnerViewer
+            && $annonce->getStatut() === AnnonceStatut::DISPONIBLE;
+
         return $this->render('marketplace/show.html.twig', [
             'annonce' => $annonce,
-            'reservationForm' => $this->createReservationForm($annonce)->createView(),
+            'reservationForm' => $canReserve && $user instanceof Utilisateur
+                ? $this->createReservationForm($annonce, $user)->createView()
+                : null,
             'recentReservations' => $reservationRepository->findBy(
                 ['annonce' => $annonce],
                 ['createdAt' => 'DESC'],
                 5
             ),
             'visual' => $this->buildAnnonceVisual($annonce),
+            'canReserve' => $canReserve,
+            'isAdminViewer' => $this->isGranted('ROLE_ADMIN'),
+            'isAgriculteurViewer' => $isAgriculteurViewer,
+            'isOwnerViewer' => $isOwnerViewer,
         ]);
     }
 
-    private function createReservationForm(Annonce $annonce): FormInterface
+    private function createReservationForm(Annonce $annonce, Utilisateur $user): FormInterface
     {
+        $reservation = (new Reservation())->setClientId($user->getId() ?? 0);
+
         // n5alliw action wa7adha bech page details tab9a lisible w POST yetsayyar wahdou
-        return $this->createForm(FrontReservationType::class, new Reservation(), [
+        return $this->createForm(FrontReservationType::class, $reservation, [
             'action' => $this->generateUrl('app_reservation_create', ['id' => $annonce->getId()]),
             'method' => 'POST',
         ]);

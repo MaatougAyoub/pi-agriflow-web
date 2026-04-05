@@ -17,12 +17,8 @@ class FrontReservationType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('clientId', IntegerType::class, [
-                'label' => 'Référence client',
-                'help' => 'Saisissez la référence du client pour cette demande.',
-            ])
             ->add('dateDebut', DateType::class, [
-                'label' => 'Date début',
+                'label' => 'Date debut',
                 'widget' => 'single_text',
             ])
             ->add('dateFin', DateType::class, [
@@ -30,12 +26,18 @@ class FrontReservationType extends AbstractType
                 'widget' => 'single_text',
             ])
             ->add('quantite', IntegerType::class, [
-                'label' => 'Quantité',
+                'label' => 'Quantite',
+                'attr' => [
+                    'min' => 1,
+                ],
             ])
             ->add('message', TextareaType::class, [
                 'label' => 'Message',
                 'required' => false,
-                'attr' => ['rows' => 3],
+                'attr' => [
+                    'rows' => 3,
+                    'placeholder' => 'Precisez vos besoins ou les details de livraison si necessaire.',
+                ],
             ]);
     }
 

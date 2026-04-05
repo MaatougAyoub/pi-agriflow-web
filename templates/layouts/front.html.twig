@@ -26,17 +26,21 @@
                     <li><a href="{{ path('site_home') }}" class="{{ current_route == 'site_home' ? 'active' : '' }}">Accueil</a></li>
                     <li><a href="{{ path('app_marketplace_index') }}" class="{{ current_route starts with 'app_marketplace_' ? 'active' : '' }}">Marketplace</a></li>
                     <li><a href="{{ path('site_services') }}" class="{{ current_route == 'site_services' ? 'active' : '' }}">Services</a></li>
-                    <li><a href="{{ path('site_about') }}" class="{{ current_route == 'site_about' ? 'active' : '' }}">À propos</a></li>
+                    <li><a href="{{ path('site_about') }}" class="{{ current_route == 'site_about' ? 'active' : '' }}">A propos</a></li>
                     <li><a href="{{ path('site_contact') }}" class="{{ current_route == 'site_contact' ? 'active' : '' }}">Contact</a></li>
                     {% if app.user %}
                         <li><a href="{{ path('app_profile') }}" class="{{ current_route starts with 'app_profile' ? 'active' : '' }}">Profil</a></li>
                         <li><a href="{{ path('app_reclamation_index') }}" class="{{ current_route starts with 'app_reclamation_' ? 'active' : '' }}">Reclamations</a></li>
                     {% endif %}
+                    {% if is_granted('ROLE_AGRICULTEUR') %}
+                        <li><a href="{{ path('app_seller_annonce_index') }}" class="{{ current_route starts with 'app_seller_' ? 'active' : '' }}">Mon espace vendeur</a></li>
+                        <li><a href="{{ path('app_reservation_my') }}" class="{{ current_route == 'app_reservation_my' ? 'active' : '' }}">Mes reservations</a></li>
+                    {% endif %}
                     {% if is_granted('ROLE_ADMIN') %}
-                        <li><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste Des Utilisateurs</a></li>
+                        <li><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste des utilisateurs</a></li>
                     {% endif %}
                     {% if app.user %}
-                        <li class="d-xl-none"><a href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Déconnexion</a></li>
+                        <li class="d-xl-none"><a href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Deconnexion</a></li>
                     {% else %}
                         <li class="d-xl-none"><a href="{{ path('app_login') }}" class="{{ current_route == 'app_login' ? 'active' : '' }}"><i class="bi bi-box-arrow-in-right me-2"></i>Connexion</a></li>
                     {% endif %}
@@ -45,13 +49,23 @@
             </nav>
 
             <div class="agf-header-actions d-none d-xl-flex">
-                <a href="{{ path('app_admin_dashboard') }}" class="agf-pro-link {{ current_route starts with 'app_admin_' ? 'active' : '' }}">
-                    Espace vendeur
-                </a>
+                {% if is_granted('ROLE_AGRICULTEUR') %}
+                    <a href="{{ path('app_seller_annonce_index') }}" class="agf-pro-link {{ current_route starts with 'app_seller_' ? 'active' : '' }}">
+                        Mon espace vendeur
+                    </a>
+                    <a href="{{ path('app_reservation_my') }}" class="agf-pro-link {{ current_route == 'app_reservation_my' ? 'active' : '' }}">
+                        Mes reservations
+                    </a>
+                {% endif %}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_dashboard') }}" class="agf-pro-link {{ current_route starts with 'app_admin_' ? 'active' : '' }}">
+                        Espace vendeur
+                    </a>
+                {% endif %}
                 {% if app.user %}
                     <a href="{{ path('app_logout') }}" class="agf-auth-link agf-auth-link--logout">
                         <i class="bi bi-box-arrow-right"></i>
-                        Déconnexion
+                        Deconnexion
                     </a>
                 {% else %}
                     <a href="{{ path('app_login') }}" class="agf-auth-link agf-auth-link--login {{ current_route == 'app_login' ? 'active' : '' }}">
@@ -94,12 +108,29 @@
                     </div>
 
                     <div class="col-lg-4 col-md-12 footer-links">
-                        <h4>Espace professionnel</h4>
-                        <ul>
-                            <li><a href="{{ path('app_admin_dashboard') }}">Tableau de bord vendeur</a></li>
-                            <li><a href="{{ path('app_admin_annonce_index') }}">Gérer les annonces</a></li>
-                            <li><a href="{{ path('app_admin_reservation_index') }}">Suivre les réservations</a></li>
-                        </ul>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <h4>Espace vendeur</h4>
+                            <ul>
+                                <li><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+                                <li><a href="{{ path('app_admin_annonce_index') }}">Gerer les annonces</a></li>
+                                <li><a href="{{ path('app_admin_reservation_index') }}">Suivre les reservations</a></li>
+                            </ul>
+                        {% elseif is_granted('ROLE_AGRICULTEUR') %}
+                            <h4>Mon espace vendeur</h4>
+                            <ul>
+                                <li><a href="{{ path('app_seller_annonce_index') }}">Mes annonces</a></li>
+                                <li><a href="{{ path('app_seller_request_index') }}">Demandes recues</a></li>
+                                <li><a href="{{ path('app_reservation_my') }}">Mes reservations</a></li>
+                                <li><a href="{{ path('app_profile') }}">Mon profil</a></li>
+                                <li><a href="{{ path('app_reclamation_index') }}">Mes reclamations</a></li>
+                            </ul>
+                        {% else %}
+                            <h4>Besoin d'aide ?</h4>
+                            <ul>
+                                <li><a href="{{ path('app_login') }}">Se connecter</a></li>
+                                <li><a href="{{ path('site_contact') }}">Nous contacter</a></li>
+                            </ul>
+                        {% endif %}
                     </div>
                 </div>
             </div>

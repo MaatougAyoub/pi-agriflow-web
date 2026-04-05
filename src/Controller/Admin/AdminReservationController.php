@@ -15,15 +15,17 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/reservations', name: 'app_admin_reservation_')]
+#[IsGranted('ROLE_ADMIN')]
 final class AdminReservationController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(ReservationRepository $reservationRepository): Response
     {
         return $this->render('admin/reservation/index.html.twig', [
-            'reservations' => $reservationRepository->findBy([], ['createdAt' => 'DESC']),
+            'reservations' => $reservationRepository->findAllForAdmin(),
         ]);
     }
 

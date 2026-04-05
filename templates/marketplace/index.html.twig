@@ -8,19 +8,19 @@
             <div class="row align-items-center gy-5">
                 <div class="col-lg-7">
                     <span class="agf-eyebrow">AgriFlow Marketplace</span>
-                    <h1 class="display-5 text-white mb-3">Trouvez du matériel, des produits et des offres de location en quelques clics.</h1>
+                    <h1 class="display-5 text-white mb-3">Trouvez du materiel, des produits et des offres de location en quelques clics.</h1>
                     <p class="text-white-50 mb-4 agf-hero-text">
                         AgriFlow facilite la mise en relation entre agriculteurs et clients avec des annonces claires,
-                        un suivi simple des demandes et un parcours de réservation direct.
+                        un suivi simple des demandes et un parcours de reservation direct.
                     </p>
                     <div class="d-flex gap-3 flex-wrap">
                         <a href="#liste-annonces" class="btn btn-success btn-lg">Parcourir les annonces</a>
-                        <a href="{{ path('site_contact') }}" class="btn btn-outline-light btn-lg">Besoin d’aide ?</a>
+                        <a href="{{ path('site_contact') }}" class="btn btn-outline-light btn-lg">Besoin d'aide ?</a>
                     </div>
                 </div>
                 <div class="col-lg-5">
                     <div class="agf-summary-card">
-                        <span class="agf-summary-kicker">Aperçu rapide</span>
+                        <span class="agf-summary-kicker">Apercu rapide</span>
                         <div class="agf-stat-grid">
                             <div class="agf-stat-item">
                                 <strong>{{ stats.total }}</strong>
@@ -40,7 +40,7 @@
                             </div>
                         </div>
                         <p class="agf-summary-note mb-0">
-                            Filtrez les annonces, consultez les détails et envoyez une demande de réservation depuis la fiche produit.
+                            Filtrez les annonces, consultez les details et envoyez une demande depuis la fiche produit.
                         </p>
                     </div>
                 </div>
@@ -55,17 +55,26 @@
             <div class="row g-4 align-items-end mb-5">
                 <div class="col-lg-8">
                     <h2 class="mb-2">Annonces disponibles</h2>
-                    <p class="text-muted mb-0">Consultez les offres publiées, filtrez par type et accédez rapidement aux détails.</p>
+                    <p class="text-muted mb-0">Consultez les offres publiees, filtrez par type et accedez rapidement aux details.</p>
                 </div>
                 <div class="col-lg-4 text-lg-end">
-                    <a href="{{ path('app_admin_annonce_index') }}" class="btn btn-outline-success">Ouvrir la gestion</a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin_annonce_index') }}" class="btn btn-outline-success">Ouvrir la gestion</a>
+                    {% elseif is_granted('ROLE_AGRICULTEUR') %}
+                        <div class="d-flex gap-2 justify-content-lg-end flex-wrap">
+                            <a href="{{ path('app_seller_annonce_index') }}" class="btn btn-success">Mon espace vendeur</a>
+                            <a href="{{ path('app_reservation_my') }}" class="btn btn-outline-success">Mes reservations</a>
+                        </div>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="btn btn-outline-success">Se connecter</a>
+                    {% endif %}
                 </div>
             </div>
 
             <form method="get" class="row g-3 agf-filter-card mb-5">
                 <div class="col-md-6">
                     <label for="q" class="form-label">Recherche</label>
-                    <input id="q" name="q" type="text" value="{{ filters.q }}" class="form-control" placeholder="titre, catégorie ou localisation">
+                    <input id="q" name="q" type="text" value="{{ filters.q }}" class="form-control" placeholder="titre, categorie ou localisation">
                 </div>
                 <div class="col-md-4">
                     <label for="type" class="form-label">Type</label>
@@ -86,6 +95,7 @@
 
             <div class="row g-4">
                 {% for annonce in annonces %}
+                    {% set isOwnerCard = is_granted('ROLE_AGRICULTEUR') and app.user and annonce.proprietaireId == app.user.id %}
                     {% set visual = visuals[annonce.id] ?? {
                         image: 'template/assets/img/hero_4.jpg',
                         alt: annonce.titre,
@@ -104,16 +114,33 @@
                             </div>
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <span class="badge text-bg-success-subtle text-success">{{ annonce.type.label() }}</span>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <span class="badge text-bg-success-subtle text-success">{{ annonce.type.label() }}</span>
+                                        {% if isOwnerCard %}
+                                            <span class="badge text-bg-dark">Votre annonce</span>
+                                        {% endif %}
+                                    </div>
                                     <span class="badge text-bg-light">{{ annonce.statut.label() }}</span>
                                 </div>
                                 <h3 class="h5">{{ annonce.titre }}</h3>
                                 <p class="text-muted small mb-2">{{ annonce.categorie }} - {{ annonce.localisation }}</p>
                                 <p class="flex-grow-1">{{ annonce.description|length > 120 ? annonce.description|slice(0, 120) ~ '...' : annonce.description }}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <strong class="text-success">{{ annonce.prix }} TND / {{ annonce.unitePrix }}</strong>
-                                    <a href="{{ path('app_marketplace_show', {id: annonce.id}) }}" class="btn btn-sm btn-dark">Voir l’annonce</a>
-                                </div>
+                                {% if isOwnerCard %}
+                                    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mt-3">
+                                        <strong class="text-success">{{ annonce.prix }} TND / {{ annonce.unitePrix }}</strong>
+                                        <div class="d-flex gap-2 flex-wrap ms-auto">
+                                            <a href="{{ path('app_marketplace_show', {id: annonce.id}) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                                            <a href="{{ path('app_seller_annonce_edit', {id: annonce.id}) }}" class="btn btn-sm btn-outline-success">Modifier</a>
+                                            <a href="{{ path('app_seller_request_index', {annonce: annonce.id}) }}" class="btn btn-sm btn-dark">Demandes</a>
+                                        </div>
+                                    </div>
+                                    <p class="small text-muted mt-3 mb-0">Cette annonce vous appartient. Vous pouvez la gerer depuis votre espace vendeur.</p>
+                                {% else %}
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <strong class="text-success">{{ annonce.prix }} TND / {{ annonce.unitePrix }}</strong>
+                                        <a href="{{ path('app_marketplace_show', {id: annonce.id}) }}" class="btn btn-sm btn-dark">Voir l'annonce</a>
+                                    </div>
+                                {% endif %}
                             </div>
                         </article>
                     </div>
