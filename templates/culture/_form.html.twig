@@ -1,15 +1,6 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-<style>
-  .agf-form-errors .invalid-feedback,
-  .agf-form-errors .form-error-message,
-  .agf-form-errors .text-danger {
-    display: block !important;
-  }
-</style>
-
-{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-<div class="agf-form-errors">
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
   {% include 'partials/_form_error_summary.html.twig' with { form: form } %}
 
   {% if selected_parcelle %}
@@ -39,7 +30,6 @@
       <div class="row">
         <div class="col-md-6">
           {{ form_row(form.superficie) }}
-          {{ form_errors(form.superficie) }}
         </div>
         <div class="col-md-6">
           {{ form_row(form.etat) }}
@@ -48,11 +38,9 @@
       <div class="row">
         <div class="col-md-6">
           {{ form_row(form.dateRecolte) }}
-          {{ form_errors(form.dateRecolte) }}
         </div>
         <div class="col-md-6">
           {{ form_row(form.recolteEstime) }}
-          {{ form_errors(form.recolteEstime) }}
         </div>
       </div>
     </div>
@@ -79,7 +67,6 @@
     <button class="btn btn-success">{{ submit_label|default('Enregistrer') }}</button>
     <a href="{{ path('app_culture_index') }}" class="btn btn-outline-secondary">Retour a la liste</a>
   </div>
-</div>
 {{ form_end(form) }}
 
 <script>
