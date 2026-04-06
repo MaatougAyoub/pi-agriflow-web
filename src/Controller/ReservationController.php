@@ -35,11 +35,13 @@ final class ReservationController extends AbstractController
     ): Response {
         $user = $this->getUser();
 
+        // security: route hedhi ma tnajjemch tet3ada ken b compte agriculteur s7i7
         if (!$user instanceof Utilisateur || null === $user->getId()) {
             throw $this->createAccessDeniedException('Connexion agriculteur requise.');
         }
 
         try {
+            // metier: houni n9ablou ken annonce disponible w moch annonce mta3 nafs user
             $sellerMarketplaceService->ensureCanReserve($user, $annonce);
         } catch (\DomainException $exception) {
             $this->addFlash('danger', $exception->getMessage());
@@ -47,19 +49,43 @@ final class ReservationController extends AbstractController
             return $this->redirectToRoute('app_marketplace_show', ['id' => $annonce->getId()]);
         }
 
+        // reservation: demande jdida tabda toujours EN_ATTENTE w clientId men compte connecte
         $reservation = (new Reservation())
             ->setAnnonce($annonce)
             ->setStatut(ReservationStatut::EN_ATTENTE)
             ->setClientId($user->getId());
 
+        if (!$annonce->isLocation()) {
+            $today = new \DateTimeImmutable('today');
+            $reservation
+                ->setDateDebut($today)
+                ->setDateFin($today);
+        }
+
         $form = $this->createForm(FrontReservationType::class, $reservation, [
             'action' => $this->generateUrl('app_reservation_create', ['id' => $annonce->getId()]),
             'method' => 'POST',
+            'is_location' => $annonce->isLocation(),
         ]);
         $form->handleRequest($request);
 
+        if ($annonce->isLocation() && $form->isSubmitted() && $form->isValid()) {
+            $today = new \DateTimeImmutable('today');
+
+            // date: fil front ma n5alliwch reservation tabda fi date fetet
+            if (null !== $reservation->getDateDebut() && $reservation->getDateDebut() < $today) {
+                $form->get('dateDebut')->addError(new FormError('La date de debut ne peut pas etre dans le passe.'));
+            }
+
+            // date: nafs logique l date fin zeda bech demande 9dima ma tet3addach
+            if (null !== $reservation->getDateFin() && $reservation->getDateFin() < $today) {
+                $form->get('dateFin')->addError(new FormError('La date de fin ne peut pas etre dans le passe.'));
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             try {
+                // pricing: houni service y7sb prix total w commission w y3abbi proprietaireId
                 $pricingService->hydrateReservation($reservation);
 
                 $entityManager->persist($reservation);
@@ -73,6 +99,7 @@ final class ReservationController extends AbstractController
             }
         }
 
+        // validation: ken fama erreur nrendrou nafs page b status 422 bech feedback yban
         $this->addFlash('danger', 'Le formulaire de reservation contient des erreurs.');
 
         return $this->render('marketplace/show.html.twig', [
@@ -97,10 +124,12 @@ final class ReservationController extends AbstractController
     {
         $user = $this->getUser();
 
+        // security: mes reservations marboutin b agriculteur connecte bark
         if (!$user instanceof Utilisateur || null === $user->getId()) {
             throw $this->createAccessDeniedException('Connexion agriculteur requise.');
         }
 
+        // reservation: hedhi liste demandes eli user ba3athhom comme client
         return $this->render('reservation/my_reservations.html.twig', [
             'reservations' => $reservationRepository->findByClientIdForMarketplace($user->getId()),
         ]);
@@ -115,7 +144,7 @@ final class ReservationController extends AbstractController
         $category = strtolower((string) $annonce->getCategorie());
         $imageUrl = trim((string) ($annonce->getImageUrl() ?? ''));
 
-        // na5thou image mta3 seller ki tkoun URL s7i7a bech detail yeb9a nefes rendu
+        // image: na5thou image mta3 seller ki tkoun URL s7i7a bech detail yeb9a nafes rendu
         if ('' !== $imageUrl && false !== filter_var($imageUrl, FILTER_VALIDATE_URL)) {
             $host = strtolower((string) parse_url($imageUrl, PHP_URL_HOST));
 
@@ -129,6 +158,7 @@ final class ReservationController extends AbstractController
             }
         }
 
+        // image: fallback local yb9a mawjoued ken ma fama hata image externe s7i7a
         if (str_contains($title, 'tracteur') || str_contains($category, 'materiel')) {
             return [
                 'image' => 'uploads/marketplace/tracteur-cover.jpg',

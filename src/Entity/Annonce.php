@@ -36,7 +36,9 @@ class Annonce
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
     #[Assert\Length(
         min: 20,
-        minMessage: 'La description doit contenir au moins {{ limit }} caracteres.'
+        max: 2000,
+        minMessage: 'La description doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'La description ne doit pas depasser {{ limit }} caracteres.'
     )]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
@@ -53,7 +55,12 @@ class Annonce
     private string $prix = '0.00';
 
     #[Assert\NotBlank(message: 'La categorie est obligatoire.')]
-    #[Assert\Length(max: 120)]
+    #[Assert\Length(
+        min: 2,
+        max: 120,
+        minMessage: 'La categorie doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'La categorie ne doit pas depasser {{ limit }} caracteres.'
+    )]
     #[ORM\Column(length: 120)]
     private ?string $categorie = null;
 
@@ -63,7 +70,12 @@ class Annonce
     private ?string $imageUrl = null;
 
     #[Assert\NotBlank(message: 'La localisation est obligatoire.')]
-    #[Assert\Length(max: 120)]
+    #[Assert\Length(
+        min: 2,
+        max: 120,
+        minMessage: 'La localisation doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'La localisation ne doit pas depasser {{ limit }} caracteres.'
+    )]
     #[ORM\Column(length: 120)]
     private ?string $localisation = null;
 
@@ -76,7 +88,12 @@ class Annonce
     private int $quantiteDisponible = 1;
 
     #[Assert\NotBlank(message: 'L unite du prix est obligatoire.')]
-    #[Assert\Length(max: 20)]
+    #[Assert\Length(
+        min: 2,
+        max: 20,
+        minMessage: 'L unite du prix doit contenir au moins {{ limit }} caracteres.',
+        maxMessage: 'L unite du prix ne doit pas depasser {{ limit }} caracteres.'
+    )]
     #[ORM\Column(length: 20)]
     private string $unitePrix = 'jour';
 
@@ -291,7 +308,7 @@ class Annonce
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
-        // houni n7otou les dates automatiquement bech l code y9a3ed propre
+        // date: houni n7otou createdAt w updatedAt automatiquement wa9t creation
         $now = new \DateTimeImmutable();
         $this->createdAt ??= $now;
         $this->updatedAt = $now;
@@ -300,7 +317,7 @@ class Annonce
     #[ORM\PreUpdate]
     public function onPreUpdate(): void
     {
-        // kol modification tbadel updatedAt automatique
+        // date: kol modification tbadel updatedAt automatiquement
         $this->updatedAt = new \DateTimeImmutable();
     }
 }

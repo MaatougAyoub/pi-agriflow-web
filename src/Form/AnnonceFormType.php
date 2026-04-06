@@ -21,6 +21,7 @@ class AnnonceFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // validation: houni n7ot controles saisie bech data mta3 annonce tod5ol nadhiya
         $builder
             ->add('titre', TextType::class, [
                 'label' => 'Titre',
@@ -69,6 +70,7 @@ class AnnonceFormType extends AbstractType
                 'help' => 'Exemples: jour, piece, semaine.',
                 'attr' => [
                     'maxlength' => 20,
+                    'minlength' => 2,
                     'placeholder' => 'Ex: jour, piece, semaine',
                 ],
             ])
@@ -76,6 +78,7 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Categorie',
                 'empty_data' => '',
                 'attr' => [
+                    'minlength' => 2,
                     'maxlength' => 120,
                     'placeholder' => 'Materiel, Fruits, Irrigation...',
                 ],
@@ -93,6 +96,7 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Localisation',
                 'empty_data' => '',
                 'attr' => [
+                    'minlength' => 2,
                     'maxlength' => 120,
                     'placeholder' => 'Nabeul, Sousse, Ariana...',
                 ],

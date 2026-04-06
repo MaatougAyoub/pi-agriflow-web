@@ -66,14 +66,20 @@
                             {% elseif canReserve %}
                                 <h3 class="h4 mb-3">Envoyer une demande</h3>
                                 <p class="text-muted small">
-                                    Choisissez la periode et la quantite souhaitee. Le montant final inclut automatiquement la commission de la plateforme.
+                                    {% if annonce.isLocation() %}
+                                        Choisissez la periode et la quantite souhaitee. Le montant final inclut automatiquement la commission de la plateforme.
+                                    {% else %}
+                                        Choisissez la quantite souhaitee. La date de demande est enregistree automatiquement et le montant final inclut la commission de la plateforme.
+                                    {% endif %}
                                 </p>
 
                                 {{ form_start(reservationForm) }}
-                                    <div class="row g-3">
-                                        <div class="col-md-6">{{ form_row(reservationForm.dateDebut) }}</div>
-                                        <div class="col-md-6">{{ form_row(reservationForm.dateFin) }}</div>
-                                    </div>
+                                    {% if reservationForm.dateDebut is defined and reservationForm.dateFin is defined %}
+                                        <div class="row g-3">
+                                            <div class="col-md-6">{{ form_row(reservationForm.dateDebut) }}</div>
+                                            <div class="col-md-6">{{ form_row(reservationForm.dateFin) }}</div>
+                                        </div>
+                                    {% endif %}
                                     <div class="mt-3">{{ form_row(reservationForm.quantite) }}</div>
                                     <div class="mt-3">{{ form_row(reservationForm.message) }}</div>
                                     <button class="btn btn-success w-100">Confirmer la demande</button>
@@ -137,6 +143,11 @@
                                     <li>Le vendeur confirme ou refuse chaque demande manuellement.</li>
                                     <li>Le total affiche inclut deja la commission de la plateforme.</li>
                                     <li>Le stock disponible est mis a jour seulement apres validation de la demande.</li>
+                                    {% if annonce.isLocation() %}
+                                        <li>Pour une location, le montant depend de la periode selectionnee.</li>
+                                    {% else %}
+                                        <li>Pour une vente, la demande se fait sur la quantite sans choisir de periode.</li>
+                                    {% endif %}
                                 </ul>
                             {% endif %}
                         </div>
