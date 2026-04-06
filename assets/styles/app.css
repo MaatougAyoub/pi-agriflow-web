@@ -2,6 +2,49 @@
     z-index: 1080;
 }
 
+.agf-password-wrapper {
+    position: relative;
+    width: 100%;
+    display: block;
+}
+
+.agf-password-wrapper .agf-password-input {
+    width: 100%;
+    padding-right: 44px;
+}
+
+.agf-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #5a6772;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.agf-password-toggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.agf-password-toggle:focus-visible {
+    outline: 2px solid #2e7d32;
+    outline-offset: 1px;
+}
+
+.agf-password-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
 .agf-front {
     background: #f7f5ef;
     color: #263326;
