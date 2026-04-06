@@ -40,12 +40,13 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/post-login, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/mon-espace, roles: ROLE_AGRICULTEUR }
-        - { path: ^/mes-reservations, roles: ROLE_AGRICULTEUR }
-        - { path: ^/marketplace/[0-9]+/reserve, roles: ROLE_AGRICULTEUR }
+        - { path: '^/login', roles: PUBLIC_ACCESS }
+        - { path: '^/forgot-password', roles: PUBLIC_ACCESS }
+        - { path: '^/post-login', roles: IS_AUTHENTICATED_FULLY }
+        - { path: '^/admin', roles: ROLE_ADMIN }
+        - { path: '^/mon-espace', roles: ROLE_AGRICULTEUR }
+        - { path: '^/mes-reservations', roles: ROLE_AGRICULTEUR }
+        - { path: '^/marketplace/[0-9]+/reserve', roles: ROLE_AGRICULTEUR }
 
 when@test:
     security:
