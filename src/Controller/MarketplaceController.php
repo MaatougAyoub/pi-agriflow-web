@@ -26,8 +26,10 @@ final class MarketplaceController extends AbstractController
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, AnnonceRepository $annonceRepository): Response
     {
+        // filter: houni njiib texte recherche w type men query string mta3 page marketplace
         $keyword = $request->query->getString('q');
         $type = AnnonceType::tryFrom((string) $request->query->get('type'));
+        // view: searchPublic njiibou beha ken annonces disponibles bech public catalogue yeb9a logique
         $annonces = $annonceRepository->searchPublic($keyword, $type);
         $stats = [
             'total' => count($annonces),
@@ -37,6 +39,7 @@ final class MarketplaceController extends AbstractController
         ];
         $localisations = [];
 
+        // stats: houni n7sbou chiffres sghar bech nwarri resume 3la catalogue
         foreach ($annonces as $annonce) {
             if ($annonce->isLocation()) {
                 ++$stats['location'];
@@ -68,11 +71,13 @@ final class MarketplaceController extends AbstractController
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getUser();
+        // role: houni nfarkou bin owner w viewer bech kol wahed ychouf el actions eli t5assou
         $isAgriculteurViewer = $user instanceof Utilisateur && $this->isGranted('ROLE_AGRICULTEUR');
         $isOwnerViewer = $sellerMarketplaceService->isAnnonceOwner(
             $user instanceof Utilisateur ? $user : null,
             $annonce
         );
+        // reservation: canReserve t7eb annonce disponible w viewer agriculteur w moch owner
         $canReserve = $isAgriculteurViewer
             && !$isOwnerViewer
             && $annonce->getStatut() === AnnonceStatut::DISPONIBLE;
@@ -97,12 +102,21 @@ final class MarketplaceController extends AbstractController
 
     private function createReservationForm(Annonce $annonce, Utilisateur $user): FormInterface
     {
+        // reservation: clientId yji automatique men user connecte bech ma n5alliwch champ technique fil front
         $reservation = (new Reservation())->setClientId($user->getId() ?? 0);
 
-        // n5alliw action wa7adha bech page details tab9a lisible w POST yetsayyar wahdou
+        if (!$annonce->isLocation()) {
+            $today = new \DateTimeImmutable('today');
+            $reservation
+                ->setDateDebut($today)
+                ->setDateFin($today);
+        }
+
+        // reservation: n7adhrou form wa7dou bech detail page tab9a wadh7a w POST yimchi route m5asssa
         return $this->createForm(FrontReservationType::class, $reservation, [
             'action' => $this->generateUrl('app_reservation_create', ['id' => $annonce->getId()]),
             'method' => 'POST',
+            'is_location' => $annonce->isLocation(),
         ]);
     }
 
@@ -115,6 +129,7 @@ final class MarketplaceController extends AbstractController
     {
         $visuals = [];
 
+        // view: n7adhrou visuel kol carte mara wa7da bech twig yeb9a ashel
         foreach ($annonces as $annonce) {
             $visuals[$annonce->getId() ?? 0] = $this->buildAnnonceVisual($annonce);
         }
@@ -131,7 +146,7 @@ final class MarketplaceController extends AbstractController
         $category = strtolower((string) $annonce->getCategorie());
         $imageUrl = trim((string) ($annonce->getImageUrl() ?? ''));
 
-        // ken seller 7at image valide, n5admouha direct 5ir men image par defaut
+        // image: ken seller 7at lien s7i7 n5admouh 9bal ay image par defaut
         if ('' !== $imageUrl && false !== filter_var($imageUrl, FILTER_VALIDATE_URL)) {
             $host = strtolower((string) parse_url($imageUrl, PHP_URL_HOST));
 
@@ -145,7 +160,7 @@ final class MarketplaceController extends AbstractController
             }
         }
 
-        // houni na3ti kol annonce image local mefhoma bech ma ykounch visuel 3achwa2i
+        // image: houni na3ti fallback local 3la 7sab titre/categorie bech visuel ma ykounch 3achwa2i
         if (str_contains($title, 'tracteur') || str_contains($category, 'materiel')) {
             return [
                 'image' => 'uploads/marketplace/tracteur-cover.jpg',
