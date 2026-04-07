@@ -134,6 +134,41 @@ class CultureRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return Culture[]
+     */
+    public function findPurchasedByAcheteurId(int $acheteurId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.utilisateur', 'acheteur')
+            ->addSelect('acheteur')
+            ->andWhere('acheteur.id = :acheteurId')
+            ->setParameter('acheteurId', $acheteurId)
+            ->orderBy('c.date_vente', 'DESC')
+            ->addOrderBy('c.date_creation', 'DESC')
+            ->addOrderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return Culture[]
+     */
+    public function findPublishedForMarketplace(int $viewerId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.proprietaire_id != :viewerId')
+            ->andWhere('c.etat = :etat')
+            ->andWhere('c.utilisateur IS NULL')
+            ->setParameter('viewerId', $viewerId)
+            ->setParameter('etat', Culture::ETAT_EN_VENTE)
+            ->orderBy('c.date_publication', 'DESC')
+            ->addOrderBy('c.date_creation', 'DESC')
+            ->addOrderBy('c.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param array<string, string|null> $criteria
      * @return Culture[]
      */
@@ -232,7 +267,9 @@ class CultureRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('c')
             ->select('COALESCE(SUM(c.superficie), 0)')
             ->andWhere('c.parcelle_id = :parcelleId')
+            ->andWhere('(c.etat IS NULL OR c.etat != :recoltee)')
             ->setParameter('parcelleId', $parcelleId);
+        $queryBuilder->setParameter('recoltee', Culture::ETAT_RECOLTEE);
 
         if (null !== $excludeCultureId) {
             $queryBuilder

@@ -2,17 +2,18 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\CultureRepository;
 
 #[ORM\Entity(repositoryClass: CultureRepository::class)]
 #[ORM\Table(name: 'cultures')]
 class Culture
 {
+    public const ETAT_EN_COURS = 'EN_COURS';
+    public const ETAT_EN_VENTE = 'EN_VENTE';
+    public const ETAT_VENDUE = 'VENDUE';
+    public const ETAT_RECOLTEE = 'RECOLTEE';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -104,7 +105,7 @@ class Culture
 
     public function getEtat(): ?string
     {
-        return $this->etat;
+        return $this->etat ?? self::ETAT_EN_COURS;
     }
 
     public function setEtat(?string $etat): self
@@ -155,7 +156,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'cultures')]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'id_acheteur', referencedColumnName: 'id')]
     private ?Utilisateur $utilisateur = null;
 
@@ -167,6 +168,18 @@ class Culture
     public function setUtilisateur(?Utilisateur $utilisateur): self
     {
         $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    public function getAcheteur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setAcheteur(?Utilisateur $acheteur): self
+    {
+        $this->utilisateur = $acheteur;
+
         return $this;
     }
 
@@ -318,6 +331,94 @@ class Culture
         $this->prix_vente = $prix_vente;
 
         return $this;
+    }
+
+    public function getAcheteurId(): ?int
+    {
+        return $this->utilisateur?->getId();
+    }
+
+    public function hasAcheteur(): bool
+    {
+        return null !== $this->getAcheteurId();
+    }
+
+    public function isEnCours(): bool
+    {
+        return self::ETAT_EN_COURS === $this->getEtat();
+    }
+
+    public function isEnVente(): bool
+    {
+        return self::ETAT_EN_VENTE === $this->getEtat();
+    }
+
+    public function isVendue(): bool
+    {
+        return self::ETAT_VENDUE === $this->getEtat();
+    }
+
+    public function isRecoltee(): bool
+    {
+        return self::ETAT_RECOLTEE === $this->getEtat();
+    }
+
+    public function isOwnedBy(?int $utilisateurId): bool
+    {
+        return null !== $utilisateurId && $utilisateurId === $this->getProprietaireId();
+    }
+
+    public function isBoughtBy(?int $utilisateurId): bool
+    {
+        return null !== $utilisateurId && $utilisateurId === $this->getAcheteurId();
+    }
+
+    public function canBePublishedBy(?int $utilisateurId): bool
+    {
+        return $this->isOwnedBy($utilisateurId)
+            && !$this->hasAcheteur()
+            && $this->isEnCours();
+    }
+
+    public function canCancelPublicationBy(?int $utilisateurId): bool
+    {
+        return $this->isOwnedBy($utilisateurId)
+            && !$this->hasAcheteur()
+            && $this->isEnVente();
+    }
+
+    public function canBeBoughtBy(?int $utilisateurId): bool
+    {
+        return null !== $utilisateurId
+            && !$this->isOwnedBy($utilisateurId)
+            && !$this->hasAcheteur()
+            && $this->isEnVente();
+    }
+
+    public function canBeHarvestedBy(?int $utilisateurId): bool
+    {
+        if ($this->isRecoltee() || null === $utilisateurId) {
+            return false;
+        }
+
+        if ($this->isVendue()) {
+            return $this->isBoughtBy($utilisateurId);
+        }
+
+        return $this->isOwnedBy($utilisateurId);
+    }
+
+    public function isModifiableOrSuppressible(): bool
+    {
+        return !$this->hasAcheteur()
+            && \in_array($this->getEtat(), [self::ETAT_EN_COURS, self::ETAT_EN_VENTE], true);
+    }
+
+    public function canBeViewedBy(?int $utilisateurId): bool
+    {
+        return $this->isOwnedBy($utilisateurId)
+            || $this->isBoughtBy($utilisateurId)
+            || $this->canBeBoughtBy($utilisateurId);
     }
 
 }

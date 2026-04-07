@@ -1,0 +1,124 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Marketplace cultures{% endblock %}
+{% block hero_title %}Marketplace cultures{% endblock %}
+{% block hero_subtitle %}Retrouvez toutes les cultures actuellement publiees a la vente{% endblock %}
+{% block top_right_action %}
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ path('app_culture_index') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-2"></i>Retour vers mes cultures
+    </a>
+  </div>
+{% endblock %}
+
+{% block module_body %}
+  <style>
+    .marketplace-card {
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .marketplace-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .marketplace-card--mine {
+      border-color: rgba(25, 135, 84, 0.28);
+      background: linear-gradient(180deg, rgba(25, 135, 84, 0.08), rgba(25, 135, 84, 0.03));
+      box-shadow: 0 0.5rem 1.25rem rgba(25, 135, 84, 0.12) !important;
+    }
+
+    .marketplace-stat {
+      border-radius: .85rem;
+      background: rgba(248, 249, 250, 0.9);
+      padding: .8rem .95rem;
+      height: 100%;
+    }
+  </style>
+
+  {% if marketplace_cultures is empty %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="h5 mb-2">Aucune culture en vente</h2>
+        <p class="text-muted mb-0">La marketplace ne contient aucune culture publiee pour le moment.</p>
+      </div>
+    </div>
+  {% else %}
+    <div class="row g-4">
+      {% for culture in marketplace_cultures %}
+        {% set is_owner = culture.proprietaireId == current_user_id %}
+        <div class="col-md-6 col-xl-4">
+          <div class="card marketplace-card border-0 shadow-sm h-100 {{ is_owner ? 'marketplace-card--mine' : '' }}">
+            <div class="card-body p-4 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div class="d-flex flex-wrap gap-2">
+                  <span class="badge text-bg-warning">{{ culture.etat }}</span>
+                  {% if is_owner %}
+                    <span class="badge text-bg-success">Votre culture</span>
+                  {% endif %}
+                </div>
+                <span class="badge {{ is_owner ? 'text-bg-success' : 'text-bg-light' }}">
+                  {{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;
+                </span>
+              </div>
+
+              <h2 class="h4 mb-1">{{ culture.nom ?: 'Sans nom' }}</h2>
+              <p class="text-muted mb-4">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
+
+              <div class="row g-3 mb-4">
+                <div class="col-6">
+                  <div class="marketplace-stat">
+                    <div class="text-muted small mb-1">Prix de vente</div>
+                    <div class="fw-semibold">
+                      {{ culture.prixVente is not null ? culture.prixVente|number_format(2, '.', ' ') ~ ' TND' : 'Non renseigne' }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="marketplace-stat">
+                    <div class="text-muted small mb-1">Proprietaire</div>
+                    <div class="fw-semibold">{{ is_owner ? 'Vous' : 'Autre agriculteur' }}</div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="marketplace-stat">
+                    <div class="text-muted small mb-1">Publication</div>
+                    <div class="fw-semibold">{{ culture.datePublication ? culture.datePublication|date('d/m/Y') : 'Non renseignee' }}</div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="marketplace-stat">
+                    <div class="text-muted small mb-1">Etat</div>
+                    <div class="fw-semibold">{{ culture.etat }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="small text-muted mb-4">
+                {% if is_owner %}
+                  Cette culture est deja visible dans la marketplace et reste consultable depuis votre espace.
+                {% else %}
+                  Cette culture est actuellement disponible a l achat selon les regles metier en place.
+                {% endif %}
+              </div>
+
+              <div class="mt-auto d-flex gap-2 flex-wrap">
+                <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="btn {{ is_owner ? 'btn-success' : 'btn-outline-success' }}">
+                  {{ is_owner ? 'Voir ma culture' : 'Consulter' }}
+                </a>
+
+                {% if not is_owner and culture.canBeBoughtBy(current_user_id) %}
+                  <form method="post" action="{{ path('app_culture_buy', {id: culture.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('buy_culture_' ~ culture.id) }}">
+                    <button class="btn btn-primary">Acheter</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

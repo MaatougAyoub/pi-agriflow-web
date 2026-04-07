@@ -32,15 +32,17 @@
           {{ form_row(form.superficie) }}
         </div>
         <div class="col-md-6">
-          {{ form_row(form.etat) }}
+          {{ form_row(form.dateRecolte) }}
         </div>
       </div>
       <div class="row">
         <div class="col-md-6">
-          {{ form_row(form.dateRecolte) }}
-        </div>
-        <div class="col-md-6">
           {{ form_row(form.recolteEstime) }}
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+          <div class="alert alert-light border w-100 mb-3">
+            L etat de la culture est gere automatiquement selon les actions disponibles.
+          </div>
         </div>
       </div>
     </div>

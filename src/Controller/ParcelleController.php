@@ -166,8 +166,18 @@ final class ParcelleController extends AbstractController
         $agriculteurId = $this->getAuthenticatedUserId();
         $parcelle = $this->findOwnedParcelle($id, $agriculteurId, $parcelleRepository);
         $cultures = $cultureRepository->findByParcelleIdAndProprietaireId($id, $agriculteurId);
+        $blockingCultures = array_filter($cultures, static fn ($culture) => !$culture->isRecoltee());
 
         if ($this->isCsrfTokenValid('delete_parcelle_'.$parcelle->getId(), (string) $request->request->get('_token'))) {
+            if ([] !== $blockingCultures) {
+                $this->addFlash(
+                    'danger',
+                    'La suppression de cette parcelle est impossible tant qu elle contient des cultures en cours, en vente ou vendues.'
+                );
+
+                return $this->redirectToRoute('app_parcelle_show', ['id' => $parcelle->getId()]);
+            }
+
             $confirmCascadeDelete = '1' === $request->request->get('confirm_cascade_delete');
 
             if ([] !== $cultures && !$confirmCascadeDelete) {
