@@ -31,19 +31,14 @@ class CultureType extends AbstractType
         'Autre' => 'AUTRE',
     ];
 
-    private const ETAT_CHOICES = [
-        'En cours' => 'EN_COURS',
-        'Recoltee' => 'RECOLTEE',
-        'En vente' => 'EN_VENTE',
-        'Vendue' => 'VENDUE',
-    ];
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $selectedParcelleId = $options['selected_parcelle_id'];
-        $selectedParcelleAvailableSurface = $selectedParcelleId ? ($options['surface_by_parcelle'][$selectedParcelleId] ?? null) : null;
+        $selectedParcelleAvailableSurface = $selectedParcelleId
+            ? ($options['surface_by_parcelle'][$selectedParcelleId] ?? null)
+            : null;
         $superficieHelp = null !== $selectedParcelleAvailableSurface
-            ? sprintf('Surface maximale disponible pour la parcelle selectionnee: %.0f m².', $selectedParcelleAvailableSurface)
+            ? sprintf('Surface maximale disponible pour la parcelle selectionnee: %.0f m2.', $selectedParcelleAvailableSurface)
             : 'Choisissez une parcelle pour verifier la surface disponible.';
 
         $builder
@@ -51,6 +46,7 @@ class CultureType extends AbstractType
                 'label' => 'Parcelle',
                 'choices' => $options['parcelle_choices'],
                 'placeholder' => 'Choisir une parcelle',
+                'required' => true,
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez choisir une parcelle.']),
                 ],
@@ -71,21 +67,12 @@ class CultureType extends AbstractType
                 ],
             ])
             ->add('superficie', NumberType::class, [
-                'label' => 'Superficie (m²)',
+                'label' => 'Superficie (m2)',
                 'scale' => 2,
                 'help' => $superficieHelp,
                 'constraints' => [
                     new NotBlank(['message' => 'Veuillez saisir une superficie.']),
                     new Positive(['message' => 'La superficie doit etre superieure a 0.']),
-                ],
-            ])
-            ->add('etat', ChoiceType::class, [
-                'label' => 'Etat',
-                'choices' => self::ETAT_CHOICES,
-                'placeholder' => 'Choisir un etat',
-                'required' => true,
-                'constraints' => [
-                    new NotBlank(['message' => "L'etat est obligatoire."]),
                 ],
             ])
             ->add('dateRecolte', DateType::class, [
