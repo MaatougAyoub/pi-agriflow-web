@@ -59,8 +59,8 @@
                     <td>{{ app.expectedSalaryAsFloat|number_format(2) }} DT</td>
                     <td class="small">{{ app.appliedAt|date('d/m/Y') }}</td>
                     <td>
-                        <span class="badge {% if app.status == 'accepted' %}bg-success{% elseif app.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                            {% if app.status == 'accepted' %}Acceptée{% elseif app.status == 'rejected' %}Refusée{% else %}En attente{% endif %}
+                        <span class="badge {% if app.status == 'APPROVED' %}bg-success{% elseif app.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {% if app.status == 'APPROVED' %}Acceptée{% elseif app.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
                         </span>
                     </td>
                     <td class="text-end">
@@ -70,8 +70,8 @@
                                     <form method="post" action="{{ path('admin_collab_application_status', {id: app.id}) }}" class="d-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('app_status_' ~ app.id) }}">
                                         <input type="hidden" name="status" value="{{ val }}">
-                                        <button type="submit" class="btn btn-xs btn-outline-{% if val == 'accepted' %}success{% elseif val == 'rejected' %}danger{% else %}warning{% endif %} btn-sm py-0 px-1" title="{{ label }}">
-                                            {% if val == 'accepted' %}<i class="bi bi-check"></i>{% elseif val == 'rejected' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
+                                        <button type="submit" class="btn btn-xs btn-outline-{% if val == 'APPROVED' %}success{% elseif val == 'REJECTED' %}danger{% else %}warning{% endif %} btn-sm py-0 px-1" title="{{ label }}">
+                                            {% if val == 'APPROVED' %}<i class="bi bi-check"></i>{% elseif val == 'REJECTED' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
                                         </button>
                                     </form>
                                 {% endif %}

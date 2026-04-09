@@ -25,18 +25,14 @@
                 <ul>
                     <li><a href="{{ path('site_home') }}" class="{{ current_route == 'site_home' ? 'active' : '' }}">Accueil</a></li>
                     <li><a href="{{ path('app_marketplace_index') }}" class="{{ current_route starts with 'app_marketplace_' ? 'active' : '' }}">Marketplace</a></li>
-<<<<<<< HEAD
-                    <li><a href="{{ path('collab_index') }}" class="{{ current_route starts with 'collab_' ? 'active' : '' }}">Collaborations</a></li>
-=======
                     <li><a href="{{ path('app_collab_index') }}" class="{{ current_route starts with 'app_collab_' ? 'active' : '' }}">Collaborations</a></li>
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
                     <li><a href="{{ path('site_services') }}" class="{{ current_route == 'site_services' ? 'active' : '' }}">Services</a></li>
                     <li><a href="{{ path('site_about') }}" class="{{ current_route == 'site_about' ? 'active' : '' }}">À propos</a></li>
                     <li><a href="{{ path('site_contact') }}" class="{{ current_route == 'site_contact' ? 'active' : '' }}">Contact</a></li>
                     {% if app.user %}
                         <li><a href="{{ path('app_profile') }}" class="{{ current_route starts with 'app_profile' ? 'active' : '' }}">Profil</a></li>
-                        <li><a href="{{ path('collab_my_requests') }}" class="{{ current_route == 'collab_my_requests' ? 'active' : '' }}">Mes demandes</a></li>
-                        <li><a href="{{ path('collab_my_applications') }}" class="{{ current_route == 'collab_my_applications' ? 'active' : '' }}">Mes candidatures</a></li>
+                        <li><a href="{{ path('app_collab_my_requests') }}" class="{{ current_route == 'app_collab_my_requests' ? 'active' : '' }}">Mes demandes</a></li>
+                        <li><a href="{{ path('app_collab_my_applications') }}" class="{{ current_route == 'app_collab_my_applications' ? 'active' : '' }}">Mes candidatures</a></li>
                     {% endif %}
                     {% if is_granted('ROLE_ADMIN') %}
                         <li><a href="{{ path('app_admin_users') }}" class="{{ current_route starts with 'app_admin_user' ? 'active' : '' }}">Liste Des Utilisateurs</a></li>

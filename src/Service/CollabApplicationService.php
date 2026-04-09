@@ -44,7 +44,7 @@ class CollabApplicationService
         }
 
         // Rule: no duplicate application
-        if ($this->repository->hasApplied($candidate->getId(), $request->getId())) {
+        if ($this->repository->hasApplied($candidate, $request)) {
             throw new \DomainException('Vous avez déjà postulé à cette demande.');
         }
 

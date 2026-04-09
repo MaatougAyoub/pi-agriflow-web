@@ -22,8 +22,8 @@
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h2 class="h3 fw-bold mb-0">{{ collabRequest.title }}</h2>
-                            <span class="badge {% if collabRequest.status == 'open' %}bg-success{% elseif collabRequest.status == 'closed' %}bg-secondary{% else %}bg-warning text-dark{% endif %} fs-6">
-                                {% if collabRequest.status == 'open' %}Ouverte{% elseif collabRequest.status == 'closed' %}Fermée{% else %}Brouillon{% endif %}
+                            <span class="badge {% if collabRequest.status == 'APPROVED' %}bg-success{% elseif collabRequest.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %} fs-6">
+                                {% if collabRequest.status == 'APPROVED' %}Approuvée{% elseif collabRequest.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
                             </span>
                         </div>
 
@@ -62,15 +62,10 @@
                             </div>
                         </div>
 
-                        {% if collabRequest.salaryPerDayAsFloat > 0 or collabRequest.salaryAsFloat > 0 %}
+                        {% if collabRequest.salaryPerDayAsFloat > 0 %}
                             <div class="mt-4 p-3 bg-success bg-opacity-10 rounded">
                                 <h6 class="fw-semibold text-success mb-2"><i class="bi bi-currency-exchange me-1"></i>Rémunération</h6>
-                                {% if collabRequest.salaryPerDayAsFloat > 0 %}
-                                    <span class="me-3"><strong>{{ collabRequest.salaryPerDayAsFloat|number_format(2) }} DT</strong> / jour</span>
-                                {% endif %}
-                                {% if collabRequest.salaryAsFloat > 0 %}
-                                    <span><strong>{{ collabRequest.salaryAsFloat|number_format(2) }} DT</strong> total</span>
-                                {% endif %}
+                                <span><strong>{{ collabRequest.salaryPerDayAsFloat|number_format(2) }} DT</strong> / jour</span>
                             </div>
                         {% endif %}
                     </div>
@@ -97,7 +92,7 @@
                         </h6>
 
                         {% if app.user %}
-                            {% if collabRequest.status == 'open' and not collabRequest.expired %}
+                            {% if collabRequest.status == 'APPROVED' and not collabRequest.expired %}
                                 <a href="{{ path('collab_apply', {id: collabRequest.id}) }}" class="btn btn-success w-100">
                                     <i class="bi bi-send me-1"></i>Postuler maintenant
                                 </a>

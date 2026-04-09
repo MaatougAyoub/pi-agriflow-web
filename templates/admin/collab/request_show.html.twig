@@ -23,8 +23,8 @@
                 <dl class="row small mb-0">
                     <dt class="col-5 text-muted">Statut</dt>
                     <dd class="col-7">
-                        <span class="badge {% if collabRequest.status == 'open' %}bg-success{% elseif collabRequest.status == 'closed' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
-                            {% if collabRequest.status == 'open' %}Ouverte{% elseif collabRequest.status == 'closed' %}Fermée{% else %}Brouillon{% endif %}
+                        <span class="badge {% if collabRequest.status == 'APPROVED' %}bg-success{% elseif collabRequest.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {% if collabRequest.status == 'APPROVED' %}Approuvée{% elseif collabRequest.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
                         </span>
                     </dd>
                     <dt class="col-5 text-muted">Localisation</dt>
@@ -34,7 +34,7 @@
                     <dt class="col-5 text-muted">Personnes</dt>
                     <dd class="col-7">{{ collabRequest.neededPeople }}</dd>
                     <dt class="col-5 text-muted">Salaire/j</dt>
-                    <dd class="col-7">{{ collabRequest.salaryPerDayAsFloat|number_format(2) }} DT</dd>
+                    <dd class="col-7">{{ collabRequest.salaryPerDayAsFloat|number_format(2, ',', ' ') }} DT</dd>
                     <dt class="col-5 text-muted">Publié par</dt>
                     <dd class="col-7">{{ collabRequest.publisher ?? '—' }}</dd>
                     <dt class="col-5 text-muted">Créé le</dt>
@@ -51,7 +51,7 @@
                     <input type="hidden" name="_token" value="{{ csrf_token('req_status_' ~ collabRequest.id) }}">
                     <div class="d-flex gap-2">
                         <select name="status" class="form-select form-select-sm">
-                            {% for label, val in {'Ouverte': 'open', 'Fermée': 'closed', 'Brouillon': 'draft'} %}
+                            {% for label, val in {'En attente': 'PENDING', 'Approuvée': 'APPROVED', 'Refusée': 'REJECTED'} %}
                                 <option value="{{ val }}" {{ collabRequest.status == val ? 'selected' : '' }}>{{ label }}</option>
                             {% endfor %}
                         </select>
@@ -122,8 +122,8 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="badge {% if app.status == 'accepted' %}bg-success{% elseif app.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
-                                                {% if app.status == 'accepted' %}Acceptée{% elseif app.status == 'rejected' %}Refusée{% else %}En attente{% endif %}
+                                            <span class="badge {% if app.status == 'APPROVED' %}bg-success{% elseif app.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                                {% if app.status == 'APPROVED' %}Acceptée{% elseif app.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
                                             </span>
                                         </td>
                                         <td class="text-end">
@@ -134,8 +134,8 @@
                                                             <input type="hidden" name="_token" value="{{ csrf_token('app_status_' ~ app.id) }}">
                                                             <input type="hidden" name="status" value="{{ val }}">
                                                             <input type="hidden" name="redirect_request_id" value="{{ app.request ? app.request.id : '' }}">
-                                                            <button type="submit" class="btn btn-sm {% if val == 'accepted' %}btn-outline-success{% elseif val == 'rejected' %}btn-outline-danger{% else %}btn-outline-warning{% endif %} py-0 px-1" title="{{ label }}">
-                                                                {% if val == 'accepted' %}<i class="bi bi-check"></i>{% elseif val == 'rejected' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
+                                                            <button type="submit" class="btn btn-sm {% if val == 'APPROVED' %}btn-outline-success{% elseif val == 'REJECTED' %}btn-outline-danger{% else %}btn-outline-warning{% endif %} py-0 px-1" title="{{ label }}">
+                                                                {% if val == 'APPROVED' %}<i class="bi bi-check"></i>{% elseif val == 'REJECTED' %}<i class="bi bi-x"></i>{% else %}<i class="bi bi-clock"></i>{% endif %}
                                                             </button>
                                                         </form>
                                                     {% endif %}

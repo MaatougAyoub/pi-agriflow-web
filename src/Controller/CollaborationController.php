@@ -10,6 +10,7 @@ use App\Repository\CollabApplicationRepository;
 use App\Repository\CollabRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -80,6 +81,10 @@ class CollaborationController extends AbstractController
 
             $this->addFlash('success', '✅ Votre demande de collaboration a été créée avec succès ! Elle est en attente de validation par l\'administrateur.');
             return $this->redirectToRoute('app_collab_index');
+        }
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addCollabFormErrorFlash($form);
         }
 
         return $this->render('collaborations/new.html.twig', [
@@ -190,6 +195,10 @@ class CollaborationController extends AbstractController
             return $this->redirectToRoute('app_collab_my_requests');
         }
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addCollabFormErrorFlash($form);
+        }
+
         return $this->render('collaborations/edit.html.twig', [
             'form' => $form->createView(),
             'request' => $collabRequest,
@@ -273,17 +282,7 @@ class CollaborationController extends AbstractController
         }
 
         if ($form->isSubmitted() && !$form->isValid()) {
-            $messages = [];
-            foreach ($form->getErrors(true) as $error) {
-                $messages[] = $error->getMessage();
-            }
-            $messages = array_values(array_unique($messages));
-            $this->addFlash(
-                'danger',
-                $messages !== []
-                    ? implode(' ', $messages)
-                    : 'Le formulaire contient des erreurs. Vérifiez les champs obligatoires.'
-            );
+            $this->addCollabFormErrorFlash($form);
         }
 
         return $this->render('collaborations/apply.html.twig', [
@@ -343,5 +342,20 @@ class CollaborationController extends AbstractController
         }
 
         return $this->redirectToRoute('app_collab_view_applications', ['id' => $collabRequest->getId()]);
+    }
+
+    private function addCollabFormErrorFlash(FormInterface $form): void
+    {
+        $messages = [];
+        foreach ($form->getErrors(true) as $error) {
+            $messages[] = $error->getMessage();
+        }
+        $messages = array_values(array_unique($messages));
+        $this->addFlash(
+            'danger',
+            $messages !== []
+                ? implode(' ', $messages)
+                : 'Le formulaire contient des erreurs. Vérifiez les champs affichés ci-dessous.'
+        );
     }
 }

@@ -1,10 +1,5 @@
 <?php
 
-<<<<<<< HEAD
-declare(strict_types=1);
-
-=======
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 namespace App\Entity;
 
 use App\Repository\CollabApplicationRepository;
@@ -14,113 +9,97 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CollabApplicationRepository::class)]
 #[ORM\Table(name: 'collab_applications')]
-<<<<<<< HEAD
-#[ORM\Index(columns: ['status'], name: 'idx_collab_app_status')]
-#[ORM\UniqueConstraint(name: 'uq_candidate_request', columns: ['candidate_id', 'request_id'])]
 #[ORM\HasLifecycleCallbacks]
 class CollabApplication
 {
-    public const STATUS_PENDING  = 'pending';
-    public const STATUS_ACCEPTED = 'accepted';
-    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_PENDING = 'PENDING';
+
+    public const STATUS_ACCEPTED = 'APPROVED';
+
+    public const STATUS_REJECTED = 'REJECTED';
 
     public const STATUSES = [
         'En attente' => self::STATUS_PENDING,
-        'Acceptée'   => self::STATUS_ACCEPTED,
-        'Refusée'    => self::STATUS_REJECTED,
+        'Acceptée' => self::STATUS_ACCEPTED,
+        'Refusée' => self::STATUS_REJECTED,
     ];
 
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: CollabRequest::class, inversedBy: 'applications')]
     #[ORM\JoinColumn(name: 'request_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-=======
-#[ORM\HasLifecycleCallbacks]
-class CollabApplication
-{
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: "IDENTITY")]
-    #[ORM\Column]
-    private ?int $id = null;
-
-    #[ORM\ManyToOne(targetEntity: CollabRequest::class)]
-    #[ORM\JoinColumn(name: 'request_id', referencedColumnName: 'id', nullable: false)]
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     private ?CollabRequest $request = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'candidate_id', referencedColumnName: 'id', nullable: false)]
     private ?Utilisateur $candidate = null;
 
-<<<<<<< HEAD
-    #[Assert\NotBlank(message: 'Le nom complet est obligatoire.')]
-    #[Assert\Length(min: 3, max: 100, minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.')]
-    #[ORM\Column(name: 'full_name', length: 100)]
-    private ?string $fullName = null;
-
-    #[Assert\NotBlank(message: 'Le numéro de téléphone est obligatoire.')]
-    #[Assert\Regex(pattern: '/^\+?[0-9\s\-]{8,20}$/', message: 'Numéro de téléphone invalide.')]
-    #[ORM\Column(length: 30)]
-    private ?string $phone = null;
-
-    #[Assert\NotBlank(message: "L'email est obligatoire.")]
-    #[Assert\Email(message: 'Email invalide.')]
-    #[ORM\Column(length: 180)]
-    private ?string $email = null;
-
-    #[Assert\NotNull(message: "Le nombre d'années d'expérience est obligatoire.")]
-    #[Assert\PositiveOrZero(message: "Les années d'expérience ne peuvent pas être négatives.")]
-    #[Assert\LessThanOrEqual(value: 50, message: "Les années d'expérience semblent incorrectes.")]
-    #[ORM\Column(name: 'years_of_experience')]
-    private ?int $yearsOfExperience = null;
-
-    #[Assert\NotBlank(message: 'La lettre de motivation est obligatoire.')]
-    #[Assert\Length(min: 50, minMessage: 'La motivation doit contenir au moins {{ limit }} caractères.')]
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $motivation = null;
-
-    #[Assert\PositiveOrZero(message: 'Le salaire attendu ne peut pas être négatif.')]
-    #[ORM\Column(name: 'expected_salary', type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => 0])]
-    private ?string $expectedSalary = '0.00';
-
-    #[Assert\Choice(choices: [self::STATUS_PENDING, self::STATUS_ACCEPTED, self::STATUS_REJECTED], message: 'Statut invalide.')]
-    #[ORM\Column(length: 20, options: ['default' => 'pending'])]
-    private ?string $status = self::STATUS_PENDING;
-
-    #[ORM\Column(name: 'applied_at', type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $appliedAt = null;
-
-    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $updatedAt = null;
-=======
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le nom complet est obligatoire.')]
+    #[Assert\Sequentially([
+        new Assert\NotBlank(message: 'Veuillez compléter le nom complet.'),
+        new Assert\Length(
+            min: 3,
+            max: 255,
+            minMessage: 'Le nom complet doit contenir au moins {{ limit }} caractères.',
+            maxMessage: 'Le nom complet ne peut pas dépasser {{ limit }} caractères.',
+        ),
+    ])]
     private ?string $fullName = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\NotBlank(message: 'Le numéro de téléphone est obligatoire.')]
-    #[Assert\Regex(pattern: '/^[0-9]+$/', message: 'Le téléphone ne doit contenir que des chiffres.')]
+    #[Assert\Sequentially([
+        new Assert\NotBlank(message: 'Veuillez compléter le numéro de téléphone.'),
+        new Assert\Regex(pattern: '/^[0-9]+$/', message: 'Le téléphone ne doit contenir que des chiffres.'),
+        new Assert\Length(
+            min: 8,
+            max: 20,
+            minMessage: 'Le téléphone doit contenir au moins {{ limit }} chiffres.',
+            maxMessage: 'Le téléphone ne peut pas dépasser {{ limit }} chiffres.',
+        ),
+    ])]
     private ?string $phone = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
-    #[Assert\Email(message: 'Veuillez saisir une adresse email valide.')]
+    #[Assert\Sequentially([
+        new Assert\NotBlank(message: 'Veuillez compléter l’adresse e-mail.'),
+        new Assert\Email(message: 'Veuillez saisir une adresse e-mail valide.'),
+        new Assert\Length(max: 100, maxMessage: 'L’e-mail ne peut pas dépasser {{ limit }} caractères.'),
+    ])]
     private ?string $email = null;
 
     #[ORM\Column(options: ['default' => 0])]
     #[Assert\NotNull(message: 'Les années d\'expérience sont obligatoires.')]
-    #[Assert\PositiveOrZero(message: 'Les années d\'expérience ne peuvent pas être négatives.')]
+    #[Assert\Range(
+        notInRangeMessage: 'Les années d\'expérience doivent être comprises entre {{ min }} et {{ max }}.',
+        min: 0,
+        max: 50,
+    )]
     private ?int $yearsOfExperience = 0;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'La motivation est obligatoire.')]
+    #[Assert\Sequentially([
+        new Assert\NotBlank(message: 'Veuillez compléter la lettre de motivation.'),
+        new Assert\Length(
+            min: 30,
+            max: 8000,
+            minMessage: 'La lettre de motivation doit contenir au moins {{ limit }} caractères.',
+            maxMessage: 'La lettre de motivation ne peut pas dépasser {{ limit }} caractères.',
+        ),
+    ])]
     private ?string $motivation = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
-    #[Assert\PositiveOrZero(message: 'Le salaire attendu ne peut pas être négatif.')]
+    #[Assert\Sequentially([
+        new Assert\NotBlank(message: 'Veuillez compléter le salaire attendu (indiquez 0 si le salaire de l’offre vous convient).'),
+        new Assert\Range(
+            min: 0,
+            max: 99999.99,
+            notInRangeMessage: 'Le salaire attendu doit être compris entre {{ min }} et {{ max }} DT.',
+        ),
+    ])]
     private ?string $expectedSalary = '0.00';
 
     #[ORM\Column(length: 50, options: ['default' => 'PENDING'])]
@@ -131,7 +110,6 @@ class CollabApplication
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $updatedAt = null;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 
     public function __construct()
     {
@@ -139,15 +117,6 @@ class CollabApplication
         $this->updatedAt = new \DateTime();
     }
 
-<<<<<<< HEAD
-    #[ORM\PreUpdate]
-    public function onPreUpdate(): void
-    {
-        $this->updatedAt = new \DateTime();
-    }
-
-=======
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     public function getId(): ?int
     {
         return $this->id;
@@ -161,10 +130,7 @@ class CollabApplication
     public function setRequest(?CollabRequest $request): static
     {
         $this->request = $request;
-<<<<<<< HEAD
 
-=======
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -176,10 +142,7 @@ class CollabApplication
     public function setCandidate(?Utilisateur $candidate): static
     {
         $this->candidate = $candidate;
-<<<<<<< HEAD
 
-=======
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -188,16 +151,10 @@ class CollabApplication
         return $this->fullName;
     }
 
-<<<<<<< HEAD
     public function setFullName(?string $fullName): static
     {
-        $this->fullName = $fullName;
+        $this->fullName = $fullName ?? '';
 
-=======
-    public function setFullName(string $fullName): static
-    {
-        $this->fullName = $fullName;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -206,16 +163,10 @@ class CollabApplication
         return $this->phone;
     }
 
-<<<<<<< HEAD
     public function setPhone(?string $phone): static
     {
-        $this->phone = $phone;
+        $this->phone = $phone ?? '';
 
-=======
-    public function setPhone(string $phone): static
-    {
-        $this->phone = $phone;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -224,16 +175,10 @@ class CollabApplication
         return $this->email;
     }
 
-<<<<<<< HEAD
     public function setEmail(?string $email): static
     {
-        $this->email = $email;
+        $this->email = $email ?? '';
 
-=======
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -242,16 +187,10 @@ class CollabApplication
         return $this->yearsOfExperience;
     }
 
-<<<<<<< HEAD
     public function setYearsOfExperience(?int $yearsOfExperience): static
     {
-        $this->yearsOfExperience = $yearsOfExperience;
+        $this->yearsOfExperience = $yearsOfExperience ?? 0;
 
-=======
-    public function setYearsOfExperience(int $yearsOfExperience): static
-    {
-        $this->yearsOfExperience = $yearsOfExperience;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -260,16 +199,10 @@ class CollabApplication
         return $this->motivation;
     }
 
-<<<<<<< HEAD
     public function setMotivation(?string $motivation): static
     {
-        $this->motivation = $motivation;
+        $this->motivation = $motivation ?? '';
 
-=======
-    public function setMotivation(string $motivation): static
-    {
-        $this->motivation = $motivation;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
         return $this;
     }
 
@@ -278,21 +211,23 @@ class CollabApplication
         return $this->expectedSalary;
     }
 
-<<<<<<< HEAD
     public function getExpectedSalaryAsFloat(): float
     {
         return (float) ($this->expectedSalary ?? 0);
     }
 
-    public function setExpectedSalary(string|float|null $expectedSalary): static
+    public function setExpectedSalary(string|float|int|null $expectedSalary): static
     {
-        $this->expectedSalary = $expectedSalary !== null ? (string) $expectedSalary : null;
+        if ($expectedSalary === null || $expectedSalary === '') {
+            $this->expectedSalary = '';
 
-=======
-    public function setExpectedSalary(string $expectedSalary): static
-    {
-        $this->expectedSalary = $expectedSalary;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
+            return $this;
+        }
+
+        $this->expectedSalary = \is_string($expectedSalary)
+            ? $expectedSalary
+            : number_format((float) $expectedSalary, 2, '.', '');
+
         return $this;
     }
 
@@ -301,61 +236,34 @@ class CollabApplication
         return $this->status;
     }
 
-<<<<<<< HEAD
-    public function setStatus(?string $status): static
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    public function getAppliedAt(): ?\DateTime
-=======
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
         return $this;
     }
 
     public function getAppliedAt(): ?\DateTimeInterface
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     {
         return $this->appliedAt;
     }
 
-<<<<<<< HEAD
-    public function getUpdatedAt(): ?\DateTime
-=======
     public function setAppliedAt(\DateTimeInterface $appliedAt): static
     {
         $this->appliedAt = $appliedAt;
+
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeInterface
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     {
         return $this->updatedAt;
     }
 
-<<<<<<< HEAD
-    public function isPending(): bool
-    {
-        return $this->status === self::STATUS_PENDING;
-    }
-
-    public function isAccepted(): bool
-    {
-        return $this->status === self::STATUS_ACCEPTED;
-    }
-
-    public function isRejected(): bool
-    {
-        return $this->status === self::STATUS_REJECTED;
-=======
     public function setUpdatedAt(\DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -363,6 +271,5 @@ class CollabApplication
     public function setUpdatedAtValue(): void
     {
         $this->updatedAt = new \DateTime();
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     }
 }

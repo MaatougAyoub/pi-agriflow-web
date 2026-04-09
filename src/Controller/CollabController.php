@@ -157,7 +157,7 @@ final class CollabController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function myRequests(CollabRequestRepository $repo): Response
     {
-        $requests = $repo->findByRequester($this->getUser()->getId());
+        $requests = $repo->findByRequester($this->getUser());
 
         return $this->render('collab/my_requests.html.twig', ['requests' => $requests]);
     }
@@ -168,7 +168,7 @@ final class CollabController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function myApplications(CollabApplicationRepository $appRepo): Response
     {
-        $applications = $appRepo->findByCandidate($this->getUser()->getId());
+        $applications = $appRepo->findByCandidate($this->getUser());
 
         return $this->render('collab/my_applications.html.twig', ['applications' => $applications]);
     }

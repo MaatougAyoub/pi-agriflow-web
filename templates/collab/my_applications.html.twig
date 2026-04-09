@@ -31,13 +31,13 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <span class="badge
-                                        {% if app.status == 'accepted' %}bg-success
-                                        {% elseif app.status == 'rejected' %}bg-danger
+                                        {% if app.status == 'APPROVED' %}bg-success
+                                        {% elseif app.status == 'REJECTED' %}bg-danger
                                         {% else %}bg-warning text-dark{% endif %}
                                     ">
-                                        {% if app.status == 'accepted' %}
+                                        {% if app.status == 'APPROVED' %}
                                             <i class="bi bi-check-circle me-1"></i>Acceptée
-                                        {% elseif app.status == 'rejected' %}
+                                        {% elseif app.status == 'REJECTED' %}
                                             <i class="bi bi-x-circle me-1"></i>Refusée
                                         {% else %}
                                             <i class="bi bi-clock me-1"></i>En attente
