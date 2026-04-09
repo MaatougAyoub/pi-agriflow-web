@@ -19,24 +19,36 @@
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="agf-seller-stat">
                         <strong>{{ stats.annonces }}</strong>
                         <span>Annonce(s) publiee(s)</span>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="agf-seller-stat">
                         <strong>{{ stats.demandes }}</strong>
                         <span>Demande(s) recues</span>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-lg-3 col-md-6">
                     <div class="agf-seller-stat">
                         <strong>{{ stats.enAttente }}</strong>
                         <span>Demande(s) en attente</span>
                     </div>
                 </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="agf-seller-stat">
+                        <strong>{{ stats.revenuEstime|number_format(2, '.', ' ') }} TND</strong>
+                        <span>Revenu estime sur demandes acceptees</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="agf-kpi-strip mb-4">
+                <span><strong>{{ stats.acceptees }}</strong> demande(s) acceptee(s)</span>
+                <span><strong>{{ stats.enAttente }}</strong> encore a traiter</span>
+                <span><strong>{{ stats.demandes }}</strong> demande(s) cumulee(s)</span>
             </div>
 
             <div class="alert alert-info border-0 shadow-sm mb-4" role="alert">
@@ -89,6 +101,10 @@
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <div class="agf-pagination mt-4">
+                {{ knp_pagination_render(annonces) }}
             </div>
         </div>
     </section>

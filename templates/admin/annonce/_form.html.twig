@@ -1,4 +1,10 @@
-{{ form_start(form, {attr: {class: 'agf-admin-form'}}) }}
+{{ form_start(form, {
+    attr: {
+        class: 'agf-admin-form',
+        'data-controller': 'ai-assistant',
+        'data-ai-assistant-url-value': ai_route|default(path('app_admin_annonce_ai_assistant'))
+    }
+}) }}
     {{ include('partials/_form_error_summary.html.twig', {form: form}) }}
 
     <div class="row g-4">
@@ -10,6 +16,8 @@
     <div class="mt-4">
         {{ form_row(form.description) }}
     </div>
+
+    {{ include('marketplace/_ai_assistant_card.html.twig') }}
 
     <div class="row g-4 mt-1">
         <div class="col-lg-4">{{ form_row(form.prix) }}</div>

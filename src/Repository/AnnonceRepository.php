@@ -8,6 +8,7 @@ use App\Entity\Annonce;
 use App\Enum\AnnonceStatut;
 use App\Enum\AnnonceType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -24,6 +25,13 @@ class AnnonceRepository extends ServiceEntityRepository
      * @return Annonce[]
      */
     public function searchPublic(?string $keyword = null, ?AnnonceType $type = null): array
+    {
+        return $this->createPublicSearchQueryBuilder($keyword, $type)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createPublicSearchQueryBuilder(?string $keyword = null, ?AnnonceType $type = null): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('a')
             ->andWhere('a.statut = :statut')
@@ -42,7 +50,7 @@ class AnnonceRepository extends ServiceEntityRepository
                 ->setParameter('type', $type);
         }
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder;
     }
 
     /**
@@ -50,12 +58,18 @@ class AnnonceRepository extends ServiceEntityRepository
      */
     public function findByOwnerId(int $ownerId): array
     {
+        return $this->createByOwnerIdQueryBuilder($ownerId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createByOwnerIdQueryBuilder(int $ownerId): QueryBuilder
+    {
         return $this->createQueryBuilder('a')
             ->andWhere('a.proprietaireId = :ownerId')
             ->setParameter('ownerId', $ownerId)
             ->orderBy('a.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        ;
     }
 
     public function countByOwnerId(int $ownerId): int
@@ -66,5 +80,25 @@ class AnnonceRepository extends ServiceEntityRepository
             ->setParameter('ownerId', $ownerId)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @return Annonce[]
+     */
+    public function findSimilarPublic(Annonce $annonce, int $limit = 4): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.id != :annonceId')
+            ->andWhere('a.statut = :statut')
+            ->andWhere('a.type = :type')
+            ->andWhere('a.categorie = :categorie')
+            ->setParameter('annonceId', $annonce->getId())
+            ->setParameter('statut', AnnonceStatut::DISPONIBLE)
+            ->setParameter('type', $annonce->getType())
+            ->setParameter('categorie', $annonce->getCategorie())
+            ->orderBy('a.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

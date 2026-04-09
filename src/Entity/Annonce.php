@@ -79,6 +79,15 @@ class Annonce
     #[ORM\Column(length: 120)]
     private ?string $localisation = null;
 
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    private ?float $latitude = null;
+
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    private ?float $longitude = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $localisationNormalisee = null;
+
     #[Assert\Positive(message: 'Le proprietaire doit avoir un ID valide.')]
     #[ORM\Column]
     private int $proprietaireId = 1;
@@ -216,6 +225,51 @@ class Annonce
     public function setLocalisation(string $localisation): self
     {
         $this->localisation = trim($localisation);
+
+        return $this;
+    }
+
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    public function setLatitude(?float $latitude): self
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
+    }
+
+    public function setLongitude(?float $longitude): self
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    public function getLocalisationNormalisee(): ?string
+    {
+        return $this->localisationNormalisee;
+    }
+
+    public function setLocalisationNormalisee(?string $localisationNormalisee): self
+    {
+        $this->localisationNormalisee = null !== $localisationNormalisee ? trim($localisationNormalisee) : null;
+
+        return $this;
+    }
+
+    public function clearGeocoding(): self
+    {
+        $this->latitude = null;
+        $this->longitude = null;
+        $this->localisationNormalisee = null;
 
         return $this;
     }

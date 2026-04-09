@@ -27,6 +27,7 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Titre',
                 'empty_data' => '',
                 'attr' => [
+                    'data-ai-assistant-target' => 'titreField',
                     'minlength' => 3,
                     'maxlength' => 150,
                     'placeholder' => 'Ex: Tracteur New Holland T5',
@@ -37,6 +38,7 @@ class AnnonceFormType extends AbstractType
                 'empty_data' => '',
                 'help' => 'Minimum 20 caracteres pour decrire l offre clairement.',
                 'attr' => [
+                    'data-ai-assistant-target' => 'descriptionField',
                     'rows' => 6,
                     'minlength' => 20,
                     'maxlength' => 2000,
@@ -47,6 +49,9 @@ class AnnonceFormType extends AbstractType
                 'class' => AnnonceType::class,
                 'label' => 'Type',
                 'choice_label' => static fn (AnnonceType $type): string => $type->label(),
+                'attr' => [
+                    'data-ai-assistant-target' => 'typeField',
+                ],
             ])
             ->add('statut', EnumType::class, [
                 'class' => AnnonceStatut::class,
@@ -69,6 +74,7 @@ class AnnonceFormType extends AbstractType
                 'empty_data' => '',
                 'help' => 'Exemples: jour, piece, semaine.',
                 'attr' => [
+                    'data-ai-assistant-target' => 'unitePrixField',
                     'maxlength' => 20,
                     'minlength' => 2,
                     'placeholder' => 'Ex: jour, piece, semaine',
@@ -78,6 +84,7 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Categorie',
                 'empty_data' => '',
                 'attr' => [
+                    'data-ai-assistant-target' => 'categorieField',
                     'minlength' => 2,
                     'maxlength' => 120,
                     'placeholder' => 'Materiel, Fruits, Irrigation...',
@@ -96,6 +103,7 @@ class AnnonceFormType extends AbstractType
                 'label' => 'Localisation',
                 'empty_data' => '',
                 'attr' => [
+                    'data-ai-assistant-target' => 'localisationField',
                     'minlength' => 2,
                     'maxlength' => 120,
                     'placeholder' => 'Nabeul, Sousse, Ariana...',

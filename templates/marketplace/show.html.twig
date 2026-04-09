@@ -4,6 +4,8 @@
 
 {% block front_body %}
     {% set visualSrc = visual.isExternal ? visual.image : asset(visual.image) %}
+    {% set normalizedLocation = annonce.localisationNormalisee ?: annonce.localisation %}
+    {% set hasMapCoordinates = annonce.latitude is not null and annonce.longitude is not null %}
     <section class="section pt-5">
         <div class="container">
             <div class="row g-5">
@@ -43,7 +45,29 @@
                         <div class="col-md-4">
                             <div class="agf-info-box">
                                 <span class="small text-muted d-block">Localisation</span>
-                                <strong>{{ annonce.localisation }}</strong>
+                                <strong>{{ normalizedLocation }}</strong>
+                                {% if hasMapCoordinates %}
+                                    <a
+                                        href="https://www.openstreetmap.org/?mlat={{ annonce.latitude }}&mlon={{ annonce.longitude }}#map=13/{{ annonce.latitude }}/{{ annonce.longitude }}"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        class="agf-map-link"
+                                    >
+                                        Voir sur la carte
+                                    </a>
+                                {% else %}
+                                    <a
+                                        href="https://www.openstreetmap.org/search?query={{ normalizedLocation|url_encode }}"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        class="agf-map-link"
+                                    >
+                                        Voir sur la carte
+                                    </a>
+                                    {% if annonce.localisationNormalisee %}
+                                        <span class="agf-map-note">Localisation normalisee automatiquement via OpenStreetMap.</span>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -153,6 +177,61 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section pt-0">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-end gap-3 flex-wrap mb-4">
+                <div>
+                    <span class="agf-page-kicker mb-2">Fonctionnalite avancee</span>
+                    <h3 class="mb-2">Offres similaires</h3>
+                    <p class="text-muted mb-0">Suggestions du meme type et de la meme categorie pour prolonger la navigation.</p>
+                </div>
+                <a href="{{ path('app_marketplace_index', {type: annonce.type.value}) }}" class="btn btn-outline-success">Voir plus d offres</a>
+            </div>
+
+            <div class="row g-4">
+                {% for similar in similarAnnonces %}
+                    {% set similarVisual = similarVisuals[similar.id] ?? {
+                        image: 'template/assets/img/hero_4.jpg',
+                        alt: similar.titre,
+                        position: 'center center',
+                        isExternal: false
+                    } %}
+                    {% set similarVisualSrc = similarVisual.isExternal ? similarVisual.image : asset(similarVisual.image) %}
+                    <div class="col-lg-3 col-md-6">
+                        <article class="agf-similar-card h-100">
+                            <img
+                                src="{{ similarVisualSrc }}"
+                                alt="{{ similarVisual.alt }}"
+                                class="agf-similar-card__image"
+                                loading="lazy"
+                                referrerpolicy="no-referrer"
+                                style="object-position: {{ similarVisual.position }};"
+                            >
+                            <div class="agf-similar-card__body">
+                                <div class="d-flex gap-2 flex-wrap mb-2">
+                                    <span class="badge text-bg-success-subtle text-success">{{ similar.type.label() }}</span>
+                                    <span class="badge text-bg-light">{{ similar.categorie }}</span>
+                                </div>
+                                <h4 class="h6 mb-2">{{ similar.titre }}</h4>
+                                <p class="small text-muted mb-3">{{ similar.localisationNormalisee ?: similar.localisation }}</p>
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <strong class="text-success">{{ similar.prix }} TND / {{ similar.unitePrix }}</strong>
+                                    <a href="{{ path('app_marketplace_show', {id: similar.id}) }}" class="btn btn-sm btn-dark">Voir</a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-light border mb-0">
+                            Aucune offre similaire n est disponible pour le moment.
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </section>
