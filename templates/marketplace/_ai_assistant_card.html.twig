@@ -1,0 +1,24 @@
+<div class="agf-ai-card mt-4">
+    <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-center">
+        <div>
+            <span class="agf-page-kicker mb-2">Assistant IA</span>
+            <h3 class="h5 mb-2">Ameliorer cette annonce avant publication</h3>
+            <p class="text-muted small mb-0">
+                L assistant propose un titre, une description, une categorie et une unite du prix.
+                Rien n est enregistre automatiquement.
+            </p>
+        </div>
+        <button
+            type="button"
+            class="btn btn-outline-success"
+            data-ai-assistant-target="trigger"
+            data-action="click->ai-assistant#generate"
+        >
+            Generer avec IA
+        </button>
+    </div>
+
+    <div class="agf-ai-status mt-3" data-ai-assistant-target="status">
+        L assistant reste optionnel: vous gardez la validation finale avant enregistrement.
+    </div>
+</div>

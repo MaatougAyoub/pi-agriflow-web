@@ -8,7 +8,9 @@ use App\Entity\Reservation;
 use App\Form\ReservationFormType;
 use App\Repository\ReservationRepository;
 use App\Service\ReservationPricingService;
+use App\Service\ReservationPdfService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -22,10 +24,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AdminReservationController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(ReservationRepository $reservationRepository): Response
+    public function index(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
         return $this->render('admin/reservation/index.html.twig', [
-            'reservations' => $reservationRepository->findAllForAdmin(),
+            'reservations' => $paginator->paginate(
+                $reservationRepository->createAllForAdminQueryBuilder(),
+                $request->query->getInt('page', 1),
+                10
+            ),
         ]);
     }
 
@@ -104,5 +114,13 @@ final class AdminReservationController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_reservation_index');
+    }
+
+    #[Route('/{id}/devis', name: 'quote', methods: ['GET'])]
+    public function quote(
+        #[MapEntity(mapping: ['id' => 'id'])] Reservation $reservation,
+        ReservationPdfService $reservationPdfService
+    ): Response {
+        return $reservationPdfService->streamReservationQuote($reservation, 'devis-admin');
     }
 }

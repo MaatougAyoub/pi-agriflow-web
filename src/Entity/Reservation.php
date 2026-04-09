@@ -22,14 +22,17 @@ class Reservation
     private ?int $id = null;
 
     #[Assert\NotNull(message: 'L annonce est obligatoire.')]
+    // relation: kol reservation lazimha tkoun marbouta b annonce wa7da
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Annonce $annonce = null;
 
     #[Assert\Positive(message: 'Le client doit avoir un ID valide.')]
+    // owner: demandeur_id houwa client eli ba3ath demande
     #[ORM\Column(name: 'demandeur_id')]
     private int $clientId = 1;
 
+    // owner: proprietaire_id houwa vendeur mta3 annonce eli tetsab 3lih demande
     #[ORM\Column]
     private int $proprietaireId = 1;
 
@@ -207,12 +210,14 @@ class Reservation
             return 0;
         }
 
+        // date: nzidou nhar bech period inclusive men debut lel fin
         return (int) $this->dateDebut->diff($this->dateFin)->days + 1;
     }
 
     #[Assert\Callback]
     public function validateDates(ExecutionContextInterface $context): void
     {
+        // validation: front w admin yestafdou men nafs check mta3 tartib dates
         if (null === $this->dateDebut || null === $this->dateFin) {
             return;
         }
@@ -227,7 +232,7 @@ class Reservation
     #[ORM\PrePersist]
     public function onPrePersist(): void
     {
-        // timestamp automatique bech ma n3awdouch nefss l code f controllers
+        // date: createdAt yet7at automatiquement wa9t tetsna3 reservation
         $this->createdAt ??= new \DateTimeImmutable();
     }
 }

@@ -8,8 +8,10 @@ use App\Entity\Reservation;
 use App\Entity\Utilisateur;
 use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
+use App\Service\ReservationPdfService;
 use App\Service\SellerMarketplaceService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +27,8 @@ final class SellerRequestController extends AbstractController
     public function index(
         Request $request,
         ReservationRepository $reservationRepository,
-        AnnonceRepository $annonceRepository
+        AnnonceRepository $annonceRepository,
+        PaginatorInterface $paginator
     ): Response {
         $user = $this->getSellerUser();
         $annonceId = $request->query->getInt('annonce');
@@ -39,9 +42,13 @@ final class SellerRequestController extends AbstractController
             }
         }
 
-        $reservations = $reservationRepository->findReceivedByOwnerId(
-            $user->getId(),
-            $annonceId > 0 ? $annonceId : null
+        $reservations = $paginator->paginate(
+            $reservationRepository->createReceivedByOwnerIdQueryBuilder(
+                $user->getId(),
+                $annonceId > 0 ? $annonceId : null
+            ),
+            $request->query->getInt('page', 1),
+            8
         );
 
         return $this->render('seller/request/index.html.twig', [
@@ -73,6 +80,18 @@ final class SellerRequestController extends AbstractController
         }
 
         return $this->redirectBackToRequests($reservation);
+    }
+
+    #[Route('/{id}/devis', name: 'quote', methods: ['GET'])]
+    public function quote(
+        #[MapEntity(mapping: ['id' => 'id'])] Reservation $reservation,
+        ReservationPdfService $reservationPdfService,
+        SellerMarketplaceService $sellerMarketplaceService
+    ): Response {
+        $user = $this->getSellerUser();
+        $this->denyAccessUnlessGrantedToOwner($sellerMarketplaceService, $user, $reservation);
+
+        return $reservationPdfService->streamReservationQuote($reservation, 'devis-vendeur');
     }
 
     #[Route('/{id}/refuser', name: 'refuse', methods: ['POST'])]

@@ -26,7 +26,10 @@
                     <tbody>
                         {% for annonce in annonces %}
                             <tr>
-                                <td>{{ annonce.titre }}</td>
+                                <td>
+                                    <div class="fw-semibold">{{ annonce.titre }}</div>
+                                    <div class="small text-muted">{{ annonce.localisationNormalisee ?: annonce.localisation }}</div>
+                                </td>
                                 <td>{{ annonce.type.label() }}</td>
                                 <td>{{ annonce.statut.label() }}</td>
                                 <td>{{ annonce.prix }} TND</td>
@@ -46,5 +49,9 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <div class="agf-pagination mt-4">
+        {{ knp_pagination_render(annonces) }}
     </div>
 {% endblock %}

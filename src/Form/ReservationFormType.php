@@ -20,6 +20,7 @@ class ReservationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // validation: hedha form admin, ywalli flexible ama mazal y7ot bornes sghar 3al champs
         $builder
             ->add('annonce', EntityType::class, [
                 'class' => Annonce::class,
@@ -37,14 +38,17 @@ class ReservationFormType extends AbstractType
             ->add('dateDebut', DateType::class, [
                 'label' => 'Date debut',
                 'widget' => 'single_text',
+                'help' => 'L administrateur peut ajuster la date, mais l ordre des dates reste obligatoire.',
             ])
             ->add('dateFin', DateType::class, [
                 'label' => 'Date fin',
                 'widget' => 'single_text',
+                'help' => 'La date de fin doit rester posterieure a la date de debut.',
             ])
             ->add('quantite', IntegerType::class, [
                 'label' => 'Quantite',
                 'empty_data' => '0',
+                'help' => 'La quantite doit rester strictement positive.',
                 'attr' => [
                     'min' => 1,
                 ],
@@ -57,6 +61,7 @@ class ReservationFormType extends AbstractType
             ->add('message', TextareaType::class, [
                 'label' => 'Message',
                 'required' => false,
+                'help' => 'Zone optionnelle pour consulter ou ajuster la note associee a la reservation.',
                 'attr' => [
                     'rows' => 4,
                     'maxlength' => 1000,
