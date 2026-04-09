@@ -60,16 +60,23 @@
                                     <tr>
                                         <td>
                                             <div class="fw-semibold">{{ reservation.annonce.titre }}</div>
-                                            <div class="small text-muted">{{ reservation.annonce.localisation }}</div>
+                                            <div class="small text-muted">{{ reservation.annonce.localisationNormalisee ?: reservation.annonce.localisation }}</div>
                                         </td>
                                         <td>#{{ reservation.clientId }}</td>
-                                        <td>{{ reservation.dateDebut|date('d/m/Y') }} - {{ reservation.dateFin|date('d/m/Y') }}</td>
+                                        <td>
+                                            {% if reservation.annonce.isLocation() %}
+                                                {{ reservation.dateDebut|date('d/m/Y') }} - {{ reservation.dateFin|date('d/m/Y') }}
+                                            {% else %}
+                                                Vente ponctuelle
+                                            {% endif %}
+                                        </td>
                                         <td>{{ reservation.quantite }}</td>
                                         <td>{{ reservation.prixTotal }} TND</td>
                                         <td>{{ reservation.statut.label() }}</td>
                                         <td class="text-end">
-                                            {% if reservation.statut.value == 'EN_ATTENTE' %}
-                                                <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                            <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                                <a href="{{ path('app_seller_request_quote', {id: reservation.id}) }}" class="btn btn-sm btn-outline-secondary">Devis PDF</a>
+                                                {% if reservation.statut.value == 'EN_ATTENTE' %}
                                                     <form method="post" action="{{ path('app_seller_request_accept', {id: reservation.id}) }}" class="agf-inline-form">
                                                         <input type="hidden" name="_token" value="{{ csrf_token('accept-seller-reservation-' ~ reservation.id) }}">
                                                         <button class="btn btn-sm btn-success">Accepter</button>
@@ -78,10 +85,10 @@
                                                         <input type="hidden" name="_token" value="{{ csrf_token('refuse-seller-reservation-' ~ reservation.id) }}">
                                                         <button class="btn btn-sm btn-outline-danger">Refuser</button>
                                                     </form>
-                                                </div>
-                                            {% else %}
-                                                <span class="small text-muted">Lecture seule</span>
-                                            {% endif %}
+                                                {% else %}
+                                                    <span class="small text-muted align-self-center">Lecture seule</span>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     </tr>
                                 {% else %}
@@ -95,6 +102,10 @@
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <div class="agf-pagination mt-4">
+                {{ knp_pagination_render(reservations) }}
             </div>
         </div>
     </section>
