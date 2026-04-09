@@ -14,6 +14,11 @@
                     <div class="card-body p-4">
                         {% form_theme form 'bootstrap_5_layout.html.twig' %}
                         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        {% if not form.vars.valid %}
+                            <div class="alert alert-danger mb-4">
+                                {{ form_errors(form) }}
+                            </div>
+                        {% endif %}
 
                         <div class="mb-3">
                             {{ form_row(form.title) }}

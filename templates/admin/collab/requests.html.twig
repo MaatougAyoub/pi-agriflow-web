@@ -63,8 +63,8 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge {% if req.status == 'open' %}bg-success{% elseif req.status == 'closed' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
-                            {% if req.status == 'open' %}Ouverte{% elseif req.status == 'closed' %}Fermée{% else %}Brouillon{% endif %}
+                        <span class="badge {% if req.status == 'APPROVED' %}bg-success{% elseif req.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {% if req.status == 'APPROVED' %}Approuvée{% elseif req.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
                         </span>
                     </td>
                     <td class="text-end">

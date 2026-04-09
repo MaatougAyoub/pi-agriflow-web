@@ -1,77 +1,45 @@
 <?php
 
-<<<<<<< HEAD
-declare(strict_types=1);
-
-=======
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 namespace App\Form;
 
 use App\Entity\CollabRequest;
 use Symfony\Component\Form\AbstractType;
-<<<<<<< HEAD
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-=======
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CollabRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event): void {
+            $data = $event->getData();
+            if (!\is_array($data)) {
+                return;
+            }
+            foreach (['title', 'description', 'location'] as $field) {
+                if (isset($data[$field]) && \is_string($data[$field])) {
+                    $data[$field] = trim($data[$field]);
+                }
+            }
+            $event->setData($data);
+        });
+
         $builder
             ->add('title', TextType::class, [
-<<<<<<< HEAD
-                'label'       => 'Titre de la demande',
-                'attr'        => ['placeholder' => 'Ex: Besoin d\'aide pour la récolte d\'olives'],
-            ])
-            ->add('description', TextareaType::class, [
-                'label' => 'Description détaillée',
-                'attr'  => ['rows' => 5, 'placeholder' => 'Décrivez la collaboration souhaitée...'],
-            ])
-            ->add('location', TextType::class, [
-                'label' => 'Localisation',
-                'attr'  => ['placeholder' => 'Ex: Sfax, Tunisie'],
-            ])
-            ->add('startDate', DateType::class, [
-                'label'  => 'Date de début',
-                'widget' => 'single_text',
-            ])
-            ->add('endDate', DateType::class, [
-                'label'  => 'Date de fin',
-                'widget' => 'single_text',
-            ])
-            ->add('neededPeople', null, [
-                'label' => 'Nombre de personnes recherchées',
-                'attr'  => ['min' => 1, 'max' => 1000],
-            ])
-            ->add('salary', NumberType::class, [
-                'label'  => 'Salaire total (DT)',
-                'scale'  => 2,
-                'attr'   => ['min' => 0, 'step' => '0.01'],
-            ])
-            ->add('salaryPerDay', NumberType::class, [
-                'label'  => 'Salaire journalier (DT)',
-                'scale'  => 2,
-                'attr'   => ['min' => 0, 'step' => '0.01'],
-                'required' => false,
-            ])
-            ->add('status', ChoiceType::class, [
-                'label'   => 'Statut',
-                'choices' => CollabRequest::STATUSES,
-            ]);
-=======
                 'label' => 'Titre de la demande',
                 'attr' => [
                     'placeholder' => 'Ex: Récolte des tomates',
                     'class' => 'form-control',
+                    'minlength' => 3,
+                    'maxlength' => 255,
                 ],
             ])
             ->add('description', TextareaType::class, [
@@ -80,27 +48,35 @@ class CollabRequestType extends AbstractType
                     'placeholder' => 'Décrivez le travail recherché, les compétences souhaitées...',
                     'class' => 'form-control',
                     'rows' => 5,
+                    'minlength' => 20,
+                    'maxlength' => 10000,
                 ],
+                'help' => 'Minimum 20 caractères, maximum 10 000.',
             ])
             ->add('location', TextType::class, [
                 'label' => 'Localisation',
                 'attr' => [
                     'placeholder' => 'Ex: Tunis, Sousse, Sfax...',
                     'class' => 'form-control',
+                    'minlength' => 2,
+                    'maxlength' => 100,
                 ],
             ])
             ->add('startDate', DateType::class, [
                 'label' => 'Date de début',
                 'widget' => 'single_text',
                 'attr' => ['class' => 'form-control'],
+                'help' => 'Lors d’une nouvelle demande, la date ne peut pas être dans le passé.',
             ])
             ->add('endDate', DateType::class, [
                 'label' => 'Date de fin',
                 'widget' => 'single_text',
                 'attr' => ['class' => 'form-control'],
+                'help' => 'Doit être strictement après la date de début.',
             ])
             ->add('neededPeople', IntegerType::class, [
                 'label' => 'Nombre de personnes recherchées',
+                'empty_data' => 1,
                 'attr' => [
                     'class' => 'form-control',
                     'min' => 1,
@@ -109,21 +85,33 @@ class CollabRequestType extends AbstractType
             ])
             ->add('salary', NumberType::class, [
                 'label' => 'Salaire par jour (DT)',
+                'required' => true,
+                'empty_data' => '0',
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Ex: 50.00',
                     'min' => 0,
+                    'max' => 99999.99,
                     'step' => '0.01',
                 ],
+                'help' => 'Entre 0 et 99 999,99 DT (0 = bénévolat ou à préciser avec l’employeur).',
+                'invalid_message' => 'Veuillez entrer un montant numérique valide.',
             ])
         ;
->>>>>>> bfa3c6f (feat: add collaboration module FO/BO (controllers, entities, forms, templates))
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => CollabRequest::class,
+            'validation_groups' => static function (FormInterface $form): array {
+                $data = $form->getData();
+                if ($data instanceof CollabRequest && null !== $data->getId()) {
+                    return ['Default', 'collab_edit'];
+                }
+
+                return ['Default', 'collab_create'];
+            },
         ]);
     }
 }
