@@ -1,0 +1,108 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block page_title %}Demandes de collaboration – Admin{% endblock %}
+{% block admin_title %}Demandes de collaboration{% endblock %}
+{% block admin_subtitle %}{{ total }} demande{{ total != 1 ? 's' : '' }} au total{% endblock %}
+
+{% block admin_body %}
+
+{% include 'partials/_flash.html.twig' %}
+
+{# Filters #}
+<form method="get" class="row g-2 mb-4">
+    <div class="col-auto">
+        <select name="status" class="form-select form-select-sm">
+            <option value="">Tous les statuts</option>
+            {% for label, val in statuses %}
+                <option value="{{ val }}" {{ current_status == val ? 'selected' : '' }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Filtrer</button>
+        <a href="{{ path('admin_collab_requests') }}" class="btn btn-sm btn-link">Réinitialiser</a>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white rounded shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Titre</th>
+                <th>Demandeur</th>
+                <th>Localisation</th>
+                <th>Période</th>
+                <th>Pers.</th>
+                <th>Candidatures</th>
+                <th>Statut</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+                <tr>
+                    <td class="text-muted small">{{ req.id }}</td>
+                    <td class="fw-semibold">{{ req.title }}</td>
+                    <td class="small">
+                        {% if req.requester %}
+                            {{ req.requester.prenom }} {{ req.requester.nom }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">{{ req.location }}</td>
+                    <td class="small">
+                        {{ req.startDate|date('d/m/Y') }}<br>
+                        <span class="text-muted">→ {{ req.endDate|date('d/m/Y') }}</span>
+                    </td>
+                    <td>{{ req.neededPeople }}</td>
+                    <td>
+                        <span class="badge bg-secondary rounded-pill">
+                            {{ req.applications|length }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {% if req.status == 'APPROVED' %}bg-success{% elseif req.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {% if req.status == 'APPROVED' %}Approuvée{% elseif req.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ path('admin_collab_request_show', {id: req.id}) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <form method="post" action="{{ path('admin_collab_request_delete', {id: req.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette demande ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_req_' ~ req.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="9" class="text-center text-muted py-4">Aucune demande trouvée.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# Pagination #}
+{% if lastPage > 1 %}
+    <nav class="mt-4 d-flex justify-content-center" aria-label="Pagination">
+        <ul class="pagination pagination-sm">
+            <li class="page-item {{ page <= 1 ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ path('admin_collab_requests', {page: page - 1, status: current_status}) }}">‹</a>
+            </li>
+            {% for p in 1..lastPage %}
+                <li class="page-item {{ p == page ? 'active' : '' }}">
+                    <a class="page-link" href="{{ path('admin_collab_requests', {page: p, status: current_status}) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {{ page >= lastPage ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ path('admin_collab_requests', {page: page + 1, status: current_status}) }}">›</a>
+            </li>
+        </ul>
+    </nav>
+{% endif %}
+
+{% endblock admin_body %}

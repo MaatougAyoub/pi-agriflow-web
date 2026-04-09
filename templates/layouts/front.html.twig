@@ -25,6 +25,7 @@
                 <ul>
                     <li><a href="{{ path('site_home') }}" class="{{ current_route == 'site_home' ? 'active' : '' }}">Accueil</a></li>
                     <li><a href="{{ path('app_marketplace_index') }}" class="{{ current_route starts with 'app_marketplace_' ? 'active' : '' }}">Marketplace</a></li>
+                    <li><a href="{{ path('app_collab_index') }}" class="{{ current_route starts with 'app_collab_' ? 'active' : '' }}">Collaborations</a></li>
                     {% if is_granted('ROLE_AGRICULTEUR') %}
                         <li><a href="{{ path('app_parcelle_index') }}" class="{{ current_route starts with 'app_parcelle_' or current_route starts with 'app_culture_' ? 'active' : '' }}">Parcelles & Cultures</a></li>
                     {% endif %}

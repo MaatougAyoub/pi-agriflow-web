@@ -1,0 +1,107 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Candidatures - {{ request.title }}{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container">
+        {# Header #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-people me-2 text-primary"></i>Candidatures reçues</h2>
+                <p class="text-muted mb-0">Pour la demande : <strong>{{ request.title }}</strong></p>
+            </div>
+            <a href="{{ path('app_collab_my_requests') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+        </div>
+
+        {# Résumé de la demande #}
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4;">
+            <div class="card-body p-3 d-flex flex-wrap gap-4">
+                <span><i class="bi bi-geo-alt text-success me-1"></i>{{ request.location }}</span>
+                <span><i class="bi bi-cash text-success me-1"></i>{{ request.salary }} DT/jour</span>
+                <span><i class="bi bi-people text-success me-1"></i>{{ request.neededPeople }} personne(s)</span>
+                <span><i class="bi bi-calendar text-success me-1"></i>{{ request.startDate|date('d/m/Y') }} → {{ request.endDate|date('d/m/Y') }}</span>
+                <span class="ms-auto fw-bold">{{ applications|length }} candidature(s)</span>
+            </div>
+        </div>
+
+        {% if applications|length == 0 %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                <h3 class="text-muted mt-3">Aucune candidature reçue</h3>
+                <p class="text-muted">Les candidats pourront postuler une fois la demande approuvée.</p>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Candidat</th>
+                            <th>Contact</th>
+                            <th class="text-center">Expérience</th>
+                            <th class="text-center">Salaire demandé</th>
+                            <th>Motivation</th>
+                            <th class="text-center">Statut</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ app.fullName }}</div>
+                                <small class="text-muted">Postulé le {{ app.appliedAt|date('d/m/Y à H:i') }}</small>
+                            </td>
+                            <td>
+                                <div><i class="bi bi-envelope me-1 text-muted"></i>{{ app.email }}</div>
+                                <div><i class="bi bi-telephone me-1 text-muted"></i>{{ app.phone }}</div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info text-dark px-3 py-2">{{ app.yearsOfExperience }} ans</span>
+                            </td>
+                            <td class="text-center fw-bold">{{ app.expectedSalary }} DT</td>
+                            <td style="max-width: 250px;">
+                                <span title="{{ app.motivation }}">
+                                    {{ app.motivation|length > 80 ? app.motivation|slice(0, 80) ~ '...' : app.motivation }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if app.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
+                                {% elseif app.status == 'APPROVED' %}
+                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i>Acceptée</span>
+                                {% elseif app.status == 'REJECTED' %}
+                                    <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i>Refusée</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if app.status == 'PENDING' %}
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="post" action="{{ path('app_collab_update_app_status', {id: app.id, action: 'approve'}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ app.id) }}">
+                                            <button type="submit" class="btn btn-success" title="Accepter"
+                                                    onclick="return confirm('Accepter la candidature de {{ app.fullName }} ?');">
+                                                <i class="bi bi-check-lg"></i> Accepter
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{{ path('app_collab_update_app_status', {id: app.id, action: 'reject'}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('status' ~ app.id) }}">
+                                            <button type="submit" class="btn btn-danger" title="Refuser"
+                                                    onclick="return confirm('Refuser la candidature de {{ app.fullName }} ?');">
+                                                <i class="bi bi-x-lg"></i> Refuser
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
