@@ -1,0 +1,15 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Modifier une parcelle{% endblock %}
+
+{% block hero_title %}Modifier la parcelle 
+<br>
+{{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+{% block hero_subtitle %}{% endblock %}
+
+
+
+{% block module_body %}
+  {% include 'parcelle/_form.html.twig' with {form: form, submit_label: 'Mettre a jour'} %}
+{% endblock %}

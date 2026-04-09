@@ -1,0 +1,4 @@
+<form method="post" data-turbo= "false" action="{{ path('app_admin_parcelle_delete', {id: parcelle.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette parcelle ?');">
+  <input type="hidden" name="_token" value="{{ csrf_token('admin_delete_parcelle_' ~ parcelle.id) }}">
+  <button class="btn btn-outline-danger btn-sm">Supprimer</button>
+</form>

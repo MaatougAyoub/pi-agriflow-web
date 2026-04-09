@@ -1,0 +1,112 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block title %}{% block page_title %}Parcelles & Cultures{% endblock %} | AgriFlow{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    <style>
+        .pc-hero {
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(135deg, rgba(17, 59, 35, 0.88), rgba(58, 124, 78, 0.72)),
+                url('{{ asset("images/header-banner-parcelles-cultures.png") }}') center center / cover no-repeat;
+        }
+
+        .pc-hero-default {
+            min-height: 460px;
+        }
+
+        .pc-hero-medium {
+            min-height: 300px;
+        }
+
+        .pc-hero-small {
+            min-height: 220px;
+        }
+
+        .pc-hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 760px;
+            padding: 110px 0 90px;
+            color: #fff;
+        }
+
+        .pc-hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1rem;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .pc-hero-title {
+            margin-bottom: 1rem;
+            font-size: clamp(2.4rem, 5vw, 4.4rem);
+            line-height: 1.08;
+            color: #fff;
+        }
+
+        .pc-hero-subtitle {
+            margin: 0;
+            max-width: 620px;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .pc-module-shell {
+            padding: 2rem 0 4rem;
+            background:
+                radial-gradient(circle at top right, rgba(87, 157, 101, 0.08), transparent 30%),
+                linear-gradient(180deg, #f7faf6 0%, #ffffff 30%);
+        }
+
+        .pc-top-actions {
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 991px) {
+            .pc-hero-default {
+                min-height: 360px;
+            }
+
+            .pc-hero-content {
+                padding: 90px 0 72px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block front_hero %}
+    <section class="pc-hero {% block hero_size %}pc-hero-default{% endblock %}">
+        <div class="container">
+            <div class="pc-hero-content">
+                <span class="pc-hero-kicker">AgriFlow</span>
+                <h1 class="pc-hero-title">{% block hero_title %}Parcelles & Cultures{% endblock %}</h1>
+                <p class="pc-hero-subtitle">{% block hero_subtitle %}Gerez facilement vos parcelles et vos cultures{% endblock %}</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block front_body %}
+    <section class="pc-module-shell">
+        <div class="container">
+            <div class="pc-top-actions d-flex justify-content-end flex-wrap gap-2">
+                {% block top_right_action %}{% endblock %}
+            </div>
+
+            {% block hero %}{% endblock %}
+            {% block module_body %}{% endblock %}
+        </div>
+    </section>
+{% endblock %}

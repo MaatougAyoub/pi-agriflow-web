@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Repository\AnnonceRepository;
+use App\Repository\CultureRepository;
+use App\Repository\ParcelleRepository;
 use App\Repository\ReservationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,11 +20,15 @@ final class AdminDashboardController extends AbstractController
     #[Route('', name: 'dashboard', methods: ['GET'])]
     public function index(
         AnnonceRepository $annonceRepository,
-        ReservationRepository $reservationRepository
+        ReservationRepository $reservationRepository,
+        ParcelleRepository $parcelleRepository,
+        CultureRepository $cultureRepository,
     ): Response {
         return $this->render('admin/dashboard.html.twig', [
             'annonceCount' => $annonceRepository->count([]),
             'reservationCount' => $reservationRepository->count([]),
+            'parcelleCount' => $parcelleRepository->count([]),
+            'cultureCount' => $cultureRepository->count([]),
             'pendingReservations' => $reservationRepository->findLatestPending(),
             'latestAnnonces' => $annonceRepository->findBy([], ['createdAt' => 'DESC'], 5),
         ]);

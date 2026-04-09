@@ -1,0 +1,22 @@
+{% set currentRoute = app.request.attributes.get('_route') %}
+
+<header id="header" class="header d-flex align-items-center position-relative">
+  <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+    <a href="{{ path('site_home') }}" class="logo d-flex align-items-center">
+      <img src="{{ asset('template/assets/img/logo.png') }}?v=2" alt="AgriCulture">
+    </a>
+
+    <nav id="navmenu" class="navmenu">
+      <ul>
+            <li><a href="{{ path('site_home') }}">Profil</a></li>
+        <li><a href="{{ path('site_home') }}">Marketplace</a></li>
+        <li><a href="{{ path('site_home') }}">Reservations</a></li>
+        <li><a href="{{ path('app_parcelle_index') }}" class="{{ currentRoute starts with 'app_parcelle_' or currentRoute starts with 'app_culture_' ? 'active' : '' }}">Mes parcelles & cultures</a></li>
+            <li><a href="{{ path('site_home') }}">Collaborations</a></li>
+        <li><a href="{{ path('site_home') }}">Irrigations</a></li>
+        <li><a href="{{ path('site_contact') }}">Contact</a></li>
+      </ul>
+      <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+  </div>
+</header>
