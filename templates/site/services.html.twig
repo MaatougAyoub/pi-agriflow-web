@@ -1,0 +1,76 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Services - AgriFlow{% endblock %}
+
+{% block front_hero %}
+    <section class="section agf-page-hero">
+        <div class="container text-center">
+            <span class="agf-eyebrow text-success">Services</span>
+            <h1 class="display-6 mb-3">Des services concus pour les besoins reels du terrain.</h1>
+            <p class="lead text-muted mb-0">
+                AgriFlow accompagne a la fois les clients, les vendeurs et les proprietaires de materiel agricole.
+            </p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block front_body %}
+    <section class="section pt-0">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="agf-soft-card h-100">
+                        <div class="agf-icon-badge"><i class="bi bi-megaphone"></i></div>
+                        <h3 class="h5">Vendre ses produits</h3>
+                        <p class="mb-0">Publiez vos produits agricoles avec un prix clair, une description utile et une localisation visible.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="agf-soft-card h-100">
+                        <div class="agf-icon-badge"><i class="bi bi-search"></i></div>
+                        <h3 class="h5">Trouver une offre</h3>
+                        <p class="mb-0">Recherchez rapidement une annonce selon le type d offre, la categorie ou la zone geographique.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="agf-soft-card h-100">
+                        <div class="agf-icon-badge"><i class="bi bi-journal-check"></i></div>
+                        <h3 class="h5">Reserver du materiel</h3>
+                        <p class="mb-0">Envoyez une demande de reservation avec les dates, la quantite souhaitee et un total calcule automatiquement.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="agf-soft-card h-100">
+                        <div class="agf-icon-badge"><i class="bi bi-speedometer2"></i></div>
+                        <h3 class="h5">Gerer ses demandes</h3>
+                        <p class="mb-0">Les professionnels disposent d un espace distinct pour suivre leurs annonces et leurs reservations.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="agf-soft-card mt-4">
+                <span class="agf-page-kicker">Parcours simple</span>
+                <div class="row g-4 mt-1">
+                    <div class="col-lg-4">
+                        <div class="agf-step-card">
+                            <strong>01. Decouverte</strong>
+                            <p class="mb-0">L utilisateur parcourt le catalogue et compare les offres selon son besoin.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="agf-step-card">
+                            <strong>02. Consultation</strong>
+                            <p class="mb-0">Il ouvre la fiche annonce pour verifier les details, le prix, le stock et la localisation.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="agf-step-card">
+                            <strong>03. Reservation</strong>
+                            <p class="mb-0">La demande est envoyee puis suivie depuis l espace professionnel du vendeur.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

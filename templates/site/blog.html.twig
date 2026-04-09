@@ -1,0 +1,57 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Actualites - AgriFlow{% endblock %}
+
+{% block front_hero %}
+    <section class="section agf-page-hero">
+        <div class="container text-center">
+            <span class="agf-eyebrow text-success">Actualites</span>
+            <h1 class="display-6 mb-3">Conseils et actualites autour du marche agricole.</h1>
+            <p class="lead text-muted mb-0">
+                Retrouvez quelques contenus utiles pour mieux preparer une vente, une location ou une reservation.
+            </p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block front_body %}
+    <section class="section pt-0">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <article class="agf-post-card h-100">
+                        <img src="{{ asset('uploads/marketplace/tracteur-cover.jpg') }}" alt="Location de tracteur" class="agf-post-card__image">
+                        <div class="p-4">
+                            <span class="agf-page-kicker">03 avril 2026</span>
+                            <h2 class="h4 mt-2">Bien preparer une location de materiel agricole</h2>
+                            <p>Quelques reflexes simples pour presenter une offre claire et rassurante avant la mise en location.</p>
+                            <a href="{{ path('site_blog_details') }}" class="btn btn-sm btn-outline-success">Lire l article</a>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-lg-4">
+                    <article class="agf-post-card h-100">
+                        <img src="{{ asset('uploads/marketplace/pompe-irrigation-cover.jpg') }}" alt="Reservation irrigation" class="agf-post-card__image">
+                        <div class="p-4">
+                            <span class="agf-page-kicker">04 avril 2026</span>
+                            <h2 class="h4 mt-2">Pourquoi la reservation rapide rassure les clients</h2>
+                            <p>Un parcours simple permet de demander une offre sans perdre du temps et sans mauvaise surprise sur le prix.</p>
+                            <a href="{{ path('site_blog_details') }}" class="btn btn-sm btn-outline-success">Lire l article</a>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-lg-4">
+                    <article class="agf-post-card h-100">
+                        <img src="{{ asset('uploads/marketplace/tomates-caisses-cover.jpg') }}" alt="Produits frais" class="agf-post-card__image">
+                        <div class="p-4">
+                            <span class="agf-page-kicker">04 avril 2026</span>
+                            <h2 class="h4 mt-2">Mieux presenter un lot de produits frais</h2>
+                            <p>Une bonne fiche annonce aide a vendre plus vite : image nette, prix visible, stock et localisation clairs.</p>
+                            <a href="{{ path('site_blog_details') }}" class="btn btn-sm btn-outline-success">Lire l article</a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

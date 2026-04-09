@@ -1,6 +1,10 @@
 when@dev:
     web_profiler:
+<<<<<<< HEAD
         toolbar: true
+=======
+        toolbar: false
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
 
     framework:
         profiler:

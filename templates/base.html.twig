@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html>
 <head>
     <meta charset="UTF-8">
@@ -72,3 +73,23 @@
     </div>
 </body>
 </html>
+=======
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}AgriFlow{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Plateforme web de gestion agricole AgriFlow.{% endblock %}">
+        <link rel="icon" href="{{ asset('template/assets/img/favicon.png') }}">
+
+        {% block stylesheets %}{% endblock %}
+        {% block javascripts %}
+            {{ importmap('app') }}
+        {% endblock %}
+    </head>
+    <body class="{% block body_class %}{% endblock %}">
+        {% include 'partials/_flash.html.twig' %}
+        {% block body %}{% endblock %}
+    </body>
+</html>
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb

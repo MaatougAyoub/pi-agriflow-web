@@ -18,3 +18,10 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+<<<<<<< HEAD
+=======
+
+
+# ===== VSCODE =====
+.vscode
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb

@@ -9,12 +9,21 @@
         }
     },
     "doctrine/doctrine-bundle": {
+<<<<<<< HEAD
         "version": "3.2",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "3.0",
             "ref": "d39a3bd844edfe90c20ae520b804a3bf4f82b4ad"
+=======
+        "version": "2.18",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "2.10",
+            "ref": "d1778a69711a9b06bb4e202977ca6c4a0d16933d"
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
         },
         "files": [
             "./config/packages/doctrine.yaml",
@@ -23,7 +32,11 @@
         ]
     },
     "doctrine/doctrine-migrations-bundle": {
+<<<<<<< HEAD
         "version": "4.0",
+=======
+        "version": "3.7",
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -36,7 +49,11 @@
         ]
     },
     "phpunit/phpunit": {
+<<<<<<< HEAD
         "version": "13.1",
+=======
+        "version": "11.5",
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -108,7 +125,11 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.4",
+<<<<<<< HEAD
             "ref": "08c492c28925bf921d98bc26fd815ae8a38b33d9"
+=======
+            "ref": "32126346f25e1cee607cc4aa6783d46034920554"
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
         },
         "files": [
             "./config/packages/cache.yaml",

@@ -1,0 +1,270 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion | AgriFlow{% endblock %}
+
+{% block body_class %}agf-auth-page{% endblock %}
+
+{% block stylesheets %}
+<style data-turbo-temporary>
+.agf-auth-page {
+    --green-900:#1b5e20;
+    --green-800:#2e7d32;
+    --green-700:#43a047;
+    --ink:#263238;
+    --muted:#637381;
+    --danger-bg:#ffebee;
+    --danger:#c62828;
+    --success-bg:#e8f5e9;
+    --success:#1b5e20;
+
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:
+        radial-gradient(1200px 600px at 90% -20%, rgba(255,213,79,0.2),transparent),
+        linear-gradient(135deg,var(--green-900),var(--green-800),var(--green-700));
+    display:grid;
+    place-items:center;
+    padding:24px;
+}
+
+.agf-auth-page * {
+    box-sizing:border-box;
+}
+
+.agf-auth-page .signin-shell {
+    width:100%;
+    max-width:980px;
+    min-height:560px;
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 30px 60px rgba(0,0,0,0.25);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+}
+
+.agf-auth-page .signin-hero {
+    background-image:
+        linear-gradient(rgba(27,94,32,0.64),rgba(27,94,32,0.76)),
+        url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1200&q=80');
+    background-size:cover;
+    background-position:center;
+    color:#fff;
+    padding:36px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:18px;
+}
+
+.agf-auth-page .brand-logo img {
+    width:422px;
+    max-width:100%;
+    height:auto;
+    object-fit:contain;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+}
+
+.agf-auth-page .brand-title {
+    margin:0;
+    font-size:56px;
+    font-weight:800;
+    text-shadow:0 2px 8px rgba(0,0,0,0.35);
+}
+
+.agf-auth-page .brand-sub {
+    margin:0;
+    font-size:18px;
+}
+
+.agf-auth-page .brand-divider {
+    width:130px;
+    height:3px;
+    border-radius:999px;
+    background:linear-gradient(90deg,transparent,#ffd54f,transparent);
+}
+
+.agf-auth-page .feature-list {
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:grid;
+    gap:10px;
+    font-weight:600;
+}
+
+.agf-auth-page .signin-form {
+    padding:42px 44px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:16px;
+}
+
+.agf-auth-page .signin-title {
+    margin:0;
+    font-size:34px;
+    color:var(--green-900);
+}
+
+.agf-auth-page .signin-subtitle {
+    margin:0;
+    color:var(--muted);
+}
+
+.agf-auth-page .alert {
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+}
+
+.agf-auth-page .alert-danger {
+    background:var(--danger-bg);
+    color:var(--danger);
+}
+
+.agf-auth-page .alert-success {
+    background:var(--success-bg);
+    color:var(--success);
+}
+
+.agf-auth-page .field {
+    display:grid;
+    gap:7px;
+}
+
+.agf-auth-page .field label {
+    font-weight:700;
+}
+
+.agf-auth-page .field input {
+    border:1.5px solid #dfe3e8;
+    border-radius:10px;
+    padding:12px;
+}
+
+.agf-auth-page .field input:focus {
+    border-color:var(--green-700);
+    box-shadow:0 0 0 4px rgba(67,160,71,0.16);
+}
+
+.agf-auth-page .inline-row {
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    margin-top:11px;
+    margin-bottom:11px;
+}
+
+.agf-auth-page .btn {
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.agf-auth-page .btn-primary {
+    padding:13px;
+    color:#fff;
+    background:linear-gradient(90deg,var(--green-900),var(--green-800));
+}
+
+.agf-auth-page .btn-secondary {
+    display:grid;
+    place-items:center;
+    padding:10px;
+    border:1px solid #dfe3e8;
+    text-decoration:none;
+}
+
+.agf-auth-page .footer-line {
+    text-align:center;
+    font-size:13px;
+}
+
+@media(max-width:960px){
+    .agf-auth-page .signin-shell {
+        grid-template-columns:1fr;
+        max-width:560px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<main class="signin-shell">
+
+    <section class="signin-hero">
+
+        {# ✅ BRAND-MARK SUPPRIMÉ #}
+
+        <div class="brand-logo">
+            <img src="{{ asset('template/assets/img/logo2.png') }}" alt="AgriFlow">
+        </div>
+
+        <!-- <h1 class="brand-title">AgriFlow</h1> -->
+        <p class="brand-sub">La plateforme agricole intelligente</p>
+
+        <div class="brand-divider"></div>
+
+        <ul class="feature-list">
+            <li>Marketplace securise</li>
+            <li>Paiement en ligne Stripe</li>
+            <li>IA integree (Gemini)</li>
+            <li>Gestion de stock intelligente</li>
+        </ul>
+
+    </section>
+
+    <section class="signin-form">
+
+        <h2 class="signin-title">Bienvenue</h2>
+        <p class="signin-subtitle">Connectez-vous a votre compte</p>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                Email ou mot de passe incorrect.
+            </div>
+        {% endif %}
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        <form method="post" data-turbo="false">
+
+            <div class="field">
+                <label>Email</label>
+                <input type="email" name="_username" value="{{ last_username }}" required autofocus>
+            </div>
+
+            <div class="field">
+                <label>Mot de passe</label>
+                <input type="password" name="_password" required>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <div class="inline-row">
+                <label><input type="checkbox" name="_remember_me"> Se souvenir</label>
+                <a href="{{ path('app_forgot_password') }}">Mot de passe oublie ?</a>
+            </div>
+
+            <button class="btn btn-primary">Se connecter</button>
+
+        </form>
+
+        <a class="btn btn-secondary" href="{{ path('site_home') }}">Annuler</a>
+
+        <p class="footer-line">
+            Pas de compte ? <a href="{{ path('app_register') }}">Creer un compte</a>
+        </p>
+
+    </section>
+
+</main>
+{% endblock %}

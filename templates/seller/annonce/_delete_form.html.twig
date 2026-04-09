@@ -1,0 +1,4 @@
+<form method="post" action="{{ path('app_seller_annonce_delete', {id: annonce.id}) }}" class="agf-inline-form" onsubmit="return confirm('Supprimer cette annonce ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete-seller-annonce-' ~ annonce.id) }}">
+    <button class="btn btn-sm btn-outline-danger">Supprimer</button>
+</form>

@@ -1,0 +1,59 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Contact - AgriFlow{% endblock %}
+
+{% block front_hero %}
+    <section class="section agf-page-hero">
+        <div class="container text-center">
+            <span class="agf-eyebrow text-success">Contact</span>
+            <h1 class="display-6 mb-3">Besoin d un renseignement sur une annonce ou un service ?</h1>
+            <p class="lead text-muted mb-0">
+                Notre equipe vous repond pour toute question liee a une offre, une reservation ou a l utilisation de la plateforme.
+            </p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block front_body %}
+    <section class="section pt-0">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="agf-soft-card">
+                        <h2 class="mb-3">Envoyer un message</h2>
+                        <p class="text-muted">
+                            Remplissez ce formulaire pour nous transmettre votre besoin, demander des informations ou signaler un probleme.
+                        </p>
+
+                        {{ form_start(contactForm) }}
+                            <div class="row">
+                                <div class="col-md-6">{{ form_row(contactForm.nom) }}</div>
+                                <div class="col-md-6">{{ form_row(contactForm.email) }}</div>
+                            </div>
+                            {{ form_row(contactForm.sujet) }}
+                            {{ form_row(contactForm.message) }}
+                            <button class="btn btn-success">Envoyer le message</button>
+                        {{ form_end(contactForm) }}
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <div class="agf-contact-card">
+                        <span class="agf-page-kicker">Coordonnees</span>
+                        <h2 class="h4 mb-3">Equipe AgriFlow</h2>
+                        <p class="mb-3">
+                            Nous accompagnons les clients et les vendeurs pour faciliter la publication des annonces et le suivi des demandes.
+                        </p>
+                        <ul class="agf-check-list">
+                            <li>Email : marketplace.agriflow@esprit.tn</li>
+                            <li>Assistance : du lundi au vendredi</li>
+                            <li>Zones couvertes : vente, location et reservations</li>
+                            <li>Espace vendeur : disponible pour le suivi des demandes</li>
+                        </ul>
+                        <a href="{{ path('app_marketplace_index') }}" class="btn btn-outline-success mt-2">Retour au catalogue</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

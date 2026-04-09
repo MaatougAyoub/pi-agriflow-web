@@ -1,0 +1,45 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Conseil pratique - AgriFlow{% endblock %}
+
+{% block front_hero %}
+    <section class="section agf-page-hero">
+        <div class="container text-center">
+            <span class="agf-eyebrow text-success">Conseil pratique</span>
+            <h1 class="display-6 mb-3">Reussir la presentation d une annonce de location agricole.</h1>
+            <p class="lead text-muted mb-0">
+                Une offre claire inspire davantage confiance et aide a transformer plus vite une visite en demande reelle.
+            </p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block front_body %}
+    <section class="section pt-0">
+        <div class="container">
+            <article class="agf-soft-card">
+                <img src="{{ asset('template/assets/img/hero_3.jpg') }}" alt="Irrigation et culture" class="img-fluid agf-section-image mb-4">
+                <h2 class="mb-3">Ce qu une bonne annonce doit montrer</h2>
+                <p>
+                    Une annonce efficace doit mettre en avant le type de materiel ou de produit, son prix, sa disponibilite,
+                    sa localisation et une image lisible des le premier regard.
+                </p>
+
+                <h3 class="h4 mt-4">Les points qui rassurent le client</h3>
+                <ul class="agf-check-list">
+                    <li>Un titre simple et precis</li>
+                    <li>Une photo propre et bien cadree</li>
+                    <li>Un prix visible avec son unite</li>
+                    <li>Une disponibilite claire</li>
+                    <li>Un formulaire de demande rapide</li>
+                </ul>
+
+                <h3 class="h4 mt-4">Pourquoi ce format fonctionne</h3>
+                <p class="mb-0">
+                    Quand la fiche annonce est lisible, le client comprend plus vite l offre et le vendeur recoit des demandes mieux qualifiees.
+                    C est exactement ce que recherche une marketplace orientee terrain.
+                </p>
+            </article>
+        </div>
+    </section>
+{% endblock %}

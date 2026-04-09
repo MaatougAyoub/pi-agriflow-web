@@ -1,10 +1,28 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
+<<<<<<< HEAD
         profiling_collect_backtrace: '%kernel.debug%'
 
     orm:
         auto_mapping: false
+=======
+        schema_filter: '~^(utilisateurs|doctrine_migration_versions)$~'
+
+        # IMPORTANT: You MUST configure your server version,
+        # either here or in the DATABASE_URL env var (see .env file)
+        #server_version: '16'
+
+        profiling_collect_backtrace: '%kernel.debug%'
+    orm:
+        auto_generate_proxy_classes: true
+        enable_lazy_ghost_objects: true
+        validate_xml_mapping: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        controller_resolver:
+            auto_mapping: false
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
         mappings:
             App:
                 type: attribute
@@ -16,11 +34,20 @@ doctrine:
 when@test:
     doctrine:
         dbal:
+<<<<<<< HEAD
+=======
+            # "TEST_TOKEN" is typically set by ParaTest
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
 
 when@prod:
     doctrine:
         orm:
+<<<<<<< HEAD
+=======
+            auto_generate_proxy_classes: false
+            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb
             query_cache_driver:
                 type: pool
                 pool: doctrine.system_cache_pool
@@ -34,4 +61,8 @@ when@prod:
                 doctrine.result_cache_pool:
                     adapter: cache.app
                 doctrine.system_cache_pool:
+<<<<<<< HEAD
                     adapter: cache.system
+=======
+                    adapter: cache.system
+>>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb

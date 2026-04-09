@@ -1,0 +1,12 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block admin_title %}Modifier une annonce{% endblock %}
+{% block admin_subtitle %}Mettez a jour les informations de l annonce{% endblock %}
+
+{% block admin_body %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            {{ include('admin/annonce/_form.html.twig', {form: form, button_label: 'Mettre a jour'}) }}
+        </div>
+    </div>
+{% endblock %}

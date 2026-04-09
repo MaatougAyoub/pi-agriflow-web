@@ -1,0 +1,272 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter Reclamation | AgriFlow{% endblock %}
+
+{% block stylesheets %}
+<style data-turbo-temporary>
+:root {
+    --green-900:#1f6f34;
+    --green-800:#2e7d32;
+    --ink:#263238;
+    --line:#e2e8ee;
+    --danger:#c62828;
+    --danger-bg:#ffebee;
+    --success:#1b5e20;
+    --success-bg:#e8f5e9;
+}
+
+* { box-sizing:border-box; }
+
+body {
+    margin:0;
+    min-height:100vh;
+    font-family:"Segoe UI","Noto Sans",sans-serif;
+    color:var(--ink);
+    background:#f5f5f5;
+    padding:18px;
+}
+
+.page-shell {
+    width:100%;
+    max-width:980px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:16px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.14);
+    overflow:hidden;
+}
+
+.page-header {
+    padding:20px 24px;
+    border-bottom:1px solid var(--line);
+}
+
+.page-title {
+    margin:0;
+    color:var(--green-900);
+    font-size:28px;
+    font-weight:800;
+}
+
+.page-subtitle {
+    margin:8px 0 0;
+    color:var(--green-800);
+    font-size:18px;
+}
+
+.page-content {
+    padding:20px 24px 26px;
+    display:grid;
+    gap:14px;
+}
+
+.alert {
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+}
+
+.alert-danger {
+    background:var(--danger-bg);
+    color:var(--danger);
+}
+
+.alert-success {
+    background:var(--success-bg);
+    color:var(--success);
+}
+
+.form-card {
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+}
+
+.form-grid {
+    display:grid;
+    gap:12px;
+}
+
+.form-grid label {
+    font-weight:700;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+    width:100%;
+    border:1.5px solid #dfe3e8;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:15px;
+}
+
+.form-grid textarea {
+    min-height:180px;
+    resize:vertical;
+}
+
+.actions {
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.form-error-list {
+    margin:0;
+    padding-left:18px;
+    display:grid;
+    gap:4px;
+}
+
+.btn {
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:0 16px;
+}
+
+.btn-primary {
+    background:#2e7d32;
+    color:#fff;
+}
+
+.btn-secondary {
+    background:#757575;
+    color:#fff;
+}
+
+.btn-light {
+    border:1px solid #dfe3e8;
+    background:#fff;
+    color:#6e7a86;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<main class="page-shell">
+    <header class="page-header">
+        <h1 class="page-title">AgriFlow - Reclamations</h1>
+        <p class="page-subtitle">Ajouter reclamation</p>
+    </header>
+
+    <section class="page-content">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        <div id="reclamationClientErrors"></div>
+
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="alert alert-danger">
+                <ul class="form-error-list">
+                    {% for error in form.categorie.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                    {% for error in form.titre.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                    {% for error in form.description.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="form-card">
+            {{ form_start(form, {attr: {class: 'form-grid', id: 'reclamationAddForm', novalidate: 'novalidate'}}) }}
+                {{ form_row(form.categorie) }}
+                {{ form_row(form.titre) }}
+                {{ form_row(form.description) }}
+
+                <div class="actions">
+                    <a class="btn btn-light" href="{{ path('app_reclamation_index') }}">Liste des reclamations</a>
+                    <a class="btn btn-secondary" href="{{ path('app_profile') }}">Retour profil</a>
+                    <button class="btn btn-primary" type="submit">Valider reclamation</button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </section>
+</main>
+
+<script data-turbo-temporary>
+(function () {
+    const form = document.getElementById('reclamationAddForm');
+    if (!form || form.dataset.validationBound === '1') {
+        return;
+    }
+
+    form.dataset.validationBound = '1';
+
+    const clientErrors = document.getElementById('reclamationClientErrors');
+    const categorieInput = form.querySelector('#reclamation_categorie');
+    const titreInput = form.querySelector('#reclamation_titre');
+    const descriptionInput = form.querySelector('#reclamation_description');
+
+    function renderClientError(message) {
+        if (!clientErrors) {
+            return;
+        }
+
+        clientErrors.innerHTML = '';
+        if (!message) {
+            return;
+        }
+
+        const errorBox = document.createElement('div');
+        errorBox.className = 'alert alert-danger';
+        errorBox.textContent = message;
+        clientErrors.appendChild(errorBox);
+    }
+
+    function getFirstValidationError() {
+        if (!categorieInput || categorieInput.value.trim() === '') {
+            return 'Veuillez choisir une categorie.';
+        }
+
+        if (!titreInput || titreInput.value.trim() === '') {
+            return 'Veuillez entrer un titre.';
+        }
+
+        if (!descriptionInput || descriptionInput.value.trim() === '') {
+            return 'Veuillez entrer une description.';
+        }
+
+        return null;
+    }
+
+    form.addEventListener('submit', function (event) {
+        const errorMessage = getFirstValidationError();
+        if (errorMessage) {
+            event.preventDefault();
+            renderClientError(errorMessage);
+            return;
+        }
+
+        renderClientError(null);
+    });
+
+    [categorieInput, titreInput, descriptionInput].forEach(function (input) {
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener('input', function () {
+            renderClientError(null);
+        });
+
+        input.addEventListener('change', function () {
+            renderClientError(null);
+        });
+    });
+})();
+</script>
+{% endblock %}

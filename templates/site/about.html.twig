@@ -1,0 +1,67 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}A propos - AgriFlow{% endblock %}
+
+{% block front_hero %}
+    <section class="section agf-page-hero">
+        <div class="container text-center">
+            <span class="agf-eyebrow text-success">A propos</span>
+            <h1 class="display-6 mb-3">AgriFlow simplifie les echanges entre producteurs, vendeurs et clients.</h1>
+            <p class="lead text-muted mb-0">
+                La plateforme a ete pensee pour rendre la vente, la location et la reservation plus accessibles dans le secteur agricole.
+            </p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block front_body %}
+    <section class="section pt-0">
+        <div class="container">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-6">
+                    <div class="agf-soft-card h-100">
+                        <span class="agf-page-kicker">Notre vision</span>
+                        <h2 class="mb-3">Creer un espace plus fluide pour le marche agricole</h2>
+                        <p>
+                            AgriFlow aide les producteurs a valoriser leurs offres et permet aux clients de trouver plus rapidement
+                            le bon produit ou le bon materiel.
+                        </p>
+                        <p class="mb-0">
+                            L objectif est de proposer une experience lisible, professionnelle et facile a utiliser pour les deux cotes de la plateforme.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="{{ asset('uploads/marketplace/tracteur-cover.jpg') }}" alt="Tracteur agricole" class="img-fluid agf-section-image">
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <div class="col-lg-4">
+                    <div class="agf-soft-card h-100">
+                        <h3 class="h4">Pour les vendeurs</h3>
+                        <p class="mb-0">
+                            Un espace dedie permet de publier une annonce, mettre a jour la disponibilite et suivre les demandes recues.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="agf-soft-card h-100">
+                        <h3 class="h4">Pour les clients</h3>
+                        <p class="mb-0">
+                            Le catalogue permet de parcourir les annonces, consulter les details et envoyer une reservation sans parcours complique.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="agf-soft-card h-100">
+                        <h3 class="h4">Pour la plateforme</h3>
+                        <p class="mb-0">
+                            La separation entre l espace public et l espace professionnel rend la gestion plus claire et ameliore l experience globale.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
