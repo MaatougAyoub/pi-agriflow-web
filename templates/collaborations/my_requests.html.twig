@@ -1,0 +1,134 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Mes demandes - Collaborations{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-list-check me-2 text-success"></i>Mes demandes de collaboration</h2>
+                <p class="text-muted mb-0">Gérez les demandes que vous avez publiées</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+                <a href="{{ path('app_collab_new') }}" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Nouvelle demande</a>
+            </div>
+        </div>
+
+        <form method="get" action="{{ path('app_collab_my_requests') }}" class="card border-0 shadow-sm p-3 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5 col-lg-4">
+                    <label class="form-label small text-muted mb-1">Statut</label>
+                    <select name="status" class="form-select">
+                        <option value="ALL" {{ filter_status == 'ALL' ? 'selected' }}>Tous</option>
+                        <option value="PENDING" {{ filter_status == 'PENDING' ? 'selected' }}>En attente</option>
+                        <option value="APPROVED" {{ filter_status == 'APPROVED' ? 'selected' }}>Approuvée</option>
+                        <option value="REJECTED" {{ filter_status == 'REJECTED' ? 'selected' }}>Refusée</option>
+                    </select>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <label class="form-label small text-muted mb-1">Tri</label>
+                    <select name="sort" class="form-select">
+                        <option value="date_desc" {{ list_sort == 'date_desc' ? 'selected' }}>Création (récent → ancien)</option>
+                        <option value="date_asc" {{ list_sort == 'date_asc' ? 'selected' }}>Création (ancien → récent)</option>
+                        <option value="title_asc" {{ list_sort == 'title_asc' ? 'selected' }}>Titre (A → Z)</option>
+                        <option value="salary_desc" {{ list_sort == 'salary_desc' ? 'selected' }}>Salaire décroissant</option>
+                        <option value="salary_asc" {{ list_sort == 'salary_asc' ? 'selected' }}>Salaire croissant</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-lg-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success"><i class="bi bi-funnel me-1"></i>Filtrer</button>
+                    {% if filter_status != 'ALL' or list_sort != 'date_desc' %}
+                        <a href="{{ path('app_collab_my_requests') }}" class="btn btn-outline-secondary">Réinit.</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        {% if requests|length == 0 %}
+            <div class="text-center py-5">
+                <i class="bi bi-clipboard-x" style="font-size: 4rem; color: #ccc;"></i>
+                <h3 class="text-muted mt-3">Aucune demande ne correspond à ces critères</h3>
+                {% if filter_status != 'ALL' %}
+                    <a href="{{ path('app_collab_my_requests') }}" class="btn btn-outline-success mt-2">Voir toutes mes demandes</a>
+                {% else %}
+                    <a href="{{ path('app_collab_new') }}" class="btn btn-success mt-3">Publier ma première demande</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Titre</th>
+                            <th class="text-center">Lieu</th>
+                            <th class="text-center">Période</th>
+                            <th class="text-center">Personnes</th>
+                            <th class="text-center">Salaire</th>
+                            <th class="text-center">Candidatures</th>
+                            <th class="text-center">Statut</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('app_collab_show', {id: req.id}) }}" class="text-decoration-none fw-bold text-dark">
+                                    {{ req.title }}
+                                </a>
+                            </td>
+                            <td class="text-center"><span class="badge bg-light text-dark border"><i class="bi bi-geo-alt me-1"></i>{{ req.location }}</span></td>
+                            <td class="text-center text-nowrap" style="font-size: 0.85rem;">
+                                {{ req.startDate|date('d/m') }} → {{ req.endDate|date('d/m/Y') }}
+                            </td>
+                            <td class="text-center">{{ req.neededPeople }}</td>
+                            <td class="text-center fw-bold">{{ req.salary }} DT</td>
+                            <td class="text-center">
+                                {% set count = applicationCounts[req.id] ?? 0 %}
+                                {% if count > 0 %}
+                                    <a href="{{ path('app_collab_view_applications', {id: req.id}) }}" class="badge bg-primary text-decoration-none" style="font-size: 0.9rem;">
+                                        {{ count }} <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">0</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if req.status == 'APPROVED' %}
+                                    <span class="badge bg-success">Approuvée</span>
+                                {% elseif req.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% elseif req.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">Refusée</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ req.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ path('app_collab_edit', {id: req.id}) }}" class="btn btn-outline-warning" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{{ path('app_collab_view_applications', {id: req.id}) }}" class="btn btn-outline-primary" title="Candidatures">
+                                        <i class="bi bi-people"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_collab_delete', {id: req.id}) }}" style="display:inline;"
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ req.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}{{ request.title }} - Collaborations{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {# Bouton retour #}
+                <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary mb-3">
+                    <i class="bi bi-arrow-left me-1"></i>Retour aux collaborations
+                </a>
+
+                <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+                    {# Header #}
+                    <div class="card-header bg-success text-white py-4 px-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="mb-1">{{ request.title }}</h3>
+                                <p class="mb-0 opacity-75">
+                                    <i class="bi bi-person me-1"></i>Publié par {{ request.publisher ?? 'Anonyme' }}
+                                    — <i class="bi bi-calendar3 me-1"></i>{{ request.createdAt|date('d/m/Y') }}
+                                </p>
+                            </div>
+                            <span class="badge bg-{{ request.status == 'APPROVED' ? 'light text-success' : (request.status == 'PENDING' ? 'warning text-dark' : 'danger') }} fs-6">
+                                {{ request.status == 'APPROVED' ? '✓ Approuvée' : (request.status == 'PENDING' ? '⏳ En attente' : '✗ Refusée') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        {# Infos principales #}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 rounded-3 text-center" style="background: #f0fdf4;">
+                                    <i class="bi bi-geo-alt fs-4 text-success"></i>
+                                    <p class="mb-0 fw-bold mt-1">{{ request.location }}</p>
+                                    <small class="text-muted">Localisation</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 rounded-3 text-center" style="background: #eff6ff;">
+                                    <i class="bi bi-people fs-4 text-primary"></i>
+                                    <p class="mb-0 fw-bold mt-1">{{ request.neededPeople }}</p>
+                                    <small class="text-muted">Personnes</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 rounded-3 text-center" style="background: #fefce8;">
+                                    <i class="bi bi-cash fs-4 text-warning"></i>
+                                    <p class="mb-0 fw-bold mt-1">{{ request.salary }} DT</p>
+                                    <small class="text-muted">Salaire/jour</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="p-3 rounded-3 text-center" style="background: #faf5ff;">
+                                    <i class="bi bi-send-check fs-4 text-info"></i>
+                                    <p class="mb-0 fw-bold mt-1">{{ applicationCount }}</p>
+                                    <small class="text-muted">Candidature(s)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Dates #}
+                        <div class="d-flex gap-4 mb-4 p-3 rounded-3" style="background: #f9fafb;">
+                            <div>
+                                <small class="text-muted d-block">Date de début</small>
+                                <span class="fw-bold text-success"><i class="bi bi-calendar-check me-1"></i>{{ request.startDate|date('d/m/Y') }}</span>
+                            </div>
+                            <div class="border-start ps-4">
+                                <small class="text-muted d-block">Date de fin</small>
+                                <span class="fw-bold text-danger"><i class="bi bi-calendar-x me-1"></i>{{ request.endDate|date('d/m/Y') }}</span>
+                            </div>
+                        </div>
+
+                        {# Description #}
+                        <h5 class="fw-bold mb-3"><i class="bi bi-text-left me-2"></i>Description</h5>
+                        <div class="p-3 rounded-3 mb-4" style="background: #f9fafb;">
+                            <p class="mb-0" style="white-space: pre-line;">{{ request.description }}</p>
+                        </div>
+
+                        {# Actions #}
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if app.user %}
+                                {% if app.user != request.requester %}
+                                    {% if hasApplied %}
+                                        <button class="btn btn-secondary btn-lg" disabled>
+                                            <i class="bi bi-check-circle me-1"></i>Déjà postulé
+                                        </button>
+                                    {% elseif request.status == 'APPROVED' %}
+                                        <a href="{{ path('app_collab_apply', {id: request.id}) }}" class="btn btn-success btn-lg">
+                                            <i class="bi bi-send me-1"></i>Postuler maintenant
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{{ path('app_collab_edit', {id: request.id}) }}" class="btn btn-outline-warning">
+                                        <i class="bi bi-pencil me-1"></i>Modifier
+                                    </a>
+                                    <a href="{{ path('app_collab_view_applications', {id: request.id}) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-people me-1"></i>Voir les candidatures ({{ applicationCount }})
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ path('app_login') }}" class="btn btn-success btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Connectez-vous pour postuler
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

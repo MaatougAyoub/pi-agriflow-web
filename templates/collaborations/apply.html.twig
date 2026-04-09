@@ -1,0 +1,81 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Postuler - {{ request.title }}{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {# Résumé de la demande #}
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #f0fdf4, #ecfdf5);">
+                    <div class="card-body p-4">
+                        <h5 class="text-success fw-bold mb-2"><i class="bi bi-briefcase me-2"></i>{{ request.title }}</h5>
+                        <div class="d-flex flex-wrap gap-3">
+                            <span><i class="bi bi-geo-alt text-muted me-1"></i>{{ request.location }}</span>
+                            <span><i class="bi bi-cash text-muted me-1"></i>{{ request.salary }} DT/jour</span>
+                            <span><i class="bi bi-calendar text-muted me-1"></i>{{ request.startDate|date('d/m/Y') }} → {{ request.endDate|date('d/m/Y') }}</span>
+                            <span><i class="bi bi-people text-muted me-1"></i>{{ request.neededPeople }} personne(s)</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Formulaire de candidature #}
+                <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                    <div class="card-header bg-primary text-white py-3" style="border-radius: 16px 16px 0 0;">
+                        <h4 class="mb-0"><i class="bi bi-send me-2"></i>Envoyer ma candidature</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        {% form_theme form 'bootstrap_5_layout.html.twig' %}
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        {% if form.vars.submitted and not form.vars.valid %}
+                            <div class="alert alert-danger mb-4" role="alert">
+                                <strong>Le formulaire est incomplet.</strong> Corrigez les champs indiqués ci-dessous.
+                                {{ form_errors(form) }}
+                            </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.fullName) }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.email) }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form_row(form.phone) }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_row(form.yearsOfExperience) }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_row(form.expectedSalary) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(form.motivation) }}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('app_collab_show', {id: request.id}) }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-send-check me-1"></i>Envoyer ma candidature
+                            </button>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
