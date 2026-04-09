@@ -1,5 +1,4 @@
 import './bootstrap.js';
-<<<<<<< HEAD
 /*
  * Welcome to your app's main JavaScript file!
  *
@@ -9,7 +8,6 @@ import './bootstrap.js';
 import './styles/app.css';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
-=======
 import './styles/app.css';
 
 const EYE_ICON = `
@@ -72,4 +70,3 @@ function initPasswordToggles() {
 
 document.addEventListener('DOMContentLoaded', initPasswordToggles);
 document.addEventListener('turbo:load', initPasswordToggles);
->>>>>>> 2e5d736b7c09004bb95e82e33ea9ef850dfb84eb

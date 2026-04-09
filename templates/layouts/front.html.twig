@@ -27,6 +27,53 @@
                     <li><a href="{{ path('app_marketplace_index') }}" class="{{ current_route starts with 'app_marketplace_' ? 'active' : '' }}">Marketplace</a></li>
                     <li><a href="{{ path('site_services') }}" class="{{ current_route == 'site_services' ? 'active' : '' }}">Services</a></li>
                     <li><a href="{{ path('site_about') }}" class="{{ current_route == 'site_about' ? 'active' : '' }}">A propos</a></li>
+                    {# Remplace le simple lien Irrigation par ce bloc dropdown #}
+                    <li class="dropdown custom-irrigation-dropdown">
+                        <a href="#" class="{{ 'plan_' in current_route or 'irrigation' in current_route ? 'active' : '' }}">                            <span>Irrigation</span> <i class="bi bi-chevron-down toggle-dropdown"></i>
+                        </a>
+                        <ul>
+                            {# --- OPTIONS POUR L'AGRICULTEUR --- #}
+                            {% if is_granted('ROLE_AGRICULTEUR') %}
+                                <li>
+                                    <a href="{{ path('app_agriculteur_irrigation') }}">
+                                        <i class="bi bi-droplet"></i> Mes Plans d'irrigation
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('app_agriculteur_nouveau_diagnostic') }}">
+                                        <i class="bi bi-plus-circle"></i> Nouveau Diagnostic
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('app_agriculteur_diagnostics') }}">
+                                        <i class="bi bi-journal-text"></i> Historique Diagnostics
+                                    </a>
+                                </li>
+
+                            {# --- OPTIONS POUR L'EXPERT --- #}
+                            {% elseif is_granted('ROLE_EXPERT') %}
+                                <li>
+                                    <a href="{{ path('app_expert_irrigation') }}">
+                                        <i class="bi bi-clipboard-check"></i> Plans à valider
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('app_expert_produits') }}">
+                                        <i class="bi bi-box-seam"></i> Gérer les Produits
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('app_expert_diagnostics') }}">
+                                        <i class="bi bi-chat-left-dots"></i> Diagnostics reçus
+                                    </a>
+                                </li>
+
+                            {# --- SI PAS CONNECTÉ (Public) --- #}
+                            {% else %}
+                                <li><a href="{{ path('app_login') }}">Connectez-vous pour voir vos plans</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
                     <li><a href="{{ path('site_contact') }}" class="{{ current_route == 'site_contact' ? 'active' : '' }}">Contact</a></li>
                     {% if app.user %}
                         <li><a href="{{ path('app_profile') }}" class="{{ current_route starts with 'app_profile' ? 'active' : '' }}">Profil</a></li>

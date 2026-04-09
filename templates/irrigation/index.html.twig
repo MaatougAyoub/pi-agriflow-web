@@ -1,0 +1,93 @@
+﻿{% extends 'base.html.twig' %}
+
+{% block title %}Mes Plans d'Irrigation - AgriFlow{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    {# En-tête avec titre dynamique #}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="page-subtitle">Gestion Agricole</span>
+            <h1 class="page-title">💧 Plans d'Irrigation</h1>
+        </div>
+        
+        {# Seul l'agriculteur peut créer un nouveau plan #}
+        {% if is_granted('ROLE_USER') and not is_granted('ROLE_EXPERT') %}
+            <a href="{{ path('plan_new') }}" class="agf-auth-link agf-auth-link--login">
+                <i class="bi bi-plus-circle me-2"></i> Nouveau diagnostic
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="agf-summary-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="m-0 font-weight-bold" style="color: #1B4332;">
+                {% if is_granted('ROLE_EXPERT') %}
+                    Demandes de plans à réviser
+                {% else %}
+                    Liste de vos plans actifs
+                {% endif %}
+            </h6>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Culture</th>
+                        <th>Besoin en Eau</th>
+                        <th>Statut</th>
+                        <th>Date de création</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td class="font-weight-bold" style="color: #2D6A4F;">
+                            {{ plan.culture.nom|default('Non spécifiée') }}
+                        </td>
+                        <td><strong>{{ plan.besoinEau }}</strong> <small class="text-muted">mm</small></td>
+                        <td>
+                            {% if plan.statut == 'approuvé' %}
+                                <span class="badge badge-green">Approuvé</span>
+                            {% else %}
+                                <span class="badge" style="background: #FEF3C7; color: #92400E;">En attente</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ plan.createdAt|date('d/m/Y') }}</td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="{{ path('plan_detail', {'id': plan.id}) }}" class="btn btn-sm btn-gray" title="Voir détails">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+
+                                {# L'expert voit un bouton pour approuver si c'est en attente #}
+                                {% if is_granted('ROLE_EXPERT') and plan.statut != 'approuvé' %}
+                                    <a href="{{ path('plan_approuver', {'id': plan.id}) }}" class="btn btn-sm btn-green mx-1">
+                                        <i class="fa-solid fa-check"></i> Approuver
+                                    </a>
+                                {% endif %}
+
+                                <a href="{{ path('plan_delete', {'id': plan.id}) }}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('Supprimer ce plan définitivement ?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-info-circle fa-2x mb-3"></i><br>
+                            Aucun plan d'irrigation trouvé.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
