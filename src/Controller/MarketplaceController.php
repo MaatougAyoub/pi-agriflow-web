@@ -13,6 +13,7 @@ use App\Form\FrontReservationType;
 use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
 use App\Service\SellerMarketplaceService;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -24,15 +25,25 @@ use Symfony\Component\Routing\Attribute\Route;
 final class MarketplaceController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(Request $request, AnnonceRepository $annonceRepository): Response
+    public function index(
+        Request $request,
+        AnnonceRepository $annonceRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
         // filter: houni njiib texte recherche w type men query string mta3 page marketplace
         $keyword = $request->query->getString('q');
         $type = AnnonceType::tryFrom((string) $request->query->get('type'));
-        // view: searchPublic njiibou beha ken annonces disponibles bech public catalogue yeb9a logique
-        $annonces = $annonceRepository->searchPublic($keyword, $type);
+        // view: n5admou query builder bech KnpPaginator y9assem liste marketplace b page propre
+        $annonces = $paginator->paginate(
+            $annonceRepository->createPublicSearchQueryBuilder($keyword, $type),
+            $request->query->getInt('page', 1),
+            6
+        );
+        // view: searchPublic njiibou beha kol annonces filtrées bech stats yeb9aw exact
+        $statsAnnonces = $annonceRepository->searchPublic($keyword, $type);
         $stats = [
-            'total' => count($annonces),
+            'total' => count($statsAnnonces),
             'vente' => 0,
             'location' => 0,
             'zones' => 0,
@@ -40,7 +51,7 @@ final class MarketplaceController extends AbstractController
         $localisations = [];
 
         // stats: houni n7sbou chiffres sghar bech nwarri resume 3la catalogue
-        foreach ($annonces as $annonce) {
+        foreach ($statsAnnonces as $annonce) {
             if ($annonce->isLocation()) {
                 ++$stats['location'];
             } else {
@@ -60,13 +71,14 @@ final class MarketplaceController extends AbstractController
             ],
             'stats' => $stats,
             'types' => AnnonceType::cases(),
-            'visuals' => $this->buildAnnonceVisuals($annonces),
+            'visuals' => $this->buildAnnonceVisuals(iterator_to_array($annonces)),
         ]);
     }
 
     #[Route('/annonce/{id}', name: 'show', methods: ['GET'])]
     public function show(
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
+        AnnonceRepository $annonceRepository,
         ReservationRepository $reservationRepository,
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
@@ -81,6 +93,7 @@ final class MarketplaceController extends AbstractController
         $canReserve = $isAgriculteurViewer
             && !$isOwnerViewer
             && $annonce->getStatut() === AnnonceStatut::DISPONIBLE;
+        $similarAnnonces = $annonceRepository->findSimilarPublic($annonce, 4);
 
         return $this->render('marketplace/show.html.twig', [
             'annonce' => $annonce,
@@ -93,6 +106,8 @@ final class MarketplaceController extends AbstractController
                 5
             ),
             'visual' => $this->buildAnnonceVisual($annonce),
+            'similarAnnonces' => $similarAnnonces,
+            'similarVisuals' => $this->buildAnnonceVisuals($similarAnnonces),
             'canReserve' => $canReserve,
             'isAdminViewer' => $this->isGranted('ROLE_ADMIN'),
             'isAgriculteurViewer' => $isAgriculteurViewer,

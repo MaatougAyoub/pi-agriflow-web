@@ -9,10 +9,13 @@ use App\Entity\Reservation;
 use App\Entity\Utilisateur;
 use App\Enum\ReservationStatut;
 use App\Form\FrontReservationType;
+use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
 use App\Service\ReservationPricingService;
+use App\Service\ReservationPdfService;
 use App\Service\SellerMarketplaceService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -30,6 +33,7 @@ final class ReservationController extends AbstractController
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
         EntityManagerInterface $entityManager,
         ReservationPricingService $pricingService,
+        AnnonceRepository $annonceRepository,
         ReservationRepository $reservationRepository,
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
@@ -101,6 +105,7 @@ final class ReservationController extends AbstractController
 
         // validation: ken fama erreur nrendrou nafs page b status 422 bech feedback yban
         $this->addFlash('danger', 'Le formulaire de reservation contient des erreurs.');
+        $similarAnnonces = $annonceRepository->findSimilarPublic($annonce, 4);
 
         return $this->render('marketplace/show.html.twig', [
             'annonce' => $annonce,
@@ -111,6 +116,8 @@ final class ReservationController extends AbstractController
                 5
             ),
             'visual' => $this->buildAnnonceVisual($annonce),
+            'similarAnnonces' => $similarAnnonces,
+            'similarVisuals' => $this->buildAnnonceVisuals($similarAnnonces),
             'canReserve' => true,
             'isAgriculteurViewer' => true,
             'isAdminViewer' => false,
@@ -120,7 +127,11 @@ final class ReservationController extends AbstractController
 
     #[IsGranted('ROLE_AGRICULTEUR')]
     #[Route('/mes-reservations', name: 'app_reservation_my', methods: ['GET'])]
-    public function myReservations(ReservationRepository $reservationRepository): Response
+    public function myReservations(
+        Request $request,
+        ReservationRepository $reservationRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
         $user = $this->getUser();
 
@@ -131,8 +142,43 @@ final class ReservationController extends AbstractController
 
         // reservation: hedhi liste demandes eli user ba3athhom comme client
         return $this->render('reservation/my_reservations.html.twig', [
-            'reservations' => $reservationRepository->findByClientIdForMarketplace($user->getId()),
+            'reservations' => $paginator->paginate(
+                $reservationRepository->createByClientIdForMarketplaceQueryBuilder($user->getId()),
+                $request->query->getInt('page', 1),
+                8
+            ),
         ]);
+    }
+
+    #[IsGranted('ROLE_AGRICULTEUR')]
+    #[Route('/mes-reservations/{id}/devis', name: 'app_reservation_quote', methods: ['GET'])]
+    public function quote(
+        #[MapEntity(mapping: ['id' => 'id'])] Reservation $reservation,
+        ReservationPdfService $reservationPdfService
+    ): Response {
+        $user = $this->getUser();
+
+        if (!$user instanceof Utilisateur || null === $user->getId() || $reservation->getClientId() !== $user->getId()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a ce devis.');
+        }
+
+        return $reservationPdfService->streamReservationQuote($reservation, 'devis-client');
+    }
+
+    /**
+     * @param list<Annonce> $annonces
+     *
+     * @return array<int, array{image: string, alt: string, position: string, isExternal: bool}>
+     */
+    private function buildAnnonceVisuals(array $annonces): array
+    {
+        $visuals = [];
+
+        foreach ($annonces as $annonce) {
+            $visuals[$annonce->getId() ?? 0] = $this->buildAnnonceVisual($annonce);
+        }
+
+        return $visuals;
     }
 
     /**

@@ -29,6 +29,7 @@
                                     <th>Quantite</th>
                                     <th>Total</th>
                                     <th>Statut</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -36,22 +37,35 @@
                                     <tr>
                                         <td>
                                             <div class="fw-semibold">{{ reservation.annonce.titre }}</div>
-                                            <div class="small text-muted">{{ reservation.annonce.localisation }}</div>
+                                            <div class="small text-muted">{{ reservation.annonce.localisationNormalisee ?: reservation.annonce.localisation }}</div>
                                         </td>
-                                        <td>{{ reservation.dateDebut|date('d/m/Y') }} - {{ reservation.dateFin|date('d/m/Y') }}</td>
+                                        <td>
+                                            {% if reservation.annonce.isLocation() %}
+                                                {{ reservation.dateDebut|date('d/m/Y') }} - {{ reservation.dateFin|date('d/m/Y') }}
+                                            {% else %}
+                                                Vente ponctuelle
+                                            {% endif %}
+                                        </td>
                                         <td>{{ reservation.quantite }}</td>
                                         <td>{{ reservation.prixTotal }} TND</td>
                                         <td>{{ reservation.statut.label() }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ path('app_reservation_quote', {id: reservation.id}) }}" class="btn btn-sm btn-outline-secondary">Devis PDF</a>
+                                        </td>
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted">Aucune reservation enregistree pour le moment.</td>
+                                        <td colspan="6" class="text-center py-4 text-muted">Aucune reservation enregistree pour le moment.</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <div class="agf-pagination mt-4">
+                {{ knp_pagination_render(reservations) }}
             </div>
         </div>
     </section>
