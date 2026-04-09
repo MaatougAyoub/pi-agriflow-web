@@ -9,8 +9,36 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+    .users-panel {
+        width: 100%;
+    }
+
     .users-toolbar .form-control {
         min-height: 42px;
+    }
+
+    .users-table-wrap {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        min-width: 1380px;
+    }
+
+    .users-table th,
+    .users-table td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .users-table .email-cell {
+        max-width: 240px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .users-table .actions-cell {
+        min-width: 130px;
     }
 
     .user-thumb {
@@ -131,13 +159,14 @@
 
 {% block front_body %}
 <section class="section">
-    <div class="container">
+    <div class="container-fluid px-3 px-xl-4">
         {{ block('users_panel') }}
     </div>
 </section>
 {% endblock %}
 
 {% block users_panel %}
+<div class="users-panel">
     {% for message in app.flashes('success') %}
         <div class="alert alert-success">{{ message }}</div>
     {% endfor %}
@@ -166,8 +195,8 @@
 
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+            <div class="users-table-wrap">
+                <table class="table table-hover align-middle mb-0 users-table">
                     <thead class="table-light">
                         <tr>
                             <th>Nom</th>
@@ -181,7 +210,7 @@
                             <th>Carte pro</th>
                             <th>Certification</th>
                             <th>Adresse</th>
-                            <th class="text-end">Actions</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
@@ -192,7 +221,7 @@
                                 <td class="fw-semibold">{{ u.nom ?: '-' }}</td>
                                 <td class="fw-semibold">{{ u.prenom ?: '-' }}</td>
                                 <td class="text-muted">{{ u.cin ?: '-' }}</td>
-                                <td>{{ u.email ?: '-' }}</td>
+                                <td class="email-cell">{{ u.email ?: '-' }}</td>
                                 <td>
                                     {% if rowRole == 'ADMIN' %}
                                         <span class="role-pill role-admin">ADMIN</span>
@@ -242,13 +271,19 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ rowRole == 'AGRICULTEUR' ? (u.adresse ?: '-') : '-' }}</td>
-                                <td class="text-end">
-                                    <div class="d-flex flex-wrap gap-1 justify-content-end">
-                                        <button class="btn btn-sm btn-outline-success" type="button" disabled>Approuver</button>
-                                        <button class="btn btn-sm btn-outline-warning" type="button" disabled>Rejeter</button>
-                                        <form method="post" action="{{ path('app_admin_user_delete', {id: u.id, from: app.request.query.get('from')}) }}" class="d-inline" onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
+                                <td class="text-center actions-cell">
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Actions utilisateur">
+                                        <button class="btn btn-outline-success" type="button" title="Approuver" disabled>
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning" type="button" title="Rejeter" disabled>
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                        <form method="post" action="{{ path('app_admin_user_delete', {id: u.id, from: app.request.query.get('from')}) }}" class="d-inline-block" onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
-                                            <button class="btn btn-sm btn-outline-danger" type="submit" {% if app.user and app.user.id == u.id %}disabled{% endif %}>Supprimer</button>
+                                            <button class="btn btn-outline-danger" type="submit" title="Supprimer" {% if app.user and app.user.id == u.id %}disabled{% endif %}>
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </form>
                                     </div>
                                 </td>
@@ -375,4 +410,5 @@
         updateCount();
     })();
     </script>
+</div>
 {% endblock %}
