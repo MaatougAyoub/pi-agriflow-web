@@ -1,0 +1,228 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Mes cultures{% endblock %}
+{% block hero_title %}Mes cultures{% endblock %}
+{% block hero_subtitle %}Consultez vos cultures et vos achats depuis votre espace{% endblock %}
+{% block top_right_action %}
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ path('app_parcelle_index') }}" class="btn btn-outline-success">
+      <i class="bi bi-grid me-2"></i>Voir mes parcelles
+    </a>
+    <a href="{{ path('app_culture_marketplace') }}" class="btn btn-outline-success">
+      <i class="bi bi-shop me-2"></i>Voir marketplace cultures
+    </a>
+    <a href="{{ path('app_culture_new') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-2"></i>Ajouter une culture
+    </a>
+  </div>
+{% endblock %}
+
+{% block module_body %}
+  <style>
+    .culture-card {
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .culture-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .culture-card--harvested {
+      background: linear-gradient(180deg, rgba(248, 249, 250, 0.98), rgba(233, 236, 239, 0.96));
+      opacity: 0.88;
+    }
+
+    .culture-card--harvested .card-title,
+    .culture-card--harvested .card-text,
+    .culture-card--harvested li,
+    .culture-card--harvested .text-muted {
+      color: #5c636a !important;
+    }
+
+    .culture-badge-group {
+      gap: .35rem;
+    }
+  </style>
+
+  <form method="get" class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label for="search" class="form-label">Recherche par nom</label>
+          <input type="text" id="search" name="search" class="form-control" value="{{ filters.search }}" placeholder="Nom de culture">
+        </div>
+        <div class="col-md-2">
+          <label for="type_culture" class="form-label">Type de culture</label>
+          <select id="type_culture" name="type_culture" class="form-select">
+            <option value="">Tous</option>
+            {% for typeCulture in type_culture_choices %}
+              <option value="{{ typeCulture }}" {{ filters.type_culture == typeCulture ? 'selected' : '' }}>{{ typeCulture }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="parcelle_id" class="form-label">Parcelle</label>
+          <select id="parcelle_id" name="parcelle_id" class="form-select">
+            <option value="">Toutes</option>
+            {% for parcelle in parcelles %}
+              <option value="{{ parcelle.id }}" {{ filters.parcelle_id == (parcelle.id ~ '') ? 'selected' : '' }}>{{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="etat" class="form-label">Etat</label>
+          <select id="etat" name="etat" class="form-select">
+            <option value="">Tous</option>
+            {% for etat in etat_choices %}
+              <option value="{{ etat }}" {{ filters.etat == etat ? 'selected' : '' }}>{{ etat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label for="sort" class="form-label">Tri</label>
+          <select id="sort" name="sort" class="form-select">
+            {% for sortKey, sortLabel in sort_choices %}
+              <option value="{{ sortKey }}" {{ filters.sort == sortKey ? 'selected' : '' }}>{{ sortLabel }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label for="direction" class="form-label">Ordre</label>
+          <select id="direction" name="direction" class="form-select">
+            <option value="asc" {{ filters.direction == 'asc' ? 'selected' : '' }}>Asc</option>
+            <option value="desc" {{ filters.direction == 'desc' ? 'selected' : '' }}>Desc</option>
+          </select>
+        </div>
+        <div class="col-md-1 d-grid">
+          <button class="btn btn-success">OK</button>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <a href="{{ path('app_culture_index') }}" class="btn btn-outline-secondary btn-sm">Reinitialiser</a>
+      </div>
+    </div>
+  </form>
+
+  <section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <div>
+        <h2 class="h4 mb-1">Mes cultures</h2>
+        <p class="text-muted mb-0">Gestion de vos cultures proprietaires, triees par etat de vie.</p>
+      </div>
+    </div>
+
+    {% if cultures is empty %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h3 class="h5">Aucune culture pour le moment</h3>
+          <p class="mb-3">Aucun resultat ne correspond aux criteres actuels.</p>
+          <a href="{{ path('app_culture_new') }}" class="btn btn-success">Creer une culture</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="row g-4">
+        {% for culture in cultures %}
+          {% set parcelle = parcelles_by_id[culture.parcelleId] ?? null %}
+          {% set is_harvested = culture.etat == 'RECOLTEE' %}
+          {% set is_sold = culture.acheteurId is not null %}
+          <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100 position-relative culture-card {{ is_harvested ? 'culture-card--harvested' : '' }}">
+              <div class="card-body d-flex flex-column p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div class="d-flex flex-wrap culture-badge-group">
+                    <span class="badge text-bg-light">{{ culture.etat }}</span>
+                    <span class="badge text-bg-success">Creee</span>
+                    {% if is_sold %}
+                      <span class="badge text-bg-primary">Vendue</span>
+                    {% endif %}
+                    {% if is_harvested %}
+                      <span class="badge text-bg-secondary">Recoltee</span>
+                    {% endif %}
+                  </div>
+                  <span class="badge {{ is_harvested ? 'text-bg-secondary' : 'text-bg-success' }}">
+                    {{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;
+                  </span>
+                </div>
+
+                <h3 class="h5 mb-2 card-title">{{ culture.nom ?: 'Sans nom' }}</h3>
+                <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="stretched-link" aria-label="Voir la culture {{ culture.nom ?: culture.id }}"></a>
+                <p class="text-muted mb-2">{{ parcelle ? (parcelle.nom ?: 'Parcelle #' ~ parcelle.id) : 'Parcelle introuvable' }}</p>
+
+                <div class="small text-muted mb-3">
+                  <div><strong>Type:</strong> {{ culture.typeCulture ?: 'Non renseigne' }}</div>
+                  <div><strong>Recolte estimee:</strong> {{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+                </div>
+
+                {% if is_harvested %}
+                  <div class="alert alert-secondary py-2 px-3 small mb-0 mt-auto">
+                    Culture archivee: elle reste consultable mais son cycle est termine.
+                  </div>
+                {% else %}
+                  <div class="small text-muted mt-auto">
+                    {% if culture.etat == 'EN_VENTE' %}
+                      Disponible a la vente.
+                    {% elseif culture.etat == 'EN_COURS' %}
+                      Culture encore en cours de suivi.
+                    {% elseif culture.etat == 'VENDUE' %}
+                      Culture vendue, acces en lecture seule pour le vendeur.
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="mb-5">
+    <div class="mb-3">
+      <h2 class="h4 mb-1">Mes achats</h2>
+      <p class="text-muted mb-0">Cultures achetees et encore consultables depuis votre espace.</p>
+    </div>
+
+    {% if purchased_cultures is empty %}
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-muted">
+          Aucune culture achetee pour le moment.
+        </div>
+      </div>
+    {% else %}
+      <div class="row g-4">
+        {% for culture in purchased_cultures %}
+          {% set is_harvested = culture.etat == 'RECOLTEE' %}
+          <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100 culture-card {{ is_harvested ? 'culture-card--harvested' : '' }}">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div class="d-flex flex-wrap culture-badge-group">
+                    <span class="badge text-bg-light">{{ culture.etat }}</span>
+                    <span class="badge text-bg-primary">Achetee</span>
+                    {% if is_harvested %}
+                      <span class="badge text-bg-secondary">Recoltee</span>
+                    {% endif %}
+                  </div>
+                  <span class="badge {{ is_harvested ? 'text-bg-secondary' : 'text-bg-primary' }}">
+                    {{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;
+                  </span>
+                </div>
+
+                <h3 class="h5 mb-2 card-title">{{ culture.nom ?: 'Sans nom' }}</h3>
+                <p class="text-muted mb-2">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
+                <div class="small text-muted mb-4">
+                  <div><strong>Recolte estimee:</strong> {{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+                  <div><strong>Date de vente:</strong> {{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Non renseignee' }}</div>
+                </div>
+
+                <div class="mt-auto">
+                  <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="btn btn-outline-primary">Voir le detail</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

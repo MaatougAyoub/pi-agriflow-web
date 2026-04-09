@@ -1,0 +1,22 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Ajouter une culture{% endblock %}
+
+{% block hero_title %}Ajouter une culture 
+
+{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+{% block hero_subtitle %}Complétez les champs pour enregistrer votre culture{% endblock %}
+
+
+
+{% block module_body %}
+  {% include 'culture/_form.html.twig' with {
+    form: form,
+    parcelles: parcelles,
+    available_surface_map: available_surface_map,
+    selected_parcelle: selected_parcelle,
+    selected_available_surface: selected_available_surface,
+    submit_label: 'Creer la culture'
+  } %}
+{% endblock %}

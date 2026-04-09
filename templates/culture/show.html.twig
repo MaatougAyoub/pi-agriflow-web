@@ -1,0 +1,163 @@
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Detail culture{% endblock %}
+{% block hero_title %}
+{{ culture.nom ?: 'Culture #' ~ culture.id }}
+{% endblock %}
+{% block hero_subtitle %}
+Suivi et informations detaillees de cette culture
+{% endblock %}
+{% block top_right_action %}
+  <button type="button" class="btn btn-outline-success" onclick="window.history.length > 1 ? history.back() : window.location.href='{{ path('app_culture_index') }}'">Retour</button>
+{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+
+{% block module_body %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <div>
+              <h1 class="h3 mb-1">{{ culture.nom ?: 'Culture' }}</h1>
+              <p class="text-muted mb-0">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="badge text-bg-light">{{ culture.etat }}</span>
+              {% if is_owner_viewer %}
+                <span class="badge text-bg-success">Proprietaire</span>
+              {% endif %}
+              {% if is_buyer_viewer %}
+                <span class="badge text-bg-primary">Acheteur</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if culture.isRecoltee %}
+            <div class="alert alert-secondary mb-4">
+              Cette culture a deja ete recoltee. Elle est maintenant en lecture seule.
+            </div>
+          {% elseif culture.isVendue and is_owner_viewer %}
+            <div class="alert alert-secondary mb-4">
+              Cette culture a ete vendue. Le vendeur conserve un acces en lecture seule.
+            </div>
+          {% elseif culture.isVendue and is_buyer_viewer %}
+            <div class="alert alert-info mb-4">
+              Cette culture vous appartient maintenant. Vous pouvez la recolter.
+            </div>
+          {% elseif culture.isEnVente and is_owner_viewer %}
+            <div class="alert alert-info mb-4">
+              Cette culture est actuellement publiee a la vente.
+            </div>
+          {% endif %}
+
+          <h2 class="h4 mb-4">Informations de la culture</h2>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Parcelle associee</div>
+                <div class="fw-semibold">
+                  {% if parcelle %}
+                    {% if can_view_parcelle %}
+                      <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="text-decoration-none">
+                        {{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}
+                      </a>
+                    {% else %}
+                      {{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}
+                    {% endif %}
+                  {% else %}
+                    Introuvable
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Superficie</div>
+                <div class="fw-semibold">{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Etat</div>
+                <div class="fw-semibold">{{ culture.etat }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Type de culture</div>
+                <div class="fw-semibold">{{ culture.typeCulture ?: 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de recolte</div>
+                <div class="fw-semibold">{{ culture.dateRecolte ? culture.dateRecolte|date('d/m/Y') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Recolte estimee</div>
+                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de publication</div>
+                <div class="fw-semibold">{{ culture.datePublication ? culture.datePublication|date('d/m/Y') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de vente</div>
+                <div class="fw-semibold">{{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4 flex-wrap">
+            {% if can_edit %}
+              <a href="{{ path('app_culture_edit', {id: culture.id}) }}" class="btn btn-outline-secondary">Modifier</a>
+            {% endif %}
+
+            {% if can_delete %}
+              {% include 'culture/_delete_form.html.twig' %}
+            {% endif %}
+
+            {% if can_publish %}
+              <form method="post" action="{{ path('app_culture_publish', {id: culture.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('publish_culture_' ~ culture.id) }}">
+                <button class="btn btn-success">Publier</button>
+              </form>
+            {% endif %}
+
+            {% if can_cancel_publication %}
+              <form method="post" action="{{ path('app_culture_cancel_publication', {id: culture.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('cancel_publication_culture_' ~ culture.id) }}">
+                <button class="btn btn-outline-warning">Annuler la publication</button>
+              </form>
+            {% endif %}
+
+            {% if can_buy %}
+              <form method="post" action="{{ path('app_culture_buy', {id: culture.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('buy_culture_' ~ culture.id) }}">
+                <button class="btn btn-primary">Acheter</button>
+              </form>
+            {% endif %}
+
+            {% if can_harvest %}
+              <form method="post" action="{{ path('app_culture_harvest', {id: culture.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('harvest_culture_' ~ culture.id) }}">
+                <button class="btn btn-outline-success">Recolter</button>
+              </form>
+            {% endif %}
+
+            {% if can_view_parcelle %}
+              <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="btn btn-success">Voir la parcelle</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
