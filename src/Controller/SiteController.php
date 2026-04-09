@@ -119,17 +119,20 @@ final class SiteController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function adminUserDelete(Utilisateur $targetUser, Request $request, EntityManagerInterface $entityManager): Response
     {
+        $from = (string) $request->query->get('from', '');
+        $redirectParams = $from !== '' ? ['from' => $from] : [];
+
         if (!$this->isCsrfTokenValid('delete_user_' . $targetUser->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Jeton CSRF invalide.');
 
-            return $this->redirectToRoute('app_admin_users');
+            return $this->redirectToRoute('app_admin_users', $redirectParams);
         }
 
         $connectedUser = $this->getAuthenticatedUser();
         if ($connectedUser->getId() === $targetUser->getId()) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte ADMIN.');
 
-            return $this->redirectToRoute('app_admin_users');
+            return $this->redirectToRoute('app_admin_users', $redirectParams);
         }
 
         try {
@@ -142,7 +145,7 @@ final class SiteController extends AbstractController
             $this->addFlash('error', 'Suppression impossible pour cet utilisateur. Verifiez les dependances liees.');
         }
 
-        return $this->redirectToRoute('app_admin_users');
+        return $this->redirectToRoute('app_admin_users', $redirectParams);
     }
 
     #[Route('/profil/image/signature', name: 'app_profile_signature_image', methods: ['GET'])]
