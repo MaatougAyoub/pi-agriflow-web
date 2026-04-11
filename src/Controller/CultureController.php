@@ -3,14 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\Culture;
+use App\Entity\CultureHistory;
 use App\Entity\Parcelle;
 use App\Entity\Utilisateur;
 use App\Enum\Role;
 use App\Form\CultureType;
+use App\Repository\CultureHistoryRepository;
 use App\Repository\CultureRepository;
 use App\Repository\ParcelleRepository;
+use App\Repository\UtilisateurRepository;
+use App\Service\CultureYieldEstimatorService;
 use App\Service\ParcelleCultureSurfaceService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
@@ -71,6 +76,7 @@ final class CultureController extends AbstractController
     #[Route('/marketplace', name: 'marketplace', methods: ['GET'])]
     public function marketplace(
         CultureRepository $cultureRepository,
+        UtilisateurRepository $utilisateurRepository,
     ): Response {
         if ($accessResponse = $this->redirectUnlessAgriculteur()) {
             return $accessResponse;
@@ -85,6 +91,7 @@ final class CultureController extends AbstractController
         return $this->render('culture/marketplace.html.twig', [
             'marketplace_cultures' => $cultures,
             'current_user_id' => $utilisateurId,
+            'owner_names_by_id' => $this->buildUserDisplayNamesById($cultures, $utilisateurRepository),
         ]);
     }
 
@@ -92,6 +99,7 @@ final class CultureController extends AbstractController
     public function new(
         Request $request,
         ParcelleRepository $parcelleRepository,
+        CultureYieldEstimatorService $yieldEstimatorService,
         ParcelleCultureSurfaceService $surfaceService,
         EntityManagerInterface $entityManager,
     ): Response {
@@ -125,6 +133,7 @@ final class CultureController extends AbstractController
             $culture,
             $parcelles,
             $agriculteurId,
+            $yieldEstimatorService,
             $surfaceService,
             $entityManager,
             'culture/new.html.twig',
@@ -137,6 +146,7 @@ final class CultureController extends AbstractController
         int $id,
         CultureRepository $cultureRepository,
         ParcelleRepository $parcelleRepository,
+        CultureHistoryRepository $cultureHistoryRepository,
     ): Response {
         if ($accessResponse = $this->redirectUnlessAgriculteur()) {
             return $accessResponse;
@@ -159,7 +169,61 @@ final class CultureController extends AbstractController
             'can_cancel_publication' => $culture->canCancelPublicationBy($utilisateurId),
             'can_buy' => $culture->canBeBoughtBy($utilisateurId),
             'can_harvest' => $culture->canBeHarvestedBy($utilisateurId),
+            'can_undo_harvest' => $this->canUndoHarvest($culture, $utilisateurId),
             'can_view_parcelle' => $isOwnerViewer && $parcelle instanceof Parcelle,
+            'can_generate_contract' => $culture->hasAcheteur() && ($isOwnerViewer || $isBuyerViewer),
+            'history_entries' => $cultureHistoryRepository->findByCultureOrderedDesc($culture),
+        ]);
+    }
+
+    #[Route('/{id}/contrat-vente', name: 'sale_contract_pdf', methods: ['GET'])]
+    public function saleContractPdf(
+        int $id,
+        CultureRepository $cultureRepository,
+        ParcelleRepository $parcelleRepository,
+        UtilisateurRepository $utilisateurRepository,
+        Pdf $pdf,
+    ): Response {
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $utilisateurId = $this->getAuthenticatedUserId();
+        $culture = $this->findAccessibleCulture($id, $utilisateurId, $cultureRepository);
+        $isOwnerViewer = $culture->isOwnedBy($utilisateurId);
+        $isBuyerViewer = $culture->isBoughtBy($utilisateurId);
+
+        if (!$culture->hasAcheteur() || (!$isOwnerViewer && !$isBuyerViewer)) {
+            throw $this->createAccessDeniedException('Ce contrat de vente n est pas accessible.');
+        }
+
+        $parcelle = $culture->getParcelleId() ? $parcelleRepository->find($culture->getParcelleId()) : null;
+        $vendeur = $isOwnerViewer ? $this->getAuthenticatedUser() : $utilisateurRepository->find($culture->getProprietaireId());
+        $acheteur = $culture->getAcheteur();
+
+        if (!$vendeur instanceof Utilisateur || !$acheteur instanceof Utilisateur) {
+            throw $this->createNotFoundException('Les informations du contrat sont incompletes.');
+        }
+
+        $html = $this->renderView('culture/sale_contract_pdf.html.twig', [
+            'culture' => $culture,
+            'parcelle' => $parcelle,
+            'vendeur' => $vendeur,
+            'acheteur' => $acheteur,
+            'vendeur_signature_src' => $this->buildPdfSignatureSource($vendeur->getSignature()),
+            'acheteur_signature_src' => $this->buildPdfSignatureSource($acheteur->getSignature()),
+            'generation_date' => new \DateTimeImmutable(),
+        ]);
+
+        $output = $pdf->getOutputFromHtml($html, [
+            'enable-local-file-access' => true,
+        ]);
+
+        $fileName = sprintf('contrat-vente-culture-%d.pdf', $culture->getId());
+
+        return new Response($output, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('inline; filename="%s"', $fileName),
         ]);
     }
 
@@ -169,6 +233,7 @@ final class CultureController extends AbstractController
         Request $request,
         CultureRepository $cultureRepository,
         ParcelleRepository $parcelleRepository,
+        CultureYieldEstimatorService $yieldEstimatorService,
         ParcelleCultureSurfaceService $surfaceService,
         EntityManagerInterface $entityManager,
     ): Response {
@@ -192,6 +257,7 @@ final class CultureController extends AbstractController
             $culture,
             $parcelles,
             $agriculteurId,
+            $yieldEstimatorService,
             $surfaceService,
             $entityManager,
             'culture/edit.html.twig',
@@ -217,10 +283,25 @@ final class CultureController extends AbstractController
             if (!$culture->canBePublishedBy($utilisateurId)) {
                 $this->addFlash('warning', 'Cette culture ne peut pas etre publiee.');
             } else {
+                $prixVente = $request->request->get('prix_vente');
+
+                if (!is_numeric($prixVente) || (float) $prixVente <= 0) {
+                    $this->addFlash('warning', 'Veuillez saisir un prix de vente valide avant de publier la culture.');
+                    return $this->redirectToRoute('app_culture_show', ['id' => $culture->getId()]);
+                }
+
                 $culture
+                    ->setPrixVente((float) $prixVente)
                     ->setEtat(Culture::ETAT_EN_VENTE)
                     ->setDatePublication(new \DateTime());
 
+                $this->recordCultureHistory(
+                    $entityManager,
+                    $culture,
+                    CultureHistory::ACTION_PUBLISHED,
+                    sprintf('Mise en vente a %.2f TND.', (float) $prixVente),
+                    $this->getAuthenticatedUser()
+                );
                 $entityManager->flush();
                 $this->addFlash('success', 'La culture est maintenant publiee a la vente.');
             }
@@ -251,6 +332,13 @@ final class CultureController extends AbstractController
                     ->setEtat(Culture::ETAT_EN_COURS)
                     ->setDatePublication(null);
 
+                $this->recordCultureHistory(
+                    $entityManager,
+                    $culture,
+                    CultureHistory::ACTION_PUBLICATION_CANCELLED,
+                    'Retrait de la culture de la vente.',
+                    $this->getAuthenticatedUser()
+                );
                 $entityManager->flush();
                 $this->addFlash('success', 'La culture a ete retiree de la vente.');
             }
@@ -282,6 +370,13 @@ final class CultureController extends AbstractController
                     ->setEtat(Culture::ETAT_VENDUE)
                     ->setDateVente(new \DateTime());
 
+                $this->recordCultureHistory(
+                    $entityManager,
+                    $culture,
+                    CultureHistory::ACTION_PURCHASED,
+                    'Achat de la culture.',
+                    $utilisateur
+                );
                 $entityManager->flush();
                 $this->addFlash('success', 'L achat de la culture a bien ete enregistre.');
             }
@@ -312,8 +407,54 @@ final class CultureController extends AbstractController
                     ->setEtat(Culture::ETAT_RECOLTEE)
                     ->setDateRecolte(new \DateTime());
 
+                $this->recordCultureHistory(
+                    $entityManager,
+                    $culture,
+                    CultureHistory::ACTION_HARVESTED,
+                    'Recolte de la culture.',
+                    $this->getAuthenticatedUser()
+                );
                 $entityManager->flush();
                 $this->addFlash('success', 'La culture a ete recoltee avec succes.');
+            }
+        }
+
+        return $this->redirectToRoute('app_culture_show', ['id' => $culture->getId()]);
+    }
+
+    #[Route('/{id}/annuler-recolte', name: 'undo_harvest', methods: ['POST'])]
+    public function undoHarvest(
+        int $id,
+        Request $request,
+        CultureRepository $cultureRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return $accessResponse;
+        }
+
+        $utilisateurId = $this->getAuthenticatedUserId();
+        $culture = $this->findAccessibleCulture($id, $utilisateurId, $cultureRepository);
+
+        if ($this->isCsrfTokenValid('undo_harvest_culture_'.$culture->getId(), (string) $request->request->get('_token'))) {
+            if (!$this->canUndoHarvest($culture, $utilisateurId)) {
+                $this->addFlash('warning', 'Cette recolte ne peut pas etre annulee.');
+            } else {
+                $previousState = $this->determineStateAfterHarvestUndo($culture);
+
+                $culture
+                    ->setEtat($previousState)
+                    ->setDateRecolte(null);
+
+                $this->recordCultureHistory(
+                    $entityManager,
+                    $culture,
+                    CultureHistory::ACTION_HARVEST_CANCELLED,
+                    sprintf('Annulation de la recolte. Retour a l etat %s.', $previousState),
+                    $this->getAuthenticatedUser()
+                );
+                $entityManager->flush();
+                $this->addFlash('success', 'La recolte a ete annulee avec succes.');
             }
         }
 
@@ -356,11 +497,13 @@ final class CultureController extends AbstractController
         Culture $culture,
         array $parcelles,
         int $agriculteurId,
+        CultureYieldEstimatorService $yieldEstimatorService,
         ParcelleCultureSurfaceService $surfaceService,
         EntityManagerInterface $entityManager,
         string $template,
         string $successMessage,
     ): Response {
+        $isNewCulture = null === $culture->getId();
         $culture->setEtat($culture->getEtat() ?: Culture::ETAT_EN_COURS);
 
         $parcellesById = $this->indexParcellesById($parcelles);
@@ -384,8 +527,8 @@ final class CultureController extends AbstractController
 
             $dateRecolte = $culture->getDateRecolte();
             if ($dateRecolte instanceof \DateTimeInterface) {
-                $today = new \DateTimeImmutable('today');
-                $selectedDate = \DateTimeImmutable::createFromInterface($dateRecolte)->setTime(0, 0);
+                $today = new \DateTime('today');
+                $selectedDate = \DateTime::createFromInterface($dateRecolte)->setTime(0, 0);
 
                 if ($selectedDate < $today) {
                     $form->get('dateRecolte')->addError(
@@ -415,9 +558,17 @@ final class CultureController extends AbstractController
                 $culture
                     ->setProprietaireId($agriculteurId)
                     ->setEtat($culture->getId() ? $culture->getEtat() : Culture::ETAT_EN_COURS)
+                    ->setRecolteEstime((string) $yieldEstimatorService->estimate($culture->getTypeCulture(), (float) $culture->getSuperficie()))
                     ->setDateCreation($culture->getDateCreation() ?? new \DateTime());
 
                 $entityManager->persist($culture);
+                $this->recordCultureHistory(
+                    $entityManager,
+                    $culture,
+                    $isNewCulture ? CultureHistory::ACTION_CREATED : CultureHistory::ACTION_UPDATED,
+                    $isNewCulture ? 'Creation de la culture.' : 'Modification des informations de la culture.',
+                    $this->getAuthenticatedUser()
+                );
                 $entityManager->flush();
 
                 $this->addFlash('success', $successMessage);
@@ -433,6 +584,7 @@ final class CultureController extends AbstractController
             'culture' => $culture,
             'parcelles' => $parcelles,
             'available_surface_map' => $availableSurfaceMap,
+            'yield_coefficients' => $yieldEstimatorService->getCoefficients(),
             'selected_parcelle' => $selectedParcelle,
             'selected_available_surface' => $selectedParcelle instanceof Parcelle
                 ? $surfaceService->getAvailableSurfaceForParcelle($selectedParcelle, $culture->getId())
@@ -577,6 +729,49 @@ final class CultureController extends AbstractController
         return $cultures;
     }
 
+    private function recordCultureHistory(
+        EntityManagerInterface $entityManager,
+        Culture $culture,
+        string $action,
+        ?string $details = null,
+        ?Utilisateur $utilisateur = null,
+    ): void {
+        $historyEntry = (new CultureHistory())
+            ->setCulture($culture)
+            ->setAction($action)
+            ->setPerformedAt(new \DateTime())
+            ->setUtilisateur($utilisateur)
+            ->setDetails($details);
+
+        $entityManager->persist($historyEntry);
+    }
+
+    private function canUndoHarvest(Culture $culture, ?int $utilisateurId): bool
+    {
+        if (!$culture->isRecoltee() || null === $utilisateurId) {
+            return false;
+        }
+
+        if ($culture->hasAcheteur()) {
+            return $culture->isBoughtBy($utilisateurId);
+        }
+
+        return $culture->isOwnedBy($utilisateurId);
+    }
+
+    private function determineStateAfterHarvestUndo(Culture $culture): string
+    {
+        if ($culture->hasAcheteur()) {
+            return Culture::ETAT_VENDUE;
+        }
+
+        if (null !== $culture->getDatePublication()) {
+            return Culture::ETAT_EN_VENTE;
+        }
+
+        return Culture::ETAT_EN_COURS;
+    }
+
     private function redirectUnlessAgriculteur(): ?Response
     {
         if ($this->isGranted(Role::AGRICULTEUR->value)) {
@@ -602,5 +797,53 @@ final class CultureController extends AbstractController
     private function getAuthenticatedUserId(): int
     {
         return $this->getAuthenticatedUser()->getId();
+    }
+
+    private function buildPdfSignatureSource(?string $signaturePath): ?string
+    {
+        if (null === $signaturePath || '' === trim($signaturePath)) {
+            return null;
+        }
+
+        $publicPath = rtrim((string) $this->getParameter('kernel.project_dir'), '\\/').DIRECTORY_SEPARATOR.'public';
+        $relativePath = ltrim(trim($signaturePath), '\\/');
+        $absolutePath = $publicPath.DIRECTORY_SEPARATOR.str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
+
+        if (!is_file($absolutePath)) {
+            return null;
+        }
+
+        return 'file:///'.str_replace(DIRECTORY_SEPARATOR, '/', $absolutePath);
+    }
+
+    /**
+     * @param Culture[] $cultures
+     * @return array<int, string>
+     */
+    private function buildUserDisplayNamesById(array $cultures, UtilisateurRepository $utilisateurRepository): array
+    {
+        $ownerNamesById = [];
+        $ownerIds = [];
+
+        foreach ($cultures as $culture) {
+            $ownerId = $culture->getProprietaireId();
+
+            if (null !== $ownerId) {
+                $ownerIds[$ownerId] = true;
+            }
+        }
+
+        foreach (array_keys($ownerIds) as $ownerId) {
+            $user = $utilisateurRepository->find($ownerId);
+
+            if (!$user instanceof Utilisateur) {
+                continue;
+            }
+
+            $fullName = trim(sprintf('%s %s', $user->getPrenom() ?? '', $user->getNom() ?? ''));
+            $ownerNamesById[$ownerId] = '' !== $fullName ? $fullName : ((string) $user->getEmail() ?: 'Agriculteur');
+        }
+
+        return $ownerNamesById;
     }
 }

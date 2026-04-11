@@ -10,14 +10,21 @@
 {% block admin_body %}
   <div class="row g-4">
     <div class="col-lg-8">
-      <div class="card admin-card h-100">
+      <div class="card admin-card">
         <div class="card-body p-4">
           <div class="d-flex justify-content-between gap-3 flex-wrap mb-4">
             <div>
               <h2 class="h4 mb-1">{{ culture.nom ?: 'Culture sans nom' }}</h2>
               <p class="text-muted mb-0">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
             </div>
-            {% include 'admin/culture/_delete_form.html.twig' with {culture: culture} %}
+            <div class="d-flex gap-2 flex-wrap align-items-start">
+              {% if culture.etat == 'VENDUE' %}
+                <span class="badge text-bg-secondary">Lecture seule : culture vendue</span>
+              {% elseif culture.etat == 'RECOLTEE' %}
+                <span class="badge text-bg-secondary">Lecture seule : culture recoltee</span>
+              {% endif %}
+              {% include 'admin/culture/_delete_form.html.twig' with {culture: culture} %}
+            </div>
           </div>
 
           <div class="row g-3">
@@ -29,8 +36,14 @@
             </div>
             <div class="col-md-6">
               <div class="border rounded p-3 h-100">
-                <div class="text-muted small mb-1">Proprietaire ID</div>
-                <div class="fw-semibold">{{ culture.proprietaireId ?: '-' }}</div>
+                <div class="text-muted small mb-1">Proprietaire</div>
+                <div class="fw-semibold">
+                  {% if proprietaire %}
+                    {{ proprietaire.prenom }} {{ proprietaire.nom }}
+                  {% else %}
+                    {{ culture.proprietaireId ?: '-' }}
+                  {% endif %}
+                </div>
               </div>
             </div>
             <div class="col-md-6">
@@ -49,8 +62,14 @@
             </div>
             <div class="col-md-6">
               <div class="border rounded p-3 h-100">
-                <div class="text-muted small mb-1">Parcelle ID</div>
-                <div class="fw-semibold">{{ culture.parcelleId ?: '-' }}</div>
+                <div class="text-muted small mb-1">Acheteur</div>
+                <div class="fw-semibold">
+                  {% if acheteur %}
+                    {{ acheteur.prenom }} {{ acheteur.nom }}
+                  {% else %}
+                    Non renseigne
+                  {% endif %}
+                </div>
               </div>
             </div>
             <div class="col-md-6">
@@ -73,8 +92,20 @@
             </div>
             <div class="col-md-6">
               <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Prix de vente</div>
+                <div class="fw-semibold">{{ culture.prixVente is not null ? culture.prixVente|number_format(2, '.', ' ') ~ ' TND' : 'Non renseigne' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
                 <div class="text-muted small mb-1">Date de creation</div>
                 <div class="fw-semibold">{{ culture.dateCreation ? culture.dateCreation|date('d/m/Y H:i') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de vente</div>
+                <div class="fw-semibold">{{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Non renseignee' }}</div>
               </div>
             </div>
             <div class="col-md-6">
@@ -86,10 +117,46 @@
             <div class="col-md-6">
               <div class="border rounded p-3 h-100">
                 <div class="text-muted small mb-1">Recolte estimee</div>
-                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' kg' : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Date de publication</div>
+                <div class="fw-semibold">{{ culture.datePublication ? culture.datePublication|date('d/m/Y') : 'Non renseignee' }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-1">Localisation de la parcelle</div>
+                <div class="fw-semibold">{{ parcelle and parcelle.localisation ? parcelle.localisation : 'Non renseignee' }}</div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="card admin-card mt-4">
+        <div class="card-body p-4">
+          <h3 class="h5 mb-3">Historique</h3>
+
+          {% if history_entries is empty %}
+            <p class="text-muted mb-0">Aucun evenement historique n est disponible pour cette culture.</p>
+          {% else %}
+            <div class="list-group list-group-flush">
+              {% for entry in history_entries %}
+                <div class="list-group-item px-0">
+                  <div class="fw-semibold">{{ entry.performedAt ? entry.performedAt|date('d/m/Y H:i') : '-' }} - {{ entry.actionLabel }}</div>
+                  {% if entry.utilisateurDisplayName %}
+                    <div class="small text-muted mt-1">Par {{ entry.utilisateurDisplayName }}</div>
+                  {% endif %}
+                  {% if entry.details %}
+                    <div class="small text-muted mt-1">{{ entry.details }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>

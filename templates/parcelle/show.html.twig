@@ -13,6 +13,28 @@ Consultez les informations et les cultures liées à cette parcelle{% endblock %
 {% block hero_size %}pc-hero-medium{% endblock %}
 
 {% block module_body %}
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+
+  <style>
+    .parcelle-show-map {
+      height: 280px;
+      border: 1px solid #dee2e6;
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .parcel-recommendation-card {
+      border: 1px solid #dee2e6;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      background: #fff;
+    }
+  </style>
+
   <div class="row g-4 mb-4">
     <div class="col-lg-7">
       <div class="card border-0 shadow-sm h-100">
@@ -45,11 +67,27 @@ Consultez les informations et les cultures liées à cette parcelle{% endblock %
                 <div class="fw-semibold">{{ parcelle.dateCreation ? parcelle.dateCreation|date('d/m/Y H:i') : 'Non renseignee' }}</div>
               </div>
             </div>
+            <div class="col-12">
+              <div class="border rounded p-3 h-100">
+                <div class="text-muted small mb-3">Localisation cartographique</div>
+                <div id="parcelle-show-map" class="parcelle-show-map d-none"></div>
+                <p id="parcelle-show-map-empty" class="text-muted mb-0">Aucune localisation cartographique enregistree.</p>
+              </div>
+            </div>
           </div>
           <div class="d-flex gap-2 mt-4 flex-wrap">
             <a href="{{ path('app_parcelle_edit', {id: parcelle.id}) }}" class="btn btn-outline-secondary">Modifier</a>
             {% include 'parcelle/_delete_form.html.twig' %}
             <a href="{{ path('app_culture_new', {parcelle: parcelle.id}) }}" class="btn btn-success">Ajouter une culture</a>
+            <button
+              type="button"
+              class="btn btn-outline-success"
+              id="parcel-recommendations-trigger"
+              data-url="{{ path('app_parcelle_recommendations', {id: parcelle.id}) }}"
+              data-token="{{ csrf_token('parcel_recommendations_' ~ parcelle.id) }}"
+            >
+              Recommander cultures (IA)
+            </button>
           </div>
         </div>
       </div>
@@ -80,4 +118,152 @@ Consultez les informations et les cultures liées à cette parcelle{% endblock %
       </div>
     </div>
   </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1">Recommandations de cultures</h2>
+          <p class="text-muted mb-0">Obtenez une proposition de repartition selon le type de terre, la superficie et la localisation.</p>
+        </div>
+      </div>
+      <div id="parcel-recommendations-feedback" class="text-muted">Cliquez sur "Recommander cultures (IA)" pour lancer l analyse.</div>
+      <div id="parcel-recommendations-results" class="row g-3 mt-1 d-none"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    (function () {
+      const mapContainer = document.getElementById('parcelle-show-map');
+      const emptyMessage = document.getElementById('parcelle-show-map-empty');
+      const rawLocation = {{ parcelle.localisation|default('')|json_encode|raw }};
+
+      if (!mapContainer || typeof L === 'undefined') {
+        return;
+      }
+
+      function parseLocation(value) {
+        if (!value) {
+          return null;
+        }
+
+        const parts = String(value).split(',').map(function (part) {
+          return part.trim();
+        });
+
+        if (parts.length !== 2) {
+          return null;
+        }
+
+        const lat = parseFloat(parts[0]);
+        const lng = parseFloat(parts[1]);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          return null;
+        }
+
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+          return null;
+        }
+
+        return [lat, lng];
+      }
+
+      const coordinates = parseLocation(rawLocation);
+
+      if (!coordinates) {
+        return;
+      }
+
+      mapContainer.classList.remove('d-none');
+
+      if (emptyMessage) {
+        emptyMessage.classList.add('d-none');
+      }
+
+      const map = L.map(mapContainer).setView(coordinates, 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      L.marker(coordinates).addTo(map);
+
+      setTimeout(function () {
+        map.invalidateSize();
+      }, 0);
+    })();
+
+    (function () {
+      const trigger = document.getElementById('parcel-recommendations-trigger');
+      const feedback = document.getElementById('parcel-recommendations-feedback');
+      const results = document.getElementById('parcel-recommendations-results');
+
+      if (!trigger || !feedback || !results) {
+        return;
+      }
+
+      trigger.addEventListener('click', async function () {
+        trigger.disabled = true;
+        feedback.className = 'text-muted';
+        feedback.textContent = 'Chargement...';
+        results.innerHTML = '';
+        results.classList.add('d-none');
+
+        try {
+          const response = await fetch(trigger.dataset.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+              _token: trigger.dataset.token
+            })
+          });
+
+          const payload = await response.json();
+
+          if (!response.ok || !payload.success || !Array.isArray(payload.recommendations)) {
+            if (payload.details) {
+              console.error('Parcel recommendations details:', payload.details);
+            }
+
+            throw new Error(payload.error || payload.message || 'Recommandation impossible pour le moment.');
+          }
+
+          if (payload.recommendations.length === 0) {
+            feedback.className = 'text-muted';
+            feedback.textContent = 'Aucune recommandation n a ete retournee.';
+            return;
+          }
+
+          feedback.className = 'text-success';
+          feedback.textContent = 'Recommandations generees avec succes.';
+          results.classList.remove('d-none');
+
+          payload.recommendations.forEach(function (recommendation) {
+            const column = document.createElement('div');
+            column.className = 'col-md-6 col-xl-4';
+            column.innerHTML =
+              '<div class="parcel-recommendation-card h-100">' +
+                '<div class="fw-semibold mb-2">' + recommendation.nom + '</div>' +
+                '<div class="text-muted small mb-2">' + Number(recommendation.surface_m2).toFixed(0) + ' m²</div>' +
+                '<div>' + recommendation.justification + '</div>' +
+              '</div>';
+
+            results.appendChild(column);
+          });
+        } catch (error) {
+          console.error('Parcel recommendations error:', error);
+          feedback.className = 'text-danger';
+          feedback.textContent = error.message || 'Une erreur est survenue.';
+        } finally {
+          trigger.disabled = false;
+        }
+      });
+    })();
+  </script>
 {% endblock %}

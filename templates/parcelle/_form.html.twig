@@ -1,5 +1,20 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  crossorigin=""
+/>
+
+<style>
+  .parcelle-map {
+    height: 340px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+</style>
+
 {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}
   {% include 'partials/_form_error_summary.html.twig' with { form: form } %}
   {{ form_errors(form) }}
@@ -16,6 +31,13 @@
         </div>
       </div>
       {{ form_row(form.localisation) }}
+      <div class="mt-3">
+        <label class="form-label fw-semibold" for="parcelle-location-map">Choisir la localisation sur la carte</label>
+        <div id="parcelle-location-map" class="parcelle-map"></div>
+        <div id="parcelle-location-feedback" class="form-text">
+          Cliquez sur la carte pour remplir automatiquement la localisation au format latitude,longitude.
+        </div>
+      </div>
     </div>
   </div>
 
@@ -29,3 +51,107 @@
     {% endif %}
   </div>
 {{ form_end(form) }}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+  (function () {
+    const locationInput = document.getElementById('{{ form.localisation.vars.id }}');
+    const mapContainer = document.getElementById('parcelle-location-map');
+    const feedback = document.getElementById('parcelle-location-feedback');
+
+    if (!locationInput || !mapContainer || typeof L === 'undefined') {
+      return;
+    }
+
+    const tunisiaCenter = [34.0, 9.0];
+    const defaultZoom = 6;
+    const focusedZoom = 13;
+
+    function parseLocation(value) {
+      if (!value) {
+        return null;
+      }
+
+      const parts = String(value).split(',').map(function (part) {
+        return part.trim();
+      });
+
+      if (parts.length !== 2) {
+        return null;
+      }
+
+      const lat = parseFloat(parts[0]);
+      const lng = parseFloat(parts[1]);
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return null;
+      }
+
+      if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return null;
+      }
+
+      return [lat, lng];
+    }
+
+    function formatCoordinate(value) {
+      return value.toFixed(6);
+    }
+
+    const initialCoordinates = parseLocation(locationInput.value);
+    const map = L.map(mapContainer).setView(initialCoordinates || tunisiaCenter, initialCoordinates ? focusedZoom : defaultZoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    function placeMarker(lat, lng, shouldUpdateInput) {
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng]).addTo(map);
+      }
+
+      map.setView([lat, lng], focusedZoom);
+
+      if (shouldUpdateInput) {
+        locationInput.value = formatCoordinate(lat) + ',' + formatCoordinate(lng);
+      }
+
+      if (feedback) {
+        feedback.textContent = 'Position selectionnee : ' + formatCoordinate(lat) + ',' + formatCoordinate(lng);
+      }
+    }
+
+    if (initialCoordinates) {
+      placeMarker(initialCoordinates[0], initialCoordinates[1], false);
+    } else if (feedback && locationInput.value.trim() !== '') {
+      feedback.textContent = 'La localisation actuelle ne correspond pas au format latitude,longitude. Cliquez sur la carte pour la corriger.';
+    }
+
+    map.on('click', function (event) {
+      placeMarker(event.latlng.lat, event.latlng.lng, true);
+    });
+
+    locationInput.addEventListener('change', function () {
+      const parsedCoordinates = parseLocation(locationInput.value);
+
+      if (!parsedCoordinates) {
+        if (feedback) {
+          feedback.textContent = 'Saisissez une valeur au format latitude,longitude ou cliquez sur la carte.';
+        }
+
+        return;
+      }
+
+      placeMarker(parsedCoordinates[0], parsedCoordinates[1], false);
+    });
+
+    setTimeout(function () {
+      map.invalidateSize();
+    }, 0);
+  })();
+</script>

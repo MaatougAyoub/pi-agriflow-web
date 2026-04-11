@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Contrat de vente de culture</title>
+    <style>
+      body {
+        font-family: DejaVu Sans, Arial, sans-serif;
+        color: #1f2933;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .contract-header {
+        margin-bottom: 28px;
+        padding-bottom: 14px;
+        border-bottom: 2px solid #198754;
+      }
+
+      .contract-title {
+        margin: 0 0 6px;
+        font-size: 24px;
+        color: #116530;
+      }
+
+      .contract-subtitle {
+        margin: 0;
+        color: #5b6570;
+      }
+
+      .section {
+        margin-bottom: 24px;
+      }
+
+      .section h2 {
+        margin: 0 0 10px;
+        font-size: 16px;
+        color: #116530;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border: 1px solid #d9e2ec;
+        vertical-align: top;
+      }
+
+      th {
+        width: 34%;
+        text-align: left;
+        background: #f8faf9;
+      }
+
+      .signature-grid {
+        width: 100%;
+        margin-top: 24px;
+      }
+
+      .signature-box {
+        width: 48%;
+        display: inline-block;
+        vertical-align: top;
+      }
+
+      .signature-card {
+        min-height: 150px;
+        padding: 14px;
+        border: 1px solid #d9e2ec;
+        border-radius: 6px;
+      }
+
+      .signature-title {
+        margin: 0 0 10px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .signature-image {
+        max-width: 220px;
+        max-height: 90px;
+        margin-top: 12px;
+      }
+
+      .signature-missing {
+        margin-top: 12px;
+        color: #6c757d;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="contract-header">
+      <h1 class="contract-title">Contrat de vente de culture</h1>
+      <p class="contract-subtitle">Date de generation : {{ generation_date|date('d/m/Y H:i') }}</p>
+    </div>
+
+    <div class="section">
+      <h2>Parties concernees</h2>
+      <table>
+        <tr>
+          <th>Vendeur</th>
+          <td>{{ vendeur.prenom }} {{ vendeur.nom }}</td>
+        </tr>
+        <tr>
+          <th>Acheteur</th>
+          <td>{{ acheteur.prenom }} {{ acheteur.nom }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Details de la culture</h2>
+      <table>
+        <tr>
+          <th>Nom de la culture</th>
+          <td>{{ culture.nom ?: 'Non renseigne' }}</td>
+        </tr>
+        <tr>
+          <th>Type de culture</th>
+          <td>{{ culture.typeCulture ?: 'Non renseigne' }}</td>
+        </tr>
+        <tr>
+          <th>Superficie</th>
+          <td>{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m²</td>
+        </tr>
+        <tr>
+          <th>Prix de vente</th>
+          <td>{{ culture.prixVente is not null ? culture.prixVente|number_format(2, '.', ' ') ~ ' TND' : 'Non renseigne' }}</td>
+        </tr>
+        <tr>
+          <th>Date de vente</th>
+          <td>{{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Non renseignee' }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Details de la parcelle</h2>
+      <table>
+        <tr>
+          <th>Nom de la parcelle</th>
+          <td>{{ parcelle ? (parcelle.nom ?: 'Parcelle #' ~ parcelle.id) : 'Non renseigne' }}</td>
+        </tr>
+        <tr>
+          <th>Localisation</th>
+          <td>{{ parcelle ? (parcelle.localisation ?: 'Non renseignee') : 'Non renseignee' }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>Signatures</h2>
+      <div class="signature-grid">
+        <div class="signature-box">
+          <div class="signature-card">
+            <p class="signature-title">Signature du vendeur</p>
+            <div>{{ vendeur.prenom }} {{ vendeur.nom }}</div>
+            {% if vendeur_signature_src %}
+              <img class="signature-image" src="{{ vendeur_signature_src }}" alt="Signature du vendeur">
+            {% else %}
+              <div class="signature-missing">Signature non disponible</div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="signature-box" style="margin-left: 4%;">
+          <div class="signature-card">
+            <p class="signature-title">Signature de l acheteur</p>
+            <div>{{ acheteur.prenom }} {{ acheteur.nom }}</div>
+            {% if acheteur_signature_src %}
+              <img class="signature-image" src="{{ acheteur_signature_src }}" alt="Signature de l acheteur">
+            {% else %}
+              <div class="signature-missing">Signature non disponible</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

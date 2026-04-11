@@ -150,7 +150,7 @@
 
                 <div class="small text-muted mb-3">
                   <div><strong>Type:</strong> {{ culture.typeCulture ?: 'Non renseigne' }}</div>
-                  <div><strong>Recolte estimee:</strong> {{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+                  <div><strong>Recolte estimee:</strong> {{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' kg' : 'Non renseignee' }}</div>
                 </div>
 
                 {% if is_harvested %}
@@ -193,7 +193,7 @@
         {% for culture in purchased_cultures %}
           {% set is_harvested = culture.etat == 'RECOLTEE' %}
           <div class="col-md-6 col-xl-4">
-            <div class="card border-0 shadow-sm h-100 culture-card {{ is_harvested ? 'culture-card--harvested' : '' }}">
+            <div class="card border-0 shadow-sm h-100 culture-card position-relative {{ is_harvested ? 'culture-card--harvested' : '' }}">
               <div class="card-body p-4 d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                   <div class="d-flex flex-wrap culture-badge-group">
@@ -209,13 +209,14 @@
                 </div>
 
                 <h3 class="h5 mb-2 card-title">{{ culture.nom ?: 'Sans nom' }}</h3>
+                <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="stretched-link" aria-label="Voir le detail de la culture {{ culture.nom ?: culture.id }}"></a>
                 <p class="text-muted mb-2">{{ culture.typeCulture ?: 'Type non renseigne' }}</p>
                 <div class="small text-muted mb-4">
-                  <div><strong>Recolte estimee:</strong> {{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+                  <div><strong>Recolte estimee:</strong> {{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' kg' : 'Non renseignee' }}</div>
                   <div><strong>Date de vente:</strong> {{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Non renseignee' }}</div>
                 </div>
 
-                <div class="mt-auto">
+                <div class="mt-auto position-relative" style="z-index: 1;">
                   <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="btn btn-outline-primary">Voir le detail</a>
                 </div>
               </div>
