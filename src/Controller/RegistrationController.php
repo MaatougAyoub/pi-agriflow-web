@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Service\BrevoEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -22,7 +23,7 @@ final class RegistrationController extends AbstractController
     private const SESSION_CODE = 'registration_code';
 
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger): Response
+    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger, BrevoEmailService $brevoEmailService): Response
     {
         $errors = [];
         $selectedRole = strtoupper((string) $request->request->get('role', 'AGRICULTEUR'));
@@ -118,9 +119,13 @@ final class RegistrationController extends AbstractController
                     'parcelles' => $selectedRole === 'AGRICULTEUR' ? $parcelles : null,
                 ]);
 
-                $this->generateAndLogVerificationCode($session, $email, $logger);
+                try {
+                    $this->generateAndSendVerificationCode($session, $email, $logger, $brevoEmailService, 'Inscription');
 
-                return $this->redirectToRoute('app_register_verify');
+                    return $this->redirectToRoute('app_register_verify');
+                } catch (\Throwable $exception) {
+                    $errors[] = $exception->getMessage();
+                }
             }
         }
 
@@ -142,69 +147,91 @@ final class RegistrationController extends AbstractController
     }
 
     #[Route('/register/verify', name: 'app_register_verify', methods: ['GET', 'POST'])]
-    public function verify(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
+    public function verify(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, BrevoEmailService $brevoEmailService): Response
     {
         $session = $request->getSession();
         $pending = $session->get(self::SESSION_PENDING);
+        $error = null;
+        $notice = null;
 
         if (!$pending) {
             return $this->redirectToRoute('app_register');
         }
 
         if (!$session->has(self::SESSION_CODE)) {
-            $this->generateAndLogVerificationCode($session, (string) ($pending['email'] ?? 'inconnu'), $logger);
+            try {
+                $this->generateAndSendVerificationCode($session, (string) ($pending['email'] ?? 'inconnu'), $logger, $brevoEmailService, 'Inscription');
+                $notice = 'Un code de verification a ete envoye par email.';
+            } catch (\Throwable $exception) {
+                $error = $exception->getMessage();
+            }
         }
 
-        $error = null;
-
         if ($request->isMethod('POST')) {
-            $submittedCode = trim((string) $request->request->get('verification_code'));
-            $expectedCode = (string) $session->get(self::SESSION_CODE, '');
+            $action = (string) $request->request->get('action', 'verify');
 
-            if (!preg_match('/^\d{6}$/', $submittedCode) || $submittedCode !== $expectedCode) {
-                $error = 'Code invalide. Un nouveau code a ete genere.';
-                $this->generateAndLogVerificationCode($session, (string) ($pending['email'] ?? 'inconnu'), $logger);
+            if ('resend' === $action) {
+                try {
+                    $this->generateAndSendVerificationCode($session, (string) ($pending['email'] ?? 'inconnu'), $logger, $brevoEmailService, 'Inscription');
+                    $notice = 'Un nouveau code a ete envoye par email.';
+                } catch (\Throwable $exception) {
+                    $error = $exception->getMessage();
+                }
             } else {
-                $existingUser = $entityManager->getRepository(Utilisateur::class)->findOneBy([
-                    'email' => $pending['email'] ?? null,
-                ]);
+                $submittedCode = trim((string) $request->request->get('verification_code'));
+                $expectedCode = (string) $session->get(self::SESSION_CODE, '');
 
-                if ($existingUser) {
-                    $error = 'Un compte existe deja avec cet email.';
+                if (!preg_match('/^\d{6}$/', $submittedCode) || $submittedCode !== $expectedCode) {
+                    $error = 'Code invalide. Un nouveau code a ete genere.';
+
+                    try {
+                        $this->generateAndSendVerificationCode($session, (string) ($pending['email'] ?? 'inconnu'), $logger, $brevoEmailService, 'Inscription');
+                    } catch (\Throwable $exception) {
+                        $error .= ' ' . $exception->getMessage();
+                    }
                 } else {
-                    $user = new Utilisateur();
-                    $user->setNom((string) $pending['nom']);
-                    $user->setPrenom((string) $pending['prenom']);
-                    $user->setCin((int) $pending['cin']);
-                    $user->setEmail((string) $pending['email']);
-                    $user->setMotDePasse((string) $pending['password_hash']);
-                    $user->setRole((string) $pending['role']);
-                    $user->setDateCreation(new \DateTime());
-                    $user->setSignature((string) $pending['signature_path']);
-                    $user->setRevenu(null);
-                    $user->setVerificationStatus('APPROVED');
-                    $user->setVerificationReason(null);
-                    $user->setVerificationScore(1.0);
-                    $user->setNomAr($pending['nom_ar']);
-                    $user->setPrenomAr($pending['prenom_ar']);
-                    $user->setAdresse($pending['adresse']);
-                    $user->setParcelles($pending['parcelles']);
-                    $user->setCartePro($pending['carte_pro_path']);
-                    $user->setCertification($pending['certification_path']);
+                    $existingUser = $entityManager->getRepository(Utilisateur::class)->findOneBy([
+                        'email' => $pending['email'] ?? null,
+                    ]);
 
-                    $entityManager->persist($user);
-                    $entityManager->flush();
+                    if ($existingUser) {
+                        $error = 'Un compte existe deja avec cet email.';
+                    } else {
+                        $user = new Utilisateur();
+                        $user->setNom((string) $pending['nom']);
+                        $user->setPrenom((string) $pending['prenom']);
+                        $user->setCin((int) $pending['cin']);
+                        $user->setEmail((string) $pending['email']);
+                        $user->setMotDePasse((string) $pending['password_hash']);
+                        $user->setRole((string) $pending['role']);
+                        $user->setDateCreation(new \DateTime());
+                        $user->setSignature((string) $pending['signature_path']);
+                        $user->setRevenu(null);
+                        $user->setVerificationStatus('APPROVED');
+                        $user->setVerificationReason(null);
+                        $user->setVerificationScore(1.0);
+                        $user->setNomAr($pending['nom_ar']);
+                        $user->setPrenomAr($pending['prenom_ar']);
+                        $user->setAdresse($pending['adresse']);
+                        $user->setParcelles($pending['parcelles']);
+                        $user->setCartePro($pending['carte_pro_path']);
+                        $user->setCertification($pending['certification_path']);
 
-                    $session->remove(self::SESSION_PENDING);
-                    $session->remove(self::SESSION_CODE);
+                        $entityManager->persist($user);
+                        $entityManager->flush();
 
-                    return $this->redirectToRoute('app_login');
+                        $session->remove(self::SESSION_PENDING);
+                        $session->remove(self::SESSION_CODE);
+
+                        return $this->redirectToRoute('app_login');
+                    }
                 }
             }
         }
 
         return $this->render('security/verify_code.html.twig', [
             'error' => $error,
+            'notice' => $notice,
             'email' => (string) ($pending['email'] ?? ''),
         ]);
     }
@@ -256,14 +283,18 @@ final class RegistrationController extends AbstractController
         return (bool) preg_match('/^[A-Za-z]:\\\\/', $path) || str_starts_with($path, '/');
     }
 
-    private function generateAndLogVerificationCode($session, string $email, LoggerInterface $logger): string
+    private function generateAndSendVerificationCode($session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
     {
         $code = (string) random_int(100000, 999999);
         $session->set(self::SESSION_CODE, $code);
+
         $logger->info('Verification code generated', [
             'email' => $email,
             'code' => $code,
+            'context' => $context,
         ]);
+
+        $brevoEmailService->sendVerificationCode($email, $code, $context);
 
         return $code;
     }

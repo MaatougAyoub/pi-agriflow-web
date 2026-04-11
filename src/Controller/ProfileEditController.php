@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Service\BrevoEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,7 +26,7 @@ final class ProfileEditController extends AbstractController
 
     #[Route('/profil/modifier', name: 'app_profile_edit', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function edit(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
+    public function edit(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, BrevoEmailService $brevoEmailService): Response
     {
         $user = $this->getAuthenticatedUser();
         $role = $this->normalizeRole((string) $user->getRole());
@@ -113,9 +114,13 @@ final class ProfileEditController extends AbstractController
                     'certification_path' => $role === 'EXPERT' ? $certificationPath : $user->getCertification(),
                 ]);
 
-                $this->generateAndLogVerificationCode($session, $email, $logger);
+                try {
+                    $this->generateAndSendVerificationCode($session, $email, $logger, $brevoEmailService, 'Modification du profil');
 
-                return $this->redirectToRoute('app_profile_edit_verify');
+                    return $this->redirectToRoute('app_profile_edit_verify');
+                } catch (\Throwable $exception) {
+                    $errors[] = $exception->getMessage();
+                }
             }
 
             $old = [
@@ -139,11 +144,13 @@ final class ProfileEditController extends AbstractController
 
     #[Route('/profil/modifier/verifier', name: 'app_profile_edit_verify', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function verify(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
+    public function verify(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger, BrevoEmailService $brevoEmailService): Response
     {
         $user = $this->getAuthenticatedUser();
         $session = $request->getSession();
         $pending = $session->get(self::SESSION_PENDING);
+        $error = null;
+        $notice = null;
 
         if (!is_array($pending) || (int) ($pending['user_id'] ?? 0) !== $user->getId()) {
             $session->remove(self::SESSION_PENDING);
@@ -153,55 +160,75 @@ final class ProfileEditController extends AbstractController
         }
 
         if (!$session->has(self::SESSION_CODE)) {
-            $this->generateAndLogVerificationCode($session, (string) ($pending['email'] ?? $user->getEmail()), $logger);
+            try {
+                $this->generateAndSendVerificationCode($session, (string) ($pending['email'] ?? $user->getEmail()), $logger, $brevoEmailService, 'Modification du profil');
+                $notice = 'Un code de verification a ete envoye par email.';
+            } catch (\Throwable $exception) {
+                $error = $exception->getMessage();
+            }
         }
 
-        $error = null;
-
         if ($request->isMethod('POST')) {
-            $submittedCode = trim((string) $request->request->get('verification_code'));
-            $expectedCode = (string) $session->get(self::SESSION_CODE, '');
+            $action = (string) $request->request->get('action', 'verify');
 
-            if (!preg_match('/^\d{6}$/', $submittedCode) || $submittedCode !== $expectedCode) {
-                $error = 'Code invalide. Un nouveau code a ete genere.';
-                $this->generateAndLogVerificationCode($session, (string) ($pending['email'] ?? $user->getEmail()), $logger);
+            if ('resend' === $action) {
+                try {
+                    $this->generateAndSendVerificationCode($session, (string) ($pending['email'] ?? $user->getEmail()), $logger, $brevoEmailService, 'Modification du profil');
+                    $notice = 'Un nouveau code a ete envoye par email.';
+                } catch (\Throwable $exception) {
+                    $error = $exception->getMessage();
+                }
             } else {
-                $newEmail = (string) ($pending['email'] ?? '');
-                $existingUser = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $newEmail]);
+                $submittedCode = trim((string) $request->request->get('verification_code'));
+                $expectedCode = (string) $session->get(self::SESSION_CODE, '');
 
-                if ($existingUser && $existingUser->getId() !== $user->getId()) {
-                    $error = 'Un compte existe deja avec cet email.';
+                if (!preg_match('/^\d{6}$/', $submittedCode) || $submittedCode !== $expectedCode) {
+                    $error = 'Code invalide. Un nouveau code a ete genere.';
+
+                    try {
+                        $this->generateAndSendVerificationCode($session, (string) ($pending['email'] ?? $user->getEmail()), $logger, $brevoEmailService, 'Modification du profil');
+                    } catch (\Throwable $exception) {
+                        $error .= ' ' . $exception->getMessage();
+                    }
                 } else {
-                    $role = strtoupper((string) ($pending['role'] ?? $this->normalizeRole((string) $user->getRole())));
+                    $newEmail = (string) ($pending['email'] ?? '');
+                    $existingUser = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $newEmail]);
 
-                    $user->setNom((string) ($pending['nom'] ?? $user->getNom()));
-                    $user->setPrenom((string) ($pending['prenom'] ?? $user->getPrenom()));
-                    $user->setEmail($newEmail);
-                    $user->setSignature((string) ($pending['signature_path'] ?? $user->getSignature()));
+                    if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                        $error = 'Un compte existe deja avec cet email.';
+                    } else {
+                        $role = strtoupper((string) ($pending['role'] ?? $this->normalizeRole((string) $user->getRole())));
 
-                    if ($role === 'AGRICULTEUR') {
-                        $user->setAdresse((string) ($pending['adresse'] ?? $user->getAdresse()));
-                        $user->setCartePro((string) ($pending['carte_pro_path'] ?? $user->getCartePro()));
+                        $user->setNom((string) ($pending['nom'] ?? $user->getNom()));
+                        $user->setPrenom((string) ($pending['prenom'] ?? $user->getPrenom()));
+                        $user->setEmail($newEmail);
+                        $user->setSignature((string) ($pending['signature_path'] ?? $user->getSignature()));
+
+                        if ($role === 'AGRICULTEUR') {
+                            $user->setAdresse((string) ($pending['adresse'] ?? $user->getAdresse()));
+                            $user->setCartePro((string) ($pending['carte_pro_path'] ?? $user->getCartePro()));
+                        }
+
+                        if ($role === 'EXPERT') {
+                            $user->setCertification((string) ($pending['certification_path'] ?? $user->getCertification()));
+                        }
+
+                        $entityManager->flush();
+
+                        $session->remove(self::SESSION_PENDING);
+                        $session->remove(self::SESSION_CODE);
+
+                        $this->addFlash('success', 'Profil modifie avec succes.');
+
+                        return $this->redirectToRoute('app_profile');
                     }
-
-                    if ($role === 'EXPERT') {
-                        $user->setCertification((string) ($pending['certification_path'] ?? $user->getCertification()));
-                    }
-
-                    $entityManager->flush();
-
-                    $session->remove(self::SESSION_PENDING);
-                    $session->remove(self::SESSION_CODE);
-
-                    $this->addFlash('success', 'Profil modifie avec succes.');
-
-                    return $this->redirectToRoute('app_profile');
                 }
             }
         }
 
         return $this->render('site/profile_edit_verify.html.twig', [
             'error' => $error,
+            'notice' => $notice,
             'email' => (string) ($pending['email'] ?? ''),
         ]);
     }
@@ -275,7 +302,7 @@ final class ProfileEditController extends AbstractController
         return (bool) preg_match('/^[A-Za-z]:\\\\/', $path) || str_starts_with($path, '/');
     }
 
-    private function generateAndLogVerificationCode($session, string $email, LoggerInterface $logger): string
+    private function generateAndSendVerificationCode($session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
     {
         $code = (string) random_int(100000, 999999);
         $session->set(self::SESSION_CODE, $code);
@@ -283,7 +310,10 @@ final class ProfileEditController extends AbstractController
         $logger->info('Profile edit verification code generated', [
             'email' => $email,
             'code' => $code,
+            'context' => $context,
         ]);
+
+        $brevoEmailService->sendVerificationCode($email, $code, $context);
 
         return $code;
     }
