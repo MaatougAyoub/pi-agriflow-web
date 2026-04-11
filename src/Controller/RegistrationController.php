@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Service\BrevoEmailService;
+use App\Service\Ocr\TesseractOcrService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -21,9 +22,10 @@ final class RegistrationController extends AbstractController
     private const CERTIFICATION_DIR = 'C:\\xampp\\htdocs\\certifications';
     private const SESSION_PENDING = 'registration_pending';
     private const SESSION_CODE = 'registration_code';
+    private const REQUIRED_FARMER_WORD = 'فلاح';
 
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger, BrevoEmailService $brevoEmailService): Response
+    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger, BrevoEmailService $brevoEmailService, TesseractOcrService $tesseractOcrService): Response
     {
         $errors = [];
         $selectedRole = strtoupper((string) $request->request->get('role', 'AGRICULTEUR'));
@@ -90,6 +92,20 @@ final class RegistrationController extends AbstractController
                 }
             }
 
+            if (!$errors && $selectedRole === 'AGRICULTEUR' && $carteProFile instanceof UploadedFile) {
+                try {
+                    $this->validateFarmerCardWithOcr($carteProFile, $nomAr, $prenomAr, $cin, $tesseractOcrService);
+                } catch (\Throwable $exception) {
+                    $errors[] = $exception->getMessage();
+
+                    $logger->warning('Farmer card OCR validation failed during registration', [
+                        'email' => $email,
+                        'cin' => $cin,
+                        'error' => $exception->getMessage(),
+                    ]);
+                }
+            }
+
             if (!$errors) {
                 $existingUser = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
                 if ($existingUser) {
@@ -129,6 +145,11 @@ final class RegistrationController extends AbstractController
             }
         }
 
+        $errorResponse = null;
+        if ($request->isMethod('POST') && $errors !== []) {
+            $errorResponse = new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         return $this->render('security/register.html.twig', [
             'errors' => $errors,
             'success_message' => null,
@@ -143,7 +164,7 @@ final class RegistrationController extends AbstractController
                 'adresse' => (string) $request->request->get('adresse', ''),
                 'parcelles' => (string) $request->request->get('parcelles', ''),
             ],
-        ]);
+        ], $errorResponse);
     }
 
     #[Route('/register/verify', name: 'app_register_verify', methods: ['GET', 'POST'])]
@@ -297,5 +318,183 @@ final class RegistrationController extends AbstractController
         $brevoEmailService->sendVerificationCode($email, $code, $context);
 
         return $code;
+    }
+
+    private function validateFarmerCardWithOcr(UploadedFile $carteProFile, string $nomAr, string $prenomAr, string $cin, TesseractOcrService $tesseractOcrService): void
+    {
+        $ocrText = $tesseractOcrService->extractText((string) $carteProFile->getPathname(), 'ara+eng')->getFullText();
+
+        $normalizedText = $this->normalizeArabicText($ocrText);
+        $compactText = str_replace(' ', '', $normalizedText);
+
+        $nomArNormalized = str_replace(' ', '', $this->normalizeArabicText($nomAr));
+        $prenomArNormalized = str_replace(' ', '', $this->normalizeArabicText($prenomAr));
+        $requiredWord = str_replace(' ', '', $this->normalizeArabicText(self::REQUIRED_FARMER_WORD));
+        $cinDigits = preg_replace('/\D+/', '', $this->normalizeDigits($cin)) ?: '';
+        $ocrDigits = preg_replace('/\D+/', '', $this->normalizeDigits($ocrText)) ?: '';
+
+        $ocrErrors = [];
+
+        if ($nomArNormalized === '' || !$this->containsArabicValue($normalizedText, $compactText, $nomArNormalized)) {
+            $ocrErrors[] = 'Le nom arabe n\'a pas ete detecte dans la carte professionnelle.';
+        }
+
+        if ($prenomArNormalized === '' || !$this->containsArabicValue($normalizedText, $compactText, $prenomArNormalized)) {
+            $ocrErrors[] = 'Le prenom arabe n\'a pas ete detecte dans la carte professionnelle.';
+        }
+
+        if ($cinDigits === '' || !str_contains($ocrDigits, $cinDigits)) {
+            $ocrErrors[] = 'Le CIN saisi ne correspond pas au CIN detecte dans la carte professionnelle.';
+        }
+
+        if ($requiredWord === '' || !str_contains($compactText, $requiredWord)) {
+            $ocrErrors[] = 'Le mot "فلاح" est introuvable dans la carte professionnelle.';
+        }
+
+        if ($ocrErrors !== []) {
+            throw new \RuntimeException('Verification OCR echouee: ' . implode(' ', $ocrErrors));
+        }
+    }
+
+    private function normalizeArabicText(string $text): string
+    {
+        $text = trim($this->normalizeDigits($text));
+        $text = strtr($text, [
+            'أ' => 'ا',
+            'إ' => 'ا',
+            'آ' => 'ا',
+            'ٱ' => 'ا',
+            'ى' => 'ي',
+            'ؤ' => 'و',
+            'ئ' => 'ي',
+            'ة' => 'ه',
+            'ـ' => '',
+        ]);
+
+        $text = preg_replace('/[\x{0610}-\x{061A}\x{064B}-\x{065F}\x{06D6}-\x{06ED}]/u', '', $text) ?? $text;
+        $text = preg_replace('/[^\p{Arabic}\p{N}\s]+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/\s+/u', ' ', $text) ?? $text;
+
+        return trim($text);
+    }
+
+    private function normalizeDigits(string $text): string
+    {
+        return strtr($text, [
+            '٠' => '0',
+            '١' => '1',
+            '٢' => '2',
+            '٣' => '3',
+            '٤' => '4',
+            '٥' => '5',
+            '٦' => '6',
+            '٧' => '7',
+            '٨' => '8',
+            '٩' => '9',
+            '۰' => '0',
+            '۱' => '1',
+            '۲' => '2',
+            '۳' => '3',
+            '۴' => '4',
+            '۵' => '5',
+            '۶' => '6',
+            '۷' => '7',
+            '۸' => '8',
+            '۹' => '9',
+        ]);
+    }
+
+    private function containsArabicValue(string $normalizedOcrText, string $compactOcrText, string $expectedCompact): bool
+    {
+        if ($expectedCompact === '') {
+            return false;
+        }
+
+        if (str_contains($compactOcrText, $expectedCompact)) {
+            return true;
+        }
+
+        $tokens = preg_split('/\s+/u', trim($normalizedOcrText)) ?: [];
+        $candidateTokens = [];
+
+        foreach ($tokens as $token) {
+            $normalizedToken = str_replace(' ', '', $this->normalizeArabicText($token));
+            if ($normalizedToken !== '') {
+                $candidateTokens[] = $normalizedToken;
+            }
+        }
+
+        $mergedCandidates = $candidateTokens;
+        $tokenCount = count($candidateTokens);
+
+        // Only combine adjacent original tokens once to avoid runaway array growth.
+        for ($i = 0; $i < $tokenCount - 1; ++$i) {
+            $mergedCandidates[] = $candidateTokens[$i] . $candidateTokens[$i + 1];
+        }
+
+        $expectedLatin = $this->arabicToLatinSkeleton($expectedCompact);
+        $expectedLen = strlen($expectedLatin);
+
+        if ($expectedLen === 0) {
+            return false;
+        }
+
+        $maxDistance = max(1, (int) floor($expectedLen * 0.34));
+
+        foreach ($mergedCandidates as $candidate) {
+            if ($candidate === '' || strlen($candidate) < 2) {
+                continue;
+            }
+
+            if (str_contains($candidate, $expectedCompact) || str_contains($expectedCompact, $candidate)) {
+                return true;
+            }
+
+            $candidateLatin = $this->arabicToLatinSkeleton($candidate);
+            if ($candidateLatin === '') {
+                continue;
+            }
+
+            $distance = levenshtein($expectedLatin, $candidateLatin);
+            if ($distance <= $maxDistance) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function arabicToLatinSkeleton(string $text): string
+    {
+        return strtr($text, [
+            'ا' => 'a',
+            'ب' => 'b',
+            'ت' => 't',
+            'ث' => 'v',
+            'ج' => 'j',
+            'ح' => 'h',
+            'خ' => 'x',
+            'د' => 'd',
+            'ذ' => 'z',
+            'ر' => 'r',
+            'ز' => 'z',
+            'س' => 's',
+            'ش' => 'c',
+            'ص' => 's',
+            'ض' => 'd',
+            'ط' => 't',
+            'ظ' => 'z',
+            'ع' => 'e',
+            'غ' => 'g',
+            'ف' => 'f',
+            'ق' => 'q',
+            'ك' => 'k',
+            'ل' => 'l',
+            'م' => 'm',
+            'ن' => 'n',
+            'ه' => 'h',
+            'و' => 'w',
+            'ي' => 'y',
+        ]);
     }
 }
