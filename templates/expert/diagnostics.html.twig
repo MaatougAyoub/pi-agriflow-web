@@ -1,0 +1,36 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Diagnostics Expert{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+    <h2 style="color:#2D5A27;font-weight:800">📝 Diagnostics à traiter</h2>
+    <div class="card shadow-sm border-0 rounded-4 p-4 mt-4">
+        <table class="table">
+            <thead><tr><th>Culture</th><th>Description</th><th>Statut</th><th>Date</th><th>Réponse</th></tr></thead>
+            <tbody>
+            {% for d in diagnostics %}
+            <tr>
+                <td>{{ d.nomCulture }}</td>
+                <td>{{ d.description|slice(0,50) }}...</td>
+                <td><span class="badge rounded-pill" style="background:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">{{ d.statut }}</span></td>
+                <td>{{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}</td>
+                <td>
+                    {% if d.statut == 'en_attente' or d.statut is null %}
+                    <form method="post" action="{{ path('expert_diagnostic_repondre', {id: d.idDiagnostic}) }}" class="d-flex gap-2">
+                        <input type="text" name="reponse" placeholder="Votre réponse..." class="form-control form-control-sm">
+                        <button type="submit" class="btn btn-sm" style="background:#2D5A27;color:white;white-space:nowrap">Envoyer</button>
+                    </form>
+                    {% else %}
+                        {{ d.reponseExpert }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">Aucun diagnostic.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</section>
+{% endblock %}

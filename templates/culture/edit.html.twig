@@ -1,19 +1,18 @@
-{% extends 'parcelle_culture/layout.html.twig' %}
-
-{% block page_title %}Modifier une culture{% endblock %}
-
-{% block hero_title %}Modifier la culture 
-<br>
-{{ culture.nom ?: 'Culture #' ~ culture.id }}{% endblock %}
-{% block hero_subtitle %}{% endblock %}
-{% block hero_size %}pc-hero-medium{% endblock %}
-{% block module_body %}
-  {% include 'culture/_form.html.twig' with {
-    form: form,
-    parcelles: parcelles,
-    available_surface_map: available_surface_map,
-    selected_parcelle: selected_parcelle,
-    selected_available_surface: selected_available_surface,
-    submit_label: 'Mettre a jour'
-  } %}
+{% extends 'base.html.twig' %}
+{% block title %}Modifier culture{% endblock %}
+{% block body %}
+<h1>Modifier : {{ culture.nom }}</h1>
+<form method="post">
+    <label>Nom : <input type="text" name="nom" value="{{ culture.nom }}" required></label><br><br>
+    <label>Type :
+        <select name="typeCulture">
+            {% for key, label in types %}
+            <option value="{{ key }}" {{ culture.typeCulture == key ? 'selected' : '' }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label><br><br>
+    <label>Superficie (ha) : <input type="number" step="0.01" name="superficie" value="{{ culture.superficie }}" required></label><br><br>
+    <button type="submit">Enregistrer</button>
+    <a href="{{ path('culture_index') }}">Annuler</a>
+</form>
 {% endblock %}

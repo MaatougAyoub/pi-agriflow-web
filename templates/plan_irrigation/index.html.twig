@@ -1,0 +1,70 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Plans d irrigation{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <p style="color:#7f8c8d;margin:0">Gestion des plans</p>
+            <h2 style="color:#2D5A27;font-weight:800;margin:0">💧 Plans d irrigation</h2>
+        </div>
+        {% if is_granted('ROLE_EXPERT') %}
+        <a href="{{ path('plan_new') }}" class="btn" style="background:#2D5A27;color:white;border-radius:20px;padding:10px 25px">+ Nouveau plan</a>
+        {% endif %}
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+    {% for p in plans %}
+        {% if p.statut == 'rempli' %}
+            {% set borderColor = '#2D5A27' %}
+            {% set badgeColor = '#2D5A27' %}
+        {% elseif p.statut == 'approuve' %}
+            {% set borderColor = '#1976D2' %}
+            {% set badgeColor = '#1976D2' %}
+        {% else %}
+            {% set borderColor = '#E65100' %}
+            {% set badgeColor = '#E65100' %}
+        {% endif %}
+
+    <a href="{{ is_granted('ROLE_EXPERT') ? path('expert_irrigation_detail', {id: p.planId}) : path('plan_detail', {id: p.planId}) }}"
+       style="text-decoration:none;color:inherit">
+        <div style="background:white;border-radius:12px;padding:20px 25px;
+                    display:flex;justify-content:space-between;align-items:center;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+                    border-left:4px solid {{ borderColor }};
+                    cursor:pointer;transition:all 0.2s"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'"
+             onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+            <div>
+                <div style="font-size:17px;font-weight:700;color:#1B4332;margin-bottom:4px">
+                    {{ p.nomCulture }}
+                </div>
+                <div style="font-size:13px;color:#95a5a6">
+                    Volume : {{ p.volumeEauPropose }} L |
+                    Date : {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px">
+                <span class="badge rounded-pill"
+                      style="background:{{ badgeColor }};color:white;padding:6px 14px">
+                    {{ p.statut ?? 'en attente' }}
+                </span>
+                {% if is_granted('ROLE_EXPERT') %}
+                <a href="{{ path('plan_delete', {id: p.planId}) }}"
+                   onclick="return confirm('Supprimer ce plan ?')"
+                   style="color:#e74c3c;text-decoration:none;font-size:18px"
+                   title="Supprimer">🗑</a>
+                {% endif %}
+                <div style="color:#ccc;font-size:24px;font-weight:300">›</div>
+            </div>
+        </div>
+    </a>
+    {% else %}
+    <div style="background:white;border-radius:12px;padding:40px;text-align:center;color:#95a5a6">
+        Aucun plan d irrigation.
+    </div>
+    {% endfor %}
+    </div>
+</div>
+</section>
+{% endblock %}

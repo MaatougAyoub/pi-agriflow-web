@@ -1,0 +1,60 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Plan d irrigation - AGRIFLOW{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+
+    <div style="margin-bottom:30px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+            <div style="color:#95a5a6;font-size:0.9rem;font-weight:500">Gestion des plans</div>
+            <div style="color:#2D5A27;font-size:1.8rem;font-weight:700;display:flex;align-items:center;gap:10px">
+                <span style="color:#78B7FF">💧</span> Plans d irrigation
+            </div>
+        </div>
+        <a href="{{ path('agriculteur_irrigation_new') }}"
+           style="background-color:#2D5A27;color:white;padding:10px 25px;border-radius:20px;text-decoration:none;font-weight:600">
+            + Nouveau plan
+        </a>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+    {% for p in plans %}
+        {% if p.statut == 'rempli' %}{% set bc = '#2D5A27' %}{% set sc = '#2D5A27' %}
+        {% elseif p.statut == 'approuve' %}{% set bc = '#1976D2' %}{% set sc = '#1976D2' %}
+        {% else %}{% set bc = '#F39C12' %}{% set sc = '#F39C12' %}{% endif %}
+
+        <a href="{{ path('agriculteur_irrigation_detail', {id: p.planId}) }}" style="text-decoration:none;color:inherit">
+            <div style="background:white;border-radius:12px;padding:20px 25px;
+                        display:flex;justify-content:space-between;align-items:center;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.06);
+                        border-left:5px solid {{ bc }};transition:all 0.2s;cursor:pointer"
+                 onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)';this.style.transform='translateY(-1px)'"
+                 onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';this.style.transform='translateY(0)'">
+                <div>
+                    <div style="font-size:18px;font-weight:700;color:#1B4332;margin-bottom:4px">
+                        {{ p.nomCulture }}
+                    </div>
+                    <div style="font-size:13px;color:#95a5a6">
+                        Volume : {{ p.volumeEauPropose }} L |
+                        Date : {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:25px">
+                    <span style="background-color:{{ sc }};color:white;padding:5px 15px;border-radius:15px;font-size:12px;font-weight:600">
+                        {{ p.statut|default('en_attente')|replace({'_': ' '}) }}
+                    </span>
+                    <div style="color:#ccc;font-size:24px;font-weight:300">›</div>
+                </div>
+            </div>
+        </a>
+    {% else %}
+        <div style="background:white;border-radius:15px;padding:50px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+            <div style="font-size:40px;margin-bottom:10px">🍃</div>
+            <p style="color:#95a5a6;font-size:1.1rem;margin:0">Aucun plan d irrigation pour le moment.</p>
+        </div>
+    {% endfor %}
+    </div>
+
+</div>
+</section>
+{% endblock %}

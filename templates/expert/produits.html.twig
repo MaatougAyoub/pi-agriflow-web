@@ -1,0 +1,30 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Produits Phytosanitaires{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color:#2D5A27;font-weight:800">💊 Catalogue Phytosanitaire</h2>
+        <a href="{{ path('expert_produit_new') }}" class="btn" style="background:#2D5A27;color:white;border-radius:20px;padding:10px 25px">+ Ajouter</a>
+    </div>
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+        <table class="table">
+            <thead><tr><th>Nom</th><th>Dosage</th><th>Fréquence</th><th>Remarques</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for p in produits %}
+            <tr>
+                <td><strong>{{ p.nomProduit }}</strong></td>
+                <td>{{ p.dosage }}</td>
+                <td>{{ p.frequenceApplication }}</td>
+                <td>{{ p.remarques }}</td>
+                <td><a href="{{ path('expert_produit_delete', {id: p.idProduit}) }}" onclick="return confirm('Supprimer ?')" class="btn btn-sm btn-danger">🗑</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">Aucun produit.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</section>
+{% endblock %}

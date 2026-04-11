@@ -1,0 +1,59 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Nouveau plan d irrigation{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+
+    <div style="margin-bottom:30px">
+        <div style="color:#95a5a6;font-size:0.9rem">Farm Management</div>
+        <div style="color:#2D5A27;font-size:1.8rem;font-weight:700">Nouveau plan d irrigation</div>
+    </div>
+
+    <div style="background:white;border-radius:14px;padding:35px;max-width:620px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,0.07)">
+        <form method="post">
+            <div style="margin-bottom:20px">
+                <label style="display:block;margin-bottom:8px;font-weight:600;color:#1B4332">🌱 Choisir une culture</label>
+                <select name="culture" required
+                        style="width:100%;padding:12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:15px;background:white">
+                    <option value="">-- Sélectionnez votre culture --</option>
+                    {% for culture in cultures %}
+                    <option value="{{ culture.id }}">
+                        {{ culture.nom }}
+                        {% if culture.superficie %} — {{ culture.superficie }} ha{% endif %}
+                        {% if culture.typeCulture %} ({{ culture.typeCulture }}){% endif %}
+                    </option>
+                    {% else %}
+                    <option disabled>Aucune culture disponible — créez d abord une culture</option>
+                    {% endfor %}
+                </select>
+                {% if cultures is empty %}
+                <div style="margin-top:8px;font-size:13px;color:#E65100">
+                    ⚠️ Vous n avez pas encore de cultures.
+                    <a href="{{ path('app_culture_new') }}" style="color:#2D5A27;font-weight:600">Créer une culture</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom:25px">
+                <label style="display:block;margin-bottom:8px;font-weight:600;color:#1B4332">💧 Volume eau proposé (L)</label>
+                <input type="number" step="0.1" name="volume_eau" required
+                       placeholder="Ex: 150"
+                       style="width:100%;padding:12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:15px">
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <a href="{{ path('agriculteur_irrigation') }}"
+                   style="padding:10px 25px;border-radius:20px;border:1.5px solid #ccc;color:#666;text-decoration:none;font-weight:600">
+                    Annuler
+                </a>
+                <button type="submit"
+                        style="padding:10px 30px;border-radius:20px;background:#2D5A27;color:white;border:none;font-weight:600;cursor:pointer">
+                    ✅ Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</section>
+{% endblock %}

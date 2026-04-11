@@ -1,0 +1,35 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Nouveau Produit{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+    <div class="card shadow-sm border-0 rounded-4 p-4" style="max-width:600px;margin:0 auto">
+        <h3 style="color:#2D5A27;font-weight:700">💊 Nouveau produit phytosanitaire</h3>
+        <form method="post" class="mt-4">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nom du produit</label>
+                <input type="text" name="nomProduit" class="form-control" required>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Dosage</label>
+                    <input type="text" name="dosage" class="form-control">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Fréquence</label>
+                    <input type="text" name="frequence" class="form-control">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Remarques</label>
+                <textarea name="remarques" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn" style="background:#2D5A27;color:white;border-radius:20px">Enregistrer</button>
+                <a href="{{ path('expert_produits') }}" class="btn btn-outline-secondary" style="border-radius:20px">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+</section>
+{% endblock %}

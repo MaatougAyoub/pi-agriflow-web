@@ -1,22 +1,18 @@
-{% extends 'parcelle_culture/layout.html.twig' %}
-
-{% block page_title %}Ajouter une culture{% endblock %}
-
-{% block hero_title %}Ajouter une culture 
-
-{% endblock %}
-{% block hero_size %}pc-hero-medium{% endblock %}
-{% block hero_subtitle %}Complétez les champs pour enregistrer votre culture{% endblock %}
-
-
-
-{% block module_body %}
-  {% include 'culture/_form.html.twig' with {
-    form: form,
-    parcelles: parcelles,
-    available_surface_map: available_surface_map,
-    selected_parcelle: selected_parcelle,
-    selected_available_surface: selected_available_surface,
-    submit_label: 'Creer la culture'
-  } %}
+{% extends 'base.html.twig' %}
+{% block title %}Nouvelle culture{% endblock %}
+{% block body %}
+<h1>Nouvelle culture</h1>
+<form method="post">
+    <label>Nom : <input type="text" name="nom" required></label><br><br>
+    <label>Type :
+        <select name="typeCulture">
+            {% for key, label in types %}
+            <option value="{{ key }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </label><br><br>
+    <label>Superficie (ha) : <input type="number" step="0.01" name="superficie" value="1" required></label><br><br>
+    <button type="submit">Enregistrer</button>
+    <a href="{{ path('culture_index') }}">Annuler</a>
+</form>
 {% endblock %}
