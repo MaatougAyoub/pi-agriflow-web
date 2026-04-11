@@ -24,6 +24,7 @@ final class AnnonceGeocodingService
      */
     public function enrichAnnonce(Annonce $annonce): array
     {
+        // geocoding: nafaskhou resultat 9dim 9bal ma n7awlou njiibou resultat jdid
         $annonce->clearGeocoding();
 
         $localisation = trim((string) $annonce->getLocalisation());
@@ -33,6 +34,7 @@ final class AnnonceGeocodingService
         }
 
         try {
+            // api: OpenStreetMap/Nominatim yrajja3 latitude longitude w adresse normalisee
             $response = $this->httpClient->request('GET', rtrim($this->baseUrl, '/').'/search', [
                 'query' => [
                     'q' => $localisation,
@@ -53,6 +55,7 @@ final class AnnonceGeocodingService
             $result = is_array($payload) && isset($payload[0]) && is_array($payload[0]) ? $payload[0] : null;
 
             if (null === $result || !isset($result['lat'], $result['lon'])) {
+                // fallback: ken ma l9ach point precis, annonce tab9a tet7fedh bel localisation mte3 user
                 return [
                     'status' => 'fallback',
                     'message' => 'Annonce enregistree. La localisation reste manuelle car aucun point precis n a ete trouve.',
@@ -74,6 +77,7 @@ final class AnnonceGeocodingService
                 'error' => $exception->getMessage(),
             ]);
 
+            // fallback: panne API ma tkasserch creation annonce
             return [
                 'status' => 'fallback',
                 'message' => 'Annonce enregistree. Le geocodage OpenStreetMap est temporairement indisponible.',

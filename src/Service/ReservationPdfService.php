@@ -24,10 +24,12 @@ final class ReservationPdfService
 
     public function streamReservationQuote(Reservation $reservation, string $filenamePrefix = 'devis-reservation'): Response
     {
+        // pdf: njiib client w vendeur bech devis ykoun mafhoum lel admin/vendeur/client
         $client = $this->utilisateurRepository->find($reservation->getClientId());
         $vendeur = $this->utilisateurRepository->find($reservation->getProprietaireId());
         $filename = sprintf('%s-%d.pdf', $filenamePrefix, $reservation->getId() ?? 0);
 
+        // pdf: twig y7adher html w Dompdf y7awlou fichier PDF
         $html = $this->twig->render('pdf/reservation_quote.html.twig', [
             'reservation' => $reservation,
             'annonce' => $reservation->getAnnonce(),

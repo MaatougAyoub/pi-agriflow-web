@@ -23,6 +23,10 @@ final class AnnonceAiAssistantService
         private readonly string $openAiApiKey,
         #[Autowire('%env(string:OPENAI_MODEL)%')]
         private readonly string $openAiModel,
+        #[Autowire('%env(string:GROQ_API_KEY)%')]
+        private readonly string $groqApiKey,
+        #[Autowire('%env(string:GROQ_MODEL)%')]
+        private readonly string $groqModel,
     ) {
     }
 
@@ -36,8 +40,10 @@ final class AnnonceAiAssistantService
         $provider = $this->resolveProvider();
         $prompt = $this->buildPrompt($context);
 
+        // ia: provider yetbadel mel .env.local, ama formulaire yeb9a nafsou
         $rawText = match ($provider) {
             'openai' => $this->requestOpenAi($prompt),
+            'groq' => $this->requestGroq($prompt),
             default => $this->requestGemini($prompt),
         };
 
@@ -56,7 +62,7 @@ final class AnnonceAiAssistantService
     {
         $provider = strtolower(trim($this->provider));
 
-        return in_array($provider, ['gemini', 'openai'], true) ? $provider : 'gemini';
+        return in_array($provider, ['gemini', 'openai', 'groq'], true) ? $provider : 'gemini';
     }
 
     private function requestGemini(string $prompt): string
@@ -150,6 +156,54 @@ final class AnnonceAiAssistantService
         }
     }
 
+    private function requestGroq(string $prompt): string
+    {
+        // groq: cle tab9a local fi .env.local, ma tetpushach lel GitHub
+        if ('' === trim($this->groqApiKey)) {
+            throw new \DomainException('Assistant indisponible: la cle Groq est absente.');
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer '.$this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => $this->groqModel,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'Tu retournes uniquement un objet JSON valide, sans introduction, sans markdown, sans commentaire.',
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt,
+                        ],
+                    ],
+                    'response_format' => ['type' => 'json_object'],
+                    'temperature' => 0.4,
+                ],
+                'timeout' => 30,
+            ]);
+
+            $payload = $response->toArray(false);
+            // groq: API chat completions traja3 texte fi choices[0].message.content
+            $text = $this->extractTextFromChatCompletion($payload);
+
+            if ('' === $text) {
+                throw new \RuntimeException('Groq n a retourne aucun texte.');
+            }
+
+            return $text;
+        } catch (\DomainException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Assistant IA Groq indisponible.', ['error' => $exception->getMessage()]);
+            throw new \DomainException('Assistant indisponible pour le moment.');
+        }
+    }
+
     /**
      * @param array<string, mixed> $payload
      */
@@ -167,6 +221,16 @@ final class AnnonceAiAssistantService
         });
 
         return trim(implode("\n", $texts));
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function extractTextFromChatCompletion(array $payload): string
+    {
+        $content = $payload['choices'][0]['message']['content'] ?? null;
+
+        return is_string($content) ? trim($content) : '';
     }
 
     /**
@@ -217,6 +281,16 @@ PROMPT, $encodedPayload ?: '{}');
         $normalized = trim($normalized);
 
         $decoded = json_decode($normalized, true);
+
+        if (!is_array($decoded)) {
+            // ia: ken model zed phrase 9bal JSON, nesta5rjou JSON men west texte
+            $firstBrace = strpos($normalized, '{');
+            $lastBrace = strrpos($normalized, '}');
+
+            if (false !== $firstBrace && false !== $lastBrace && $lastBrace > $firstBrace) {
+                $decoded = json_decode(substr($normalized, $firstBrace, $lastBrace - $firstBrace + 1), true);
+            }
+        }
 
         if (!is_array($decoded)) {
             throw new \DomainException('Assistant indisponible pour le moment.');
