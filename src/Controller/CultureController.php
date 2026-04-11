@@ -414,6 +414,7 @@ final class CultureController extends AbstractController
             if ($form->isValid()) {
                 $culture
                     ->setProprietaireId($agriculteurId)
+                    ->setProprietaire($entityManager->getReference(Utilisateur::class, $agriculteurId))
                     ->setEtat($culture->getId() ? $culture->getEtat() : Culture::ETAT_EN_COURS)
                     ->setDateCreation($culture->getDateCreation() ?? new \DateTime());
 

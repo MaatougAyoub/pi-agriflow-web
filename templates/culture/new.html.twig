@@ -1,18 +1,18 @@
-{% extends 'base.html.twig' %}
-{% block title %}Nouvelle culture{% endblock %}
-{% block body %}
-<h1>Nouvelle culture</h1>
-<form method="post">
-    <label>Nom : <input type="text" name="nom" required></label><br><br>
-    <label>Type :
-        <select name="typeCulture">
-            {% for key, label in types %}
-            <option value="{{ key }}">{{ label }}</option>
-            {% endfor %}
-        </select>
-    </label><br><br>
-    <label>Superficie (ha) : <input type="number" step="0.01" name="superficie" value="1" required></label><br><br>
-    <button type="submit">Enregistrer</button>
-    <a href="{{ path('culture_index') }}">Annuler</a>
-</form>
+{% extends 'parcelle_culture/layout.html.twig' %}
+
+{% block page_title %}Nouvelle culture{% endblock %}
+{% block hero_title %}Ajouter une culture{% endblock %}
+{% block hero_subtitle %}Renseignez les informations de la culture a creer{% endblock %}
+{% block top_right_action %}
+    <a href="{{ path('app_culture_index') }}" class="btn btn-outline-success">Retour aux cultures</a>
+{% endblock %}
+{% block hero_size %}pc-hero-medium{% endblock %}
+
+{% block module_body %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-lg-5">
+            <h1 class="h3 mb-4">Nouvelle culture</h1>
+            {% include 'culture/_form.html.twig' with {submit_label: 'Creer la culture'} %}
+        </div>
+    </div>
 {% endblock %}
