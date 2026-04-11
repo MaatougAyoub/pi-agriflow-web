@@ -1,0 +1,48 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Détail Diagnostic{% endblock %}
+
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+    <a href="{{ path('agriculteur_diagnostics') }}" class="btn btn-outline-secondary mb-4" style="border-radius:20px">← Retour</a>
+    
+    {% if diagnostic %}
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+        <h3 style="color:#2D5A27">{{ diagnostic.nomCulture }}</h3>
+        <p style="color:#7f8c8d">{{ diagnostic.dateEnvoi ? diagnostic.dateEnvoi|date('d/m/Y H:i') : '-' }}</p>
+        
+        <div class="mt-3">
+            <strong>Description :</strong>
+            <p>{{ diagnostic.description }}</p>
+        </div>
+
+        {% if diagnostic.imagePath %}
+        <div class="mt-3">
+            <strong>Photo jointe :</strong><br>
+            <img src="{{ asset('uploads/diagnostics/' ~ diagnostic.imagePath) }}" 
+                 alt="Photo du diagnostic" 
+                 style="max-width:100%; max-height:300px; border-radius:8px; margin-top:10px;">
+        </div>
+        {% endif %}
+
+        <div class="mt-3">
+            <strong>Statut :</strong>
+            <span class="badge rounded-pill ms-2 {{ diagnostic.statut == 'traite' ? 'text-bg-success' : 'text-bg-warning' }}">
+                {{ diagnostic.statut|default('en attente') }}
+            </span>
+        </div>
+
+        {% if diagnostic.reponseExpert %}
+        <div class="mt-4 p-3 rounded-3" style="background:#E8F5E9">
+            <strong style="color:#2D5A27">💬 Réponse de l'expert :</strong>
+            <p class="mt-2">{{ diagnostic.reponseExpert }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-warning">Diagnostic introuvable.</div>
+    {% endif %}
+</div>
+</section>
+{% endblock %}

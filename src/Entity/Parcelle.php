@@ -57,7 +57,7 @@ class Parcelle
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: "float", nullable: true)]
     private ?float $superficie = null;
 
     public function getSuperficie(): ?float

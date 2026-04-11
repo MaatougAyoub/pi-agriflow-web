@@ -26,21 +26,15 @@ use Symfony\Component\ExpressionLanguage\Expression;
  */
 abstract class AbstractRecursivePass implements CompilerPassInterface
 {
-    /**
-     * @var ContainerBuilder
-     */
-    protected $container;
-    protected $currentId;
+    protected ?ContainerBuilder $container;
+    protected ?string $currentId = null;
     protected bool $skipScalars = false;
 
     private bool $processExpressions = false;
     private ExpressionLanguage $expressionLanguage;
     private bool $inExpression = false;
 
-    /**
-     * @return void
-     */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $this->container = $container;
 
@@ -51,10 +45,7 @@ abstract class AbstractRecursivePass implements CompilerPassInterface
         }
     }
 
-    /**
-     * @return void
-     */
-    protected function enableExpressionProcessing()
+    protected function enableExpressionProcessing(): void
     {
         $this->processExpressions = true;
     }
@@ -71,10 +62,8 @@ abstract class AbstractRecursivePass implements CompilerPassInterface
 
     /**
      * Processes a value found in a definition tree.
-     *
-     * @return mixed
      */
-    protected function processValue(mixed $value, bool $isRoot = false)
+    protected function processValue(mixed $value, bool $isRoot = false): mixed
     {
         if (\is_array($value)) {
             foreach ($value as $k => $v) {
@@ -187,7 +176,7 @@ abstract class AbstractRecursivePass implements CompilerPassInterface
                 throw new RuntimeException(\sprintf('Invalid service "%s": class%s has no constructor.', $this->currentId, \sprintf($class !== $this->currentId ? ' "%s"' : '', $class)));
             }
         } elseif (!$r->isPublic()) {
-            throw new RuntimeException(\sprintf('Invalid service "%s": ', $this->currentId).\sprintf($class !== $this->currentId ? 'constructor of class "%s"' : 'its constructor', $class).' must be public.');
+            throw new RuntimeException(\sprintf('Invalid service "%s": ', $this->currentId).\sprintf($class !== $this->currentId ? 'constructor of class "%s"' : 'its constructor', $class).' must be public. Did you miss configuring a factory or a static constructor? Try using the "#[Autoconfigure(constructor: ...)]" attribute for the latter.');
         }
 
         return $r;

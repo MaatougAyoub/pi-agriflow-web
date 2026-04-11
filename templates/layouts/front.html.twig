@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+﻿{% extends 'base.html.twig' %}
 
 {% block title %}{% block page_title %}Marketplace AgriFlow{% endblock %}{% endblock %}
 {% block body_class %}agf-front{% endblock %}
@@ -30,6 +30,34 @@
                         <li><a href="{{ path('app_parcelle_index') }}" class="{{ current_route starts with 'app_parcelle_' or current_route starts with 'app_culture_' ? 'active' : '' }}">Parcelles & Cultures</a></li>
                     {% endif %}
                     <li><a href="{{ path('site_services') }}" class="{{ current_route == 'site_services' ? 'active' : '' }}">Services</a></li>
+
+                    {% if app.user %}
+                    <li class="dropdown">
+                        <a href="{{ path('irrigation_dashboard') }}" class="{{ current_route starts with 'irrigation_' or current_route starts with 'plan_' or current_route starts with 'expert_' or current_route starts with 'agriculteur_' ? 'active' : '' }}">
+                            <span>💧 Irrigation</span>
+                            <i class="bi bi-chevron-down toggle-dropdown"></i>
+                        </a>
+                        <ul>
+                            <li><a href="{{ path('irrigation_dashboard') }}">🏠 Dashboard</a></li>
+                            {% if is_granted('ROLE_AGRICULTEUR') or is_granted('ROLE_EXPERT') %}
+                            <li><a href="{{ path('app_culture_index') }}">🌱 Cultures</a></li>
+                            {% endif %}
+                            <li>
+                                <a href="{{ is_granted('ROLE_EXPERT') ? path('expert_irrigation') : path('agriculteur_irrigation') }}">
+                                    💧 Plans d'irrigation
+                                </a>
+                            </li>
+                            {% if is_granted('ROLE_EXPERT') %}
+                                <li><a href="{{ path('expert_diagnostics') }}">📝 Diagnostics</a></li>
+                                <li><a href="{{ path('expert_produits') }}">💊 Produits phyto</a></li>
+                            {% else %}
+                                <li><a href="{{ path('agriculteur_diagnostics') }}">📝 Mes diagnostics</a></li>
+                                <li><a href="{{ path('agriculteur_diagnostic_new') }}">➕ Nouveau diagnostic</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
                     <li><a href="{{ path('site_about') }}" class="{{ current_route == 'site_about' ? 'active' : '' }}">A propos</a></li>
                     <li><a href="{{ path('site_contact') }}" class="{{ current_route == 'site_contact' ? 'active' : '' }}">Contact</a></li>
                     {% if app.user %}
