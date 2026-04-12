@@ -8,7 +8,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ParcelRecommendationService
 {
-    private const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+    private const GEMINI_MODEL = 'gemini-2.5-flash';
+    private const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/'.self::GEMINI_MODEL.':generateContent';
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
@@ -87,12 +88,14 @@ class ParcelRecommendationService
         $rawBody = $response->getContent(false);
 
         $this->logger->info('Parcel recommendations response received.', [
+            'model' => self::GEMINI_MODEL,
             'status' => $statusCode,
             'body' => $rawBody,
         ]);
 
         if ($statusCode < 200 || $statusCode >= 300) {
             $this->logger->error('Parcel recommendations Gemini HTTP error.', [
+                'model' => self::GEMINI_MODEL,
                 'status' => $statusCode,
                 'body' => $rawBody,
             ]);
