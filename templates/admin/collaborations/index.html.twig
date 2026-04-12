@@ -1,0 +1,210 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block page_title %}Gestion des collaborations - Admin{% endblock %}
+{% block admin_title %}Collaborations{% endblock %}
+{% block admin_subtitle %}Supervision et modération des demandes{% endblock %}
+
+{% block admin_body %}
+<section class="section">
+    <div class="container">
+
+        {# Header avec bouton retour #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-shield-check me-2 text-success"></i>Gestion des collaborations</h2>
+                <p class="text-muted mb-0">Supervision et modération de toutes les demandes</p>
+            </div>
+            <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Retour aux collaborations
+            </a>
+        </div>
+
+        {# Statistiques globales #}
+        {% set totalAll = allRequests|length %}
+        {% set pendingAll = allRequests|filter(r => r.status == 'PENDING')|length %}
+        {% set approvedAll = allRequests|filter(r => r.status == 'APPROVED')|length %}
+        {% set rejectedAll = allRequests|filter(r => r.status == 'REJECTED')|length %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-3 col-6">
+                <a href="{{ path('app_admin_collab_index') }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm text-center p-3 {{ filterStatus == '' ? 'border-primary border-2' : '' }}" style="border-radius: 12px;">
+                        <h2 class="fw-bold text-primary mb-0">{{ totalAll }}</h2>
+                        <small class="text-muted">Total</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a href="{{ path('app_admin_collab_index', {status: 'PENDING'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm text-center p-3 {{ filterStatus == 'PENDING' ? 'border-warning border-2' : '' }}" style="border-radius: 12px;">
+                        <h2 class="fw-bold text-warning mb-0">{{ pendingAll }}</h2>
+                        <small class="text-muted">En attente</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a href="{{ path('app_admin_collab_index', {status: 'APPROVED'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm text-center p-3 {{ filterStatus == 'APPROVED' ? 'border-success border-2' : '' }}" style="border-radius: 12px;">
+                        <h2 class="fw-bold text-success mb-0">{{ approvedAll }}</h2>
+                        <small class="text-muted">Approuvées</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3 col-6">
+                <a href="{{ path('app_admin_collab_index', {status: 'REJECTED'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm text-center p-3 {{ filterStatus == 'REJECTED' ? 'border-danger border-2' : '' }}" style="border-radius: 12px;">
+                        <h2 class="fw-bold text-danger mb-0">{{ rejectedAll }}</h2>
+                        <small class="text-muted">Refusées</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        {# Barre de recherche + Tri #}
+        <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+            <div class="card-body p-3">
+                <form method="get" action="{{ path('app_admin_collab_index') }}" class="row g-2 align-items-end">
+                    {# Conserver le filtre statut #}
+                    {% if filterStatus %}
+                        <input type="hidden" name="status" value="{{ filterStatus }}">
+                    {% endif %}
+
+                    {# Recherche #}
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small mb-1">Rechercher</label>
+                        <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Titre, publieur, lieu...">
+                    </div>
+
+                    {# Tri par #}
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small mb-1">Trier par</label>
+                        <select name="sort" class="form-select">
+                            <option value="createdAt" {{ sortField == 'createdAt' ? 'selected' : '' }}>Date de création</option>
+                            <option value="title" {{ sortField == 'title' ? 'selected' : '' }}>Titre</option>
+                            <option value="salary" {{ sortField == 'salary' ? 'selected' : '' }}>Salaire</option>
+                            <option value="startDate" {{ sortField == 'startDate' ? 'selected' : '' }}>Date de début</option>
+                            <option value="neededPeople" {{ sortField == 'neededPeople' ? 'selected' : '' }}>Nb personnes</option>
+                        </select>
+                    </div>
+
+                    {# Direction #}
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold small mb-1">Ordre</label>
+                        <select name="dir" class="form-select">
+                            <option value="DESC" {{ sortDir == 'DESC' ? 'selected' : '' }}>Décroissant ↓</option>
+                            <option value="ASC" {{ sortDir == 'ASC' ? 'selected' : '' }}>Croissant ↑</option>
+                        </select>
+                    </div>
+
+                    {# Boutons #}
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-funnel me-1"></i>Appliquer
+                        </button>
+                        <a href="{{ path('app_admin_collab_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# Filtre actif #}
+        {% if filterStatus or search %}
+            <div class="mb-3 d-flex gap-2 align-items-center flex-wrap">
+                <span class="text-muted small">Filtres actifs :</span>
+                {% if filterStatus %}
+                    <span class="badge bg-{{ filterStatus == 'PENDING' ? 'warning text-dark' : (filterStatus == 'APPROVED' ? 'success' : 'danger') }} px-3 py-2">
+                        {{ filterStatus == 'PENDING' ? '⏳ En attente' : (filterStatus == 'APPROVED' ? '✓ Approuvées' : '✗ Refusées') }}
+                    </span>
+                {% endif %}
+                {% if search %}
+                    <span class="badge bg-info text-dark px-3 py-2">Recherche : « {{ search }} »</span>
+                {% endif %}
+                <span class="text-muted small ms-2">— {{ requests|length }} résultat(s)</span>
+            </div>
+        {% endif %}
+
+        {# Tableau des demandes #}
+        {% if requests|length == 0 %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                <h4 class="text-muted mt-3">Aucune demande trouvée</h4>
+                {% if filterStatus or search %}
+                    <a href="{{ path('app_admin_collab_index') }}" class="btn btn-outline-success mt-2">Voir toutes les demandes</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Titre</th>
+                            <th>Publié par</th>
+                            <th class="text-center">Lieu</th>
+                            <th class="text-center">Période</th>
+                            <th class="text-center">Pers.</th>
+                            <th class="text-center">Salaire</th>
+                            <th class="text-center">Candidatures</th>
+                            <th class="text-center">Statut</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr>
+                            <td class="text-muted">{{ req.id }}</td>
+                            <td class="fw-bold">{{ req.title }}</td>
+                            <td>{{ req.publisher ?? '—' }}</td>
+                            <td class="text-center"><span class="badge bg-light text-dark border">{{ req.location }}</span></td>
+                            <td class="text-center text-nowrap" style="font-size: 0.85rem;">
+                                {{ req.startDate|date('d/m') }} → {{ req.endDate|date('d/m/Y') }}
+                            </td>
+                            <td class="text-center">{{ req.neededPeople }}</td>
+                            <td class="text-center fw-bold">{{ req.salary }} DT</td>
+                            <td class="text-center">
+                                {% set count = applicationCounts[req.id] ?? 0 %}
+                                <span class="badge bg-{{ count > 0 ? 'primary' : 'secondary' }}">{{ count }}</span>
+                            </td>
+                            <td class="text-center">
+                                {% if req.status == 'APPROVED' %}
+                                    <span class="badge bg-success px-3 py-2">Approuvée</span>
+                                {% elseif req.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark px-3 py-2">En attente</span>
+                                {% elseif req.status == 'REJECTED' %}
+                                    <span class="badge bg-danger px-3 py-2">Refusée</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ req.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    {% if req.status != 'APPROVED' %}
+                                        <form method="post" action="{{ path('app_admin_collab_update_status', {id: req.id, action: 'approve'}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_status' ~ req.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-success" title="Approuver">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                    {% if req.status != 'REJECTED' %}
+                                        <form method="post" action="{{ path('app_admin_collab_update_status', {id: req.id, action: 'reject'}) }}" style="display:inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('admin_status' ~ req.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Rejeter">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

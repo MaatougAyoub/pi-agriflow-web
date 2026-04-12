@@ -1,0 +1,35 @@
+{# templates/expert/irrigation.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<h1>Liste des plans d'irrigation</h1>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+    {% for p in plans %}
+        {% set statusColor = '#2D5A27' %}
+        {% if p.statut == 'en_attente' %}
+            {% set statusColor = '#FFA000' %}
+        {% elseif p.statut == 'rempli' %}
+            {% set statusColor = '#2D5A27' %}
+        {% elseif p.statut == 'approuve' %}
+            {% set statusColor = '#1976D2' %}
+        {% endif %}
+
+        <a href="{{ path('expert_irrigation_detail', {'id': p.planId}) }}" class="irrigation-card" style="border-left-color: {{ statusColor }}; display: block; width: 300px; background: white; border-radius: 12px; padding: 16px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="font-size: 17px; font-weight: 700; color: #1B4332; margin-bottom: 4px;">
+                {{ p.nomCulture }}
+            </div>
+            <div style="font-size: 13px; color: #555;">
+                Volume: {{ p.volumeEauPropose }} L | Date: {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
+            </div>
+            <div style="margin-top: 8px;">
+                <span style="background: {{ statusColor }}; color: white; padding: 2px 8px; border-radius: 20px; font-size: 11px;">
+                    {{ p.statut }}
+                </span>
+            </div>
+        </a>
+    {% else %}
+        <p>Aucun plan trouvé.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Mes Diagnostics{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color:#2D5A27;font-weight:800">📝 Mes Diagnostics</h2>
+        <a href="{{ path('agriculteur_diagnostic_new') }}" class="btn" style="background:#2D5A27;color:white;border-radius:20px;padding:10px 25px">+ Nouveau diagnostic</a>
+    </div>
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+        <table class="table">
+            <thead><tr><th>Culture</th><th>Description</th><th>Statut</th><th>Réponse expert</th><th>Date</th></tr></thead>
+            <tbody>
+            {% for d in diagnostics %}
+            <tr>
+                <td>{{ d.nomCulture }}</td>
+                <td>{{ d.description|slice(0,50) }}...</td>
+                <td><span class="badge rounded-pill" style="background:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">{{ d.statut ?? 'en attente' }}</span></td>
+                <td>{{ d.reponseExpert ?? '⏳ En attente' }}</td>
+                <td>{{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">Aucun diagnostic.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</section>
+{% endblock %}

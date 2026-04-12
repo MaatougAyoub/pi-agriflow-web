@@ -40,19 +40,25 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/post-login, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/mes-parcelles, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/mes-cultures, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/mon-espace, roles: ROLE_AGRICULTEUR }
-        - { path: ^/mes-reservations, roles: ROLE_AGRICULTEUR }
-        - { path: ^/marketplace/[0-9]+/reserve, roles: ROLE_AGRICULTEUR }
+      - { path: '^/login', roles: PUBLIC_ACCESS }
+      - { path: '^/forgot-password', roles: PUBLIC_ACCESS }
+      - { path: '^/post-login', roles: IS_AUTHENTICATED_FULLY }
+
+      - { path: '^/admin', roles: ROLE_ADMIN }
+
+      # Parcelles & Cultures (branche collègue)
+      - { path: '^/mes-parcelles', roles: IS_AUTHENTICATED_FULLY }
+      - { path: '^/mes-cultures', roles: IS_AUTHENTICATED_FULLY }
+
+      # Espace agriculteur
+      - { path: '^/mon-espace', roles: ROLE_AGRICULTEUR }
+      - { path: '^/mes-reservations', roles: ROLE_AGRICULTEUR }
+      - { path: '^/marketplace/[0-9]+/reserve', roles: ROLE_AGRICULTEUR }
 
 when@test:
-    security:
-        password_hashers:
-            # By default, password hashers are resource intensive and take time. This is
+  security:
+    password_hashers:
+      # By default, password hashers are resource intensive and take time. This is
             # important to generate secure password hashes. In tests however, secure hashes
             # are not important, waste resources and increase test times. The following
             # reduces the work factor to the lowest possible values.

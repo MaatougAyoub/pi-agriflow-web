@@ -1,0 +1,111 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Mes candidatures - Collaborations{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1"><i class="bi bi-send-check me-2 text-primary"></i>Mes candidatures</h2>
+                <p class="text-muted mb-0">Suivez l'état de vos candidatures envoyées</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Explorer</a>
+                <a href="{{ path('app_collab_my_requests') }}" class="btn btn-outline-success"><i class="bi bi-list-check me-1"></i>Mes demandes</a>
+            </div>
+        </div>
+
+        <form method="get" action="{{ path('app_collab_my_applications') }}" class="card border-0 shadow-sm p-3 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5 col-lg-4">
+                    <label class="form-label small text-muted mb-1">Statut</label>
+                    <select name="status" class="form-select">
+                        <option value="ALL" {{ filter_status == 'ALL' ? 'selected' }}>Tous</option>
+                        <option value="PENDING" {{ filter_status == 'PENDING' ? 'selected' }}>En attente</option>
+                        <option value="APPROVED" {{ filter_status == 'APPROVED' ? 'selected' }}>Acceptée</option>
+                        <option value="REJECTED" {{ filter_status == 'REJECTED' ? 'selected' }}>Refusée</option>
+                    </select>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <label class="form-label small text-muted mb-1">Tri</label>
+                    <select name="sort" class="form-select">
+                        <option value="date_desc" {{ list_sort == 'date_desc' ? 'selected' }}>Date (récent → ancien)</option>
+                        <option value="date_asc" {{ list_sort == 'date_asc' ? 'selected' }}>Date (ancien → récent)</option>
+                        <option value="status_asc" {{ list_sort == 'status_asc' ? 'selected' }}>Statut (A → Z)</option>
+                    </select>
+                </div>
+                <div class="col-md-2 col-lg-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Filtrer</button>
+                    {% if filter_status != 'ALL' or list_sort != 'date_desc' %}
+                        <a href="{{ path('app_collab_my_applications') }}" class="btn btn-outline-secondary">Réinit.</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+        {% if applications|length == 0 %}
+            <div class="text-center py-5">
+                <i class="bi bi-send-x" style="font-size: 4rem; color: #ccc;"></i>
+                <h3 class="text-muted mt-3">Aucune candidature ne correspond à ces critères</h3>
+                {% if filter_status != 'ALL' %}
+                    <a href="{{ path('app_collab_my_applications') }}" class="btn btn-outline-primary mt-2">Voir toutes mes candidatures</a>
+                {% else %}
+                    <p class="text-muted">Explorez les demandes de collaboration et postulez !</p>
+                    <a href="{{ path('app_collab_index') }}" class="btn btn-primary mt-2">Voir les opportunités</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Demande</th>
+                            <th class="text-center">Lieu</th>
+                            <th class="text-center">Salaire demandé</th>
+                            <th class="text-center">Expérience</th>
+                            <th class="text-center">Statut</th>
+                            <th class="text-center">Date</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('app_collab_show', {id: app.request.id}) }}" class="text-decoration-none fw-bold text-dark">
+                                    {{ app.request.title }}
+                                </a>
+                                <br><small class="text-muted">{{ app.request.publisher ?? '' }}</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border"><i class="bi bi-geo-alt me-1"></i>{{ app.request.location }}</span>
+                            </td>
+                            <td class="text-center fw-bold">{{ app.expectedSalary }} DT</td>
+                            <td class="text-center">{{ app.yearsOfExperience }} ans</td>
+                            <td class="text-center">
+                                {% if app.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
+                                {% elseif app.status == 'APPROVED' %}
+                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i>Acceptée</span>
+                                {% elseif app.status == 'REJECTED' %}
+                                    <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i>Refusée</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ app.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center text-nowrap" style="font-size: 0.85rem;">{{ app.appliedAt|date('d/m/Y') }}</td>
+                            <td class="text-center">
+                                <a href="{{ path('app_collab_show', {id: app.request.id}) }}" class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

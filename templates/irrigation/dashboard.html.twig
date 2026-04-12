@@ -1,0 +1,136 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Dashboard Irrigation{% endblock %}
+
+{% block front_body %}
+<style>
+    /* Classes pour les badges de statut */
+    .badge-status {
+        color: white;
+        padding: 0.35em 0.65em;
+        border-radius: 50rem;
+        font-size: 0.75em;
+        font-weight: 600;
+    }
+    .badge-approuve { background-color: #2D5A27; }
+    .badge-brouillon { background-color: #E65100; }
+    .badge-default { background-color: #1976D2; }
+    .badge-traite { background-color: #2D5A27; }
+    .badge-en_attente { background-color: #E65100; }
+</style>
+
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+
+    <div class="row mb-4">
+        <div class="col">
+            <h2 style="color:#2D5A27;font-weight:800">
+                {% if is_expert %}🔬 Espace Expert{% else %}🌱 Espace Agriculteur{% endif %}
+            </h2>
+            <p style="color:#7f8c8d">Tableau de bord irrigation</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center p-4 shadow-sm border-0 rounded-4">
+                <div style="font-size:36px;font-weight:900;color:#2D5A27">{{ total_cultures }}</div>
+                <div style="color:#7f8c8d">Cultures</div>
+                <a href="{{ path('app_culture_index') }}" class="btn btn-sm mt-2" style="background:#2D5A27;color:white;border-radius:20px">Voir</a>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-4 shadow-sm border-0 rounded-4">
+                <div style="font-size:36px;font-weight:900;color:#1976D2">{{ total_plans }}</div>
+                <div style="color:#7f8c8d">Plans irrigation</div>
+                <a href="{{ path('plan_index') }}" class="btn btn-sm mt-2" style="background:#1976D2;color:white;border-radius:20px">Voir</a>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center p-4 shadow-sm border-0 rounded-4">
+                <div style="font-size:36px;font-weight:900;color:#E65100">{{ diagnostics_attente }}</div>
+                <div style="color:#7f8c8d">Diagnostics en attente</div>
+                <a href="{{ path(is_expert ? 'expert_diagnostics' : 'agriculteur_diagnostics') }}" class="btn btn-sm mt-2" style="background:#E65100;color:white;border-radius:20px">Voir</a>
+            </div>
+        </div>
+        {% if is_expert %}
+        <div class="col-md-3">
+            <div class="card text-center p-4 shadow-sm border-0 rounded-4">
+                <div style="font-size:36px;font-weight:900;color:#6A1B9A">{{ total_produits }}</div>
+                <div style="color:#7f8c8d">Produits phyto</div>
+                <a href="{{ path('expert_produits') }}" class="btn btn-sm mt-2" style="background:#6A1B9A;color:white;border-radius:20px">Voir</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 p-4">
+                <h5 style="color:#2D5A27;font-weight:700">💧 Derniers plans d irrigation</h5>
+                <table class="table mt-3">
+                    <thead>
+                        <tr><th>Culture</th><th>Volume (mm)</th><th>Statut</th><th>Date</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for p in plans|slice(0,5) %}
+                        <tr>
+                            <td>{{ p.nomCulture ?: 'Non renseigné' }}</td>
+                            <td>{{ p.volumeEauPropose|number_format(2) }} mm</td>
+                            <td>
+                                {% if p.statut == 'approuve' %}
+                                    <span class="badge rounded-pill badge-status badge-approuve">{{ p.statut }}</span>
+                                {% elseif p.statut == 'brouillon' %}
+                                    <span class="badge rounded-pill badge-status badge-brouillon">{{ p.statut }}</span>
+                                {% else %}
+                                    <span class="badge rounded-pill badge-status badge-default">{{ p.statut }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-muted">Aucun plan</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{{ path('plan_index') }}" class="btn btn-sm" style="background:#2D5A27;color:white;border-radius:20px">Voir tous les plans</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 p-4">
+                <h5 style="color:#2D5A27;font-weight:700">📝 Derniers diagnostics</h5>
+                {% for d in diagnostics %}
+                <div style="border-bottom:1px solid #f0f0f0;padding:10px 0">
+                    <div style="font-weight:600">{{ d.nomCulture }}</div>
+                    <div style="font-size:13px;color:#7f8c8d">{{ d.dateEnvoi|date('d/m/Y') }}</div>
+                    {% if d.statut == 'traite' %}
+                        <span class="badge rounded-pill badge-status badge-traite">{{ d.statut }}</span>
+                    {% else %}
+                        <span class="badge rounded-pill badge-status badge-en_attente">{{ d.statut }}</span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-muted">Aucun diagnostic</p>
+                {% endfor %}
+                <a href="{{ path(is_expert ? 'expert_diagnostics' : 'agriculteur_diagnostics') }}" class="btn btn-sm mt-3" style="background:#2D5A27;color:white;border-radius:20px;width:100%">Voir tous</a>
+            </div>
+
+            <div class="card shadow-sm border-0 rounded-4 p-4 mt-3">
+                <h5 style="color:#2D5A27;font-weight:700">⚡ Actions rapides</h5>
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{{ path('plan_new') }}" class="btn" style="background:#1976D2;color:white;border-radius:20px">+ Nouveau plan</a>
+                    <a href="{{ path('app_culture_new') }}" class="btn" style="background:#2D5A27;color:white;border-radius:20px">+ Nouvelle culture</a>
+                    {% if is_expert %}
+                    <a href="{{ path('expert_produit_new') }}" class="btn" style="background:#6A1B9A;color:white;border-radius:20px">+ Nouveau produit</a>
+                    {% else %}
+                    <a href="{{ path('agriculteur_diagnostic_new') }}" class="btn" style="background:#E65100;color:white;border-radius:20px">+ Nouveau diagnostic</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</section>
+{% endblock %}

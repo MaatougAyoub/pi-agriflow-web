@@ -1,0 +1,82 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Mes demandes – AgriFlow{% endblock %}
+
+{% block front_body %}
+<section class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Mes demandes de collaboration</h2>
+                <p class="text-muted mb-0">{{ requests|length }} demande{{ requests|length != 1 ? 's' : '' }}</p>
+            </div>
+            <a href="{{ path('collab_new') }}" class="btn btn-success">
+                <i class="bi bi-plus-lg me-1"></i>Nouvelle demande
+            </a>
+        </div>
+
+        {% include 'partials/_flash.html.twig' %}
+
+        {% if requests|length == 0 %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-4 text-muted"></i>
+                <p class="mt-3 text-muted">Vous n'avez pas encore publié de demande.</p>
+                <a href="{{ path('collab_new') }}" class="btn btn-outline-success">Créer une demande</a>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Titre</th>
+                            <th>Localisation</th>
+                            <th>Période</th>
+                            <th>Personnes</th>
+                            <th>Candidatures</th>
+                            <th>Statut</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                            <tr>
+                                <td class="fw-semibold">{{ req.title }}</td>
+                                <td><i class="bi bi-geo-alt text-success me-1"></i>{{ req.location }}</td>
+                                <td class="small">
+                                    {{ req.startDate|date('d/m/Y') }}<br>
+                                    <span class="text-muted">→ {{ req.endDate|date('d/m/Y') }}</span>
+                                </td>
+                                <td>{{ req.neededPeople }}</td>
+                                <td>
+                                    <span class="badge bg-secondary rounded-pill">
+                                        {{ req.applications|length }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if req.status == 'APPROVED' %}bg-success{% elseif req.status == 'REJECTED' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                        {% if req.status == 'APPROVED' %}Approuvée{% elseif req.status == 'REJECTED' %}Refusée{% else %}En attente{% endif %}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ path('collab_show', {id: req.id}) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ path('collab_edit', {id: req.id}) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('collab_delete', {id: req.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer cette demande ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_collab_' ~ req.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock front_body %}

@@ -10,10 +10,14 @@ use App\Enum\AnnonceStatut;
 use App\Form\AnnonceFormType;
 use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
+use App\Service\AnnonceAiAssistantService;
+use App\Service\AnnonceGeocodingService;
 use App\Service\SellerMarketplaceService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -25,22 +29,39 @@ final class SellerAnnonceController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(
+        Request $request,
         AnnonceRepository $annonceRepository,
-        ReservationRepository $reservationRepository
+        ReservationRepository $reservationRepository,
+        PaginatorInterface $paginator
     ): Response {
         $user = $this->getSellerUser();
-        $annonces = $annonceRepository->findByOwnerId($user->getId());
+        $allAnnonces = $annonceRepository->findByOwnerId($user->getId());
         $receivedReservations = $reservationRepository->findReceivedByOwnerId($user->getId());
+        $annonces = $paginator->paginate(
+            $annonceRepository->createByOwnerIdQueryBuilder($user->getId()),
+            $request->query->getInt('page', 1),
+            8
+        );
+        $acceptedReservations = array_filter(
+            $receivedReservations,
+            static fn ($reservation) => $reservation->getStatut()->value === 'ACCEPTEE'
+        );
 
         return $this->render('seller/annonce/index.html.twig', [
             'annonces' => $annonces,
             'stats' => [
-                'annonces' => count($annonces),
+                'annonces' => count($allAnnonces),
                 'demandes' => count($receivedReservations),
                 'enAttente' => count(array_filter(
                     $receivedReservations,
                     static fn ($reservation) => $reservation->getStatut()->value === 'EN_ATTENTE'
                 )),
+                'acceptees' => count($acceptedReservations),
+                'revenuEstime' => array_reduce(
+                    $acceptedReservations,
+                    static fn (float $carry, $reservation): float => $carry + $reservation->getPrixTotalAsFloat(),
+                    0.0
+                ),
             ],
         ]);
     }
@@ -49,6 +70,7 @@ final class SellerAnnonceController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
+        AnnonceGeocodingService $annonceGeocodingService,
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getSellerUser();
@@ -59,6 +81,7 @@ final class SellerAnnonceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $geocodingOutcome = $annonceGeocodingService->enrichAnnonce($annonce);
             $entityManager->persist($annonce);
             $entityManager->flush();
 
@@ -71,6 +94,7 @@ final class SellerAnnonceController extends AbstractController
             }
 
             $this->addFlash('success', $message);
+            $this->flashGeocodingOutcome($geocodingOutcome);
 
             return $this->redirectToRoute('app_seller_annonce_index');
         }
@@ -85,6 +109,7 @@ final class SellerAnnonceController extends AbstractController
         Request $request,
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
         EntityManagerInterface $entityManager,
+        AnnonceGeocodingService $annonceGeocodingService,
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getSellerUser();
@@ -94,6 +119,7 @@ final class SellerAnnonceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $geocodingOutcome = $annonceGeocodingService->enrichAnnonce($annonce);
             $entityManager->flush();
 
             $message = 'Annonce modifiee avec succes.';
@@ -105,6 +131,7 @@ final class SellerAnnonceController extends AbstractController
             }
 
             $this->addFlash('success', $message);
+            $this->flashGeocodingOutcome($geocodingOutcome);
 
             return $this->redirectToRoute('app_seller_annonce_index');
         }
@@ -135,6 +162,33 @@ final class SellerAnnonceController extends AbstractController
         return $this->redirectToRoute('app_seller_annonce_index');
     }
 
+    #[Route('/ai-assistant', name: 'ai_assistant', methods: ['POST'])]
+    public function aiAssistant(
+        Request $request,
+        AnnonceAiAssistantService $annonceAiAssistantService
+    ): JsonResponse {
+        try {
+            $payload = $request->toArray();
+            $suggestions = $annonceAiAssistantService->generateSuggestions($payload);
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Suggestions generees avec succes.',
+                'suggestions' => $suggestions,
+            ]);
+        } catch (\DomainException $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        } catch (\Throwable) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Assistant indisponible pour le moment.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     private function getSellerUser(): Utilisateur
     {
         $user = $this->getUser();
@@ -154,5 +208,17 @@ final class SellerAnnonceController extends AbstractController
         if (!$sellerMarketplaceService->isAnnonceOwner($user, $annonce)) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cette annonce.');
         }
+    }
+
+    /**
+     * @param array{status: string, message: ?string} $outcome
+     */
+    private function flashGeocodingOutcome(array $outcome): void
+    {
+        if (null === $outcome['message']) {
+            return;
+        }
+
+        $this->addFlash($outcome['status'] === 'matched' ? 'success' : 'warning', $outcome['message']);
     }
 }

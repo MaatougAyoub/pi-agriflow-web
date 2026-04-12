@@ -16,28 +16,30 @@ class PlansIrrigationRepository extends ServiceEntityRepository
         parent::__construct($registry, PlansIrrigation::class);
     }
 
-    //    /**
-    //     * @return PlansIrrigation[] Returns an array of PlansIrrigation objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Récupère tous les plans d'irrigation d'un agriculteur (via ses cultures)
+     */
+    public function findByAgriculteur(int $userId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.culture', 'c')
+            ->where('c.proprietaire_id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getResult();
+    }
 
-    //    public function findOneBySomeField($value): ?PlansIrrigation
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * Récupère un plan avec ses jours d'irrigation (relation OneToMany)
+     */
+    public function findByProprietaire(int $userId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('App\Entity\Culture', 'c', 'WITH', 'c.id = p.id_culture')
+            ->where('c.proprietaire_id = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('p.date_demande', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

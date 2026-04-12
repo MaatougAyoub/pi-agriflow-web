@@ -86,7 +86,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: "float", nullable: true)]
     private ?float $superficie = null;
 
     public function getSuperficie(): ?float
@@ -128,7 +128,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: "float", nullable: true)]
     private ?float $recolte_estime = null;
 
     public function getRecolte_estime(): ?float
@@ -211,7 +211,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: "float", nullable: true)]
     private ?float $prix_vente = null;
 
     public function getPrix_vente(): ?float
@@ -419,6 +419,21 @@ class Culture
         return $this->isOwnedBy($utilisateurId)
             || $this->isBoughtBy($utilisateurId)
             || $this->canBeBoughtBy($utilisateurId);
+    }
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: "proprietaire_id", referencedColumnName: "id")]
+    private ?Utilisateur $proprietaire = null;
+
+    public function getProprietaire(): ?Utilisateur
+    {
+        return $this->proprietaire;
+    }
+
+    public function setProprietaire(?Utilisateur $proprietaire): self
+    {
+        $this->proprietaire = $proprietaire;
+        return $this;
     }
 
 }

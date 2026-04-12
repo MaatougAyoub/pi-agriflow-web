@@ -40,8 +40,11 @@
                     <a class="nav-link text-white px-0 {{ current_route starts with 'app_admin_culture_' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_culture_index') }}">
                         <i class="bi bi-flower1 me-2"></i>Cultures
                     </a>
-                    <a class="nav-link text-white px-0 {{ current_route == 'app_admin_users' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_users') }}">
+                    <a class="nav-link text-white px-0 {{ current_route == 'app_admin_users' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_users', {from: 'admin'}) }}">
                         <i class="bi bi-people me-2"></i>Utilisateurs
+                    </a>
+                    <a class="nav-link text-white px-0 {{ current_route starts with 'app_admin_collab_' or current_route starts with 'admin_collab_' ? 'fw-semibold text-warning' : '' }}" href="{{ path('app_admin_collab_index') }}">
+                        <i class="bi bi-people me-2"></i>Collaborations
                     </a>
                     <a class="nav-link text-white px-0" href="{{ path('app_marketplace_index') }}">
                         <i class="bi bi-box-arrow-up-right me-2"></i>Ouvrir le site

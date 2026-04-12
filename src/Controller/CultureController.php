@@ -557,6 +557,7 @@ final class CultureController extends AbstractController
             if ($form->isValid()) {
                 $culture
                     ->setProprietaireId($agriculteurId)
+                    ->setProprietaire($entityManager->getReference(Utilisateur::class, $agriculteurId))
                     ->setEtat($culture->getId() ? $culture->getEtat() : Culture::ETAT_EN_COURS)
                     ->setRecolteEstime((string) $yieldEstimatorService->estimate($culture->getTypeCulture(), (float) $culture->getSuperficie()))
                     ->setDateCreation($culture->getDateCreation() ?? new \DateTime());

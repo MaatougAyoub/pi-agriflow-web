@@ -14,7 +14,7 @@ class ParcelRecommendationService
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
-        #[Autowire(env: 'GEMINI_API_KEY')]
+        #[Autowire(env: 'BGEMINI_API_KEY')]
         private readonly ?string $apiKey = null,
     ) {
     }

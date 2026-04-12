@@ -2,77 +2,102 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PlansIrrigationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
-use App\Repository\PlansIrrigationRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlansIrrigationRepository::class)]
 #[ORM\Table(name: 'plans_irrigation')]
 class PlansIrrigation
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    // Retrait de GeneratedValue pour éviter l'erreur "No identity value was generated"
     #[ORM\Column(type: 'integer')]
     private ?int $plan_id = null;
 
-    public function getPlan_id(): ?int
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $id_culture = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $nom_culture = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_demande = null;
+
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $statut = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $volume_eau_propose = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $temp_irrigation = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $temp = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $donnees_meteo_json = null;
+
+    #[ORM\ManyToOne(targetEntity: Culture::class)]
+    #[ORM\JoinColumn(name: "id_culture", referencedColumnName: "id")]
+    private ?Culture $culture = null;
+
+    #[ORM\OneToMany(mappedBy: "plan", targetEntity: PlansIrrigationJour::class)]
+    private Collection $jours;
+
+    public function __construct()
+    {
+        $this->jours = new ArrayCollection();
+    }
+
+    // ----- Getters / Setters -----
+
+    public function getPlanId(): ?int
     {
         return $this->plan_id;
     }
 
-    public function setPlan_id(int $plan_id): self
+    public function setPlanId(int $plan_id): self
     {
         $this->plan_id = $plan_id;
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $id_culture = null;
-
-    public function getId_culture(): ?int
+    public function getIdCulture(): ?int
     {
         return $this->id_culture;
     }
 
-    public function setId_culture(?int $id_culture): self
+    public function setIdCulture(?int $id_culture): self
     {
         $this->id_culture = $id_culture;
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom_culture = null;
-
-    public function getNom_culture(): ?string
+    public function getNomCulture(): ?string
     {
         return $this->nom_culture;
     }
 
-    public function setNom_culture(?string $nom_culture): self
+    public function setNomCulture(?string $nom_culture): self
     {
         $this->nom_culture = $nom_culture;
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $date_demande = null;
-
-    public function getDate_demande(): ?\DateTimeInterface
+    public function getDateDemande(): ?\DateTimeInterface
     {
         return $this->date_demande;
     }
 
-    public function setDate_demande(?\DateTimeInterface $date_demande): self
+    public function setDateDemande(?\DateTimeInterface $date_demande): self
     {
         $this->date_demande = $date_demande;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $statut = null;
 
     public function getStatut(): ?string
     {
@@ -85,36 +110,27 @@ class PlansIrrigation
         return $this;
     }
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $volume_eau_propose = null;
-
-    public function getVolume_eau_propose(): ?float
+    public function getVolumeEauPropose(): ?float
     {
         return $this->volume_eau_propose;
     }
 
-    public function setVolume_eau_propose(?float $volume_eau_propose): self
+    public function setVolumeEauPropose(?float $volume_eau_propose): self
     {
         $this->volume_eau_propose = $volume_eau_propose;
         return $this;
     }
 
-    #[ORM\Column(type: 'time', nullable: true)]
-    private ?string $temp_irrigation = null;
-
-    public function getTemp_irrigation(): ?string
+    public function getTempIrrigation(): ?\DateTimeInterface
     {
         return $this->temp_irrigation;
     }
 
-    public function setTemp_irrigation(?string $temp_irrigation): self
+    public function setTempIrrigation(?\DateTimeInterface $temp_irrigation): self
     {
         $this->temp_irrigation = $temp_irrigation;
         return $this;
     }
-
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $temp = null;
 
     public function getTemp(): ?\DateTimeInterface
     {
@@ -127,95 +143,42 @@ class PlansIrrigation
         return $this;
     }
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $donnees_meteo_json = null;
-
-    public function getDonnees_meteo_json(): ?string
-    {
-        return $this->donnees_meteo_json;
-    }
-
-    public function setDonnees_meteo_json(?string $donnees_meteo_json): self
-    {
-        $this->donnees_meteo_json = $donnees_meteo_json;
-        return $this;
-    }
-
-    public function getPlanId(): ?int
-    {
-        return $this->plan_id;
-    }
-
-    public function getIdCulture(): ?int
-    {
-        return $this->id_culture;
-    }
-
-    public function setIdCulture(?int $id_culture): static
-    {
-        $this->id_culture = $id_culture;
-
-        return $this;
-    }
-
-    public function getNomCulture(): ?string
-    {
-        return $this->nom_culture;
-    }
-
-    public function setNomCulture(?string $nom_culture): static
-    {
-        $this->nom_culture = $nom_culture;
-
-        return $this;
-    }
-
-    public function getDateDemande(): ?\DateTime
-    {
-        return $this->date_demande;
-    }
-
-    public function setDateDemande(?\DateTime $date_demande): static
-    {
-        $this->date_demande = $date_demande;
-
-        return $this;
-    }
-
-    public function getVolumeEauPropose(): ?float
-    {
-        return $this->volume_eau_propose;
-    }
-
-    public function setVolumeEauPropose(?float $volume_eau_propose): static
-    {
-        $this->volume_eau_propose = $volume_eau_propose;
-
-        return $this;
-    }
-
-    public function getTempIrrigation(): ?\DateTime
-    {
-        return $this->temp_irrigation;
-    }
-
-    public function setTempIrrigation(?\DateTime $temp_irrigation): static
-    {
-        $this->temp_irrigation = $temp_irrigation;
-
-        return $this;
-    }
-
     public function getDonneesMeteoJson(): ?string
     {
         return $this->donnees_meteo_json;
     }
 
-    public function setDonneesMeteoJson(?string $donnees_meteo_json): static
+    public function setDonneesMeteoJson(?string $donnees_meteo_json): self
     {
         $this->donnees_meteo_json = $donnees_meteo_json;
-
         return $this;
     }
 
+    public function getCulture(): ?Culture
+    {
+        return $this->culture;
+    }
+
+    public function setCulture(?Culture $culture): self
+    {
+        $this->culture = $culture;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PlansIrrigationJour>
+     */
+    public function getJours(): Collection
+    {
+        return $this->jours;
+    }
+
+    public function addJour(PlansIrrigationJour $jour): self
+    {
+        if (!$this->jours->contains($jour)) {
+            $this->jours[] = $jour;
+            $jour->setPlan($this);
+        }
+        return $this;
+    }
 }

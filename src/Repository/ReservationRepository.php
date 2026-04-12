@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Reservation;
 use App\Enum\ReservationStatut;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -24,13 +25,18 @@ class ReservationRepository extends ServiceEntityRepository
      */
     public function findAllForAdmin(): array
     {
-        return $this->createQueryBuilder('r')
-            // n5alli ken reservations eli mazel 3andhom annonce valide bech el page admin ma tti7ch
-            ->innerJoin('r.annonce', 'a')
-            ->addSelect('a')
-            ->orderBy('r.createdAt', 'DESC')
+        return $this->createAllForAdminQueryBuilder()
             ->getQuery()
             ->getResult();
+    }
+
+    public function createAllForAdminQueryBuilder(): QueryBuilder
+    {
+        return $this->createQueryBuilder('r')
+            // admin: n5alli ken reservations eli mazel 3andhom annonce valide bech el page admin ma tti7ch
+            ->innerJoin('r.annonce', 'a')
+            ->addSelect('a')
+            ->orderBy('r.createdAt', 'DESC');
     }
 
     /**
@@ -38,14 +44,19 @@ class ReservationRepository extends ServiceEntityRepository
      */
     public function findByClientIdForMarketplace(int $clientId): array
     {
+        return $this->createByClientIdForMarketplaceQueryBuilder($clientId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createByClientIdForMarketplaceQueryBuilder(int $clientId): QueryBuilder
+    {
         return $this->createQueryBuilder('r')
             ->innerJoin('r.annonce', 'a')
             ->addSelect('a')
             ->andWhere('r.clientId = :clientId')
             ->setParameter('clientId', $clientId)
-            ->orderBy('r.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->orderBy('r.createdAt', 'DESC');
     }
 
     /**
@@ -69,6 +80,13 @@ class ReservationRepository extends ServiceEntityRepository
      */
     public function findReceivedByOwnerId(int $ownerId, ?int $annonceId = null): array
     {
+        return $this->createReceivedByOwnerIdQueryBuilder($ownerId, $annonceId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createReceivedByOwnerIdQueryBuilder(int $ownerId, ?int $annonceId = null): QueryBuilder
+    {
         $queryBuilder = $this->createQueryBuilder('r')
             ->innerJoin('r.annonce', 'a')
             ->addSelect('a')
@@ -82,6 +100,6 @@ class ReservationRepository extends ServiceEntityRepository
                 ->setParameter('annonceId', $annonceId);
         }
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder;
     }
 }
