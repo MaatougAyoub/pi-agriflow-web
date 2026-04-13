@@ -20,6 +20,11 @@
             .amounts { width: 100%; border-collapse: collapse; margin-top: 16px; }
             .amounts td { padding: 10px 12px; border-bottom: 1px solid #e2ebe3; }
             .amounts tr:last-child td { font-weight: bold; font-size: 15px; border-bottom: none; }
+            .diagnostic-score { display: inline-block; padding: 8px 12px; border-radius: 999px; background: #18392b; color: #fff; font-weight: bold; }
+            .pill { display: inline-block; margin: 0 6px 6px 0; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; }
+            .pill-success { background: #e8f6ed; color: #1d5f3a; }
+            .pill-warning { background: #fff4dd; color: #8a6110; }
+            .advice { margin: 10px 0 0; padding-left: 18px; color: #496046; }
             .footer-note { margin-top: 24px; font-size: 12px; color: #5b6b5d; }
         </style>
     </head>
@@ -102,6 +107,43 @@
                 </tr>
             </table>
         </div>
+
+        {% if businessDiagnostic %}
+            <div class="panel">
+                <h2>Analyse Marketplace</h2>
+                <table class="grid">
+                    <tr>
+                        <td>Score metier</td>
+                        <td><span class="diagnostic-score">{{ businessDiagnostic.score }}/100 - {{ businessDiagnostic.level }}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Commission</td>
+                        <td>Commission plateforme appliquee: {{ businessDiagnostic.commissionRateLabel }}</td>
+                    </tr>
+                    <tr>
+                        <td>APIs externes</td>
+                        <td>
+                            Meteo: {{ businessDiagnostic.weatherAvailable ? 'disponible' : 'indisponible' }} -
+                            Qualite de l air: {{ businessDiagnostic.airQualityAvailable ? 'disponible' : 'indisponible' }}
+                        </td>
+                    </tr>
+                </table>
+
+                <div>
+                    {% for badge in businessDiagnostic.badges %}
+                        <span class="pill pill-{{ badge.state }}">{{ badge.label }}</span>
+                    {% endfor %}
+                </div>
+
+                {% if businessDiagnostic.advice is not empty %}
+                    <ul class="advice">
+                        {% for advice in businessDiagnostic.advice %}
+                            <li>{{ advice }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
 
         <p class="footer-note">
             Ce devis est genere automatiquement depuis le module Marketplace AgriFlow pour consultation, suivi vendeur et supervision administrateur.

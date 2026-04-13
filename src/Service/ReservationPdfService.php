@@ -17,6 +17,8 @@ final class ReservationPdfService
         private readonly DompdfWrapperInterface $dompdfWrapper,
         private readonly Environment $twig,
         private readonly UtilisateurRepository $utilisateurRepository,
+        private readonly AnnonceBusinessDiagnosticService $businessDiagnosticService,
+        private readonly AnnonceEnvironmentInsightService $environmentInsightService,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
     ) {
@@ -28,13 +30,24 @@ final class ReservationPdfService
         $client = $this->utilisateurRepository->find($reservation->getClientId());
         $vendeur = $this->utilisateurRepository->find($reservation->getProprietaireId());
         $filename = sprintf('%s-%d.pdf', $filenamePrefix, $reservation->getId() ?? 0);
+        $annonce = $reservation->getAnnonce();
+        $environmentInsights = null;
+        $businessDiagnostic = null;
+
+        if (null !== $annonce) {
+            // diagnostic: devis yhez nafs analyse metier mta3 fiche annonce bech PDF yban plus pro
+            $environmentInsights = $this->environmentInsightService->buildForAnnonce($annonce);
+            $businessDiagnostic = $this->businessDiagnosticService->buildForAnnonce($annonce, $environmentInsights);
+        }
 
         // pdf: twig y7adher html w Dompdf y7awlou fichier PDF
         $html = $this->twig->render('pdf/reservation_quote.html.twig', [
             'reservation' => $reservation,
-            'annonce' => $reservation->getAnnonce(),
+            'annonce' => $annonce,
             'client' => $client,
             'vendeur' => $vendeur,
+            'environmentInsights' => $environmentInsights,
+            'businessDiagnostic' => $businessDiagnostic,
             'generatedAt' => new \DateTimeImmutable(),
             'logoPath' => 'file:///'.str_replace('\\', '/', $this->projectDir.'/public/template/assets/img/logo2-header.png'),
         ]);

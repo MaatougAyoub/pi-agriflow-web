@@ -60,10 +60,10 @@ export default class extends Controller {
             const advice = typeof payload.suggestions.qualityAdvice === 'string' ? payload.suggestions.qualityAdvice.trim() : '';
             // ia: nwarri score w conseil ama ma nsajjel chay automatiquement
             const analysis = score > 0
-                ? ` Analyse qualite: ${score}/100${advice ? ` - ${advice}` : ''}.`
+                ? ` Analyse qualite: ${score}/100.${advice ? ` Conseil: ${advice}.` : ''}`
                 : '';
 
-            this.updateStatus(`Suggestions appliquees${provider}.${analysis} Vous pouvez encore les modifier avant l enregistrement.`, 'success');
+            this.updateStatus(`Suggestions appliquees${provider}.${analysis} Vous pouvez encore les modifier avant l enregistrement.`, 'success', score > 0);
         } catch (error) {
             this.updateStatus(error.message || 'Assistant indisponible pour le moment.', 'error');
         } finally {
@@ -81,12 +81,17 @@ export default class extends Controller {
         field.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    updateStatus(message, state) {
+    updateStatus(message, state, hasAnalysis = false) {
         if (!this.hasStatusTarget) {
             return;
         }
 
         this.statusTarget.textContent = message;
         this.statusTarget.dataset.state = state;
+        if (hasAnalysis) {
+            this.statusTarget.dataset.analysis = 'true';
+        } else {
+            delete this.statusTarget.dataset.analysis;
+        }
     }
 }
