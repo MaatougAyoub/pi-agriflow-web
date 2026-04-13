@@ -366,6 +366,14 @@
     color: #18392b;
 }
 
+.agf-environment-panel {
+    background: #ffffff;
+    border: 1px solid rgba(24, 57, 43, 0.08);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 18px 50px rgba(29, 42, 27, 0.08);
+}
+
 .agf-map-link,
 .agf-map-note {
     display: block;

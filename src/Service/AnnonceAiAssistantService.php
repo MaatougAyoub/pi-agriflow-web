@@ -33,7 +33,7 @@ final class AnnonceAiAssistantService
     /**
      * @param array{titre?: mixed, description?: mixed, categorie?: mixed, unitePrix?: mixed, type?: mixed, localisation?: mixed} $context
      *
-     * @return array{titre: string, description: string, categorie: string, unitePrix: string, provider: string}
+     * @return array{titre: string, description: string, categorie: string, unitePrix: string, qualityScore: int, qualityAdvice: string, provider: string}
      */
     public function generateSuggestions(array $context): array
     {
@@ -54,6 +54,9 @@ final class AnnonceAiAssistantService
             'description' => $this->sanitizeSuggestion($decoded['description'] ?? $context['description'] ?? '', 2000),
             'categorie' => $this->sanitizeSuggestion($decoded['categorie'] ?? $context['categorie'] ?? '', 120),
             'unitePrix' => $this->sanitizeSuggestion($decoded['unitePrix'] ?? $context['unitePrix'] ?? '', 20),
+            // ia: score hedha y3awen vendeur ychouf qualite annonce 9bal validation
+            'qualityScore' => $this->sanitizeScore($decoded['qualityScore'] ?? 0),
+            'qualityAdvice' => $this->sanitizeSuggestion($decoded['qualityAdvice'] ?? '', 220),
             'provider' => $provider,
         ];
     }
@@ -255,6 +258,8 @@ Retourne uniquement un objet JSON valide avec exactement ces cles:
 - description
 - categorie
 - unitePrix
+- qualityScore
+- qualityAdvice
 
 Contraintes:
 - style professionnel et clair
@@ -263,6 +268,8 @@ Contraintes:
 - description exploitable en quelques phrases
 - categorie courte
 - unitePrix adaptee au type de l annonce
+- qualityScore entier entre 0 et 100 selon clarte, completude et pertinence
+- qualityAdvice conseil court et concret pour ameliorer l annonce
 - pour une vente, privilegier une unite liee a la quantite
 - pour une location, privilegier une unite liee a la duree
 
@@ -308,5 +315,14 @@ PROMPT, $encodedPayload ?: '{}');
         }
 
         return substr($text, 0, $maxLength);
+    }
+
+    private function sanitizeScore(mixed $value): int
+    {
+        if (!is_numeric($value)) {
+            return 0;
+        }
+
+        return max(0, min(100, (int) round((float) $value)));
     }
 }

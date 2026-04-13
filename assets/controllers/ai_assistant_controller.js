@@ -56,7 +56,14 @@ export default class extends Controller {
             this.applySuggestion(this.unitePrixFieldTarget, payload.suggestions.unitePrix);
 
             const provider = payload.suggestions.provider ? ` (${payload.suggestions.provider})` : '';
-            this.updateStatus(`Suggestions appliquees${provider}. Vous pouvez encore les modifier avant l enregistrement.`, 'success');
+            const score = Number(payload.suggestions.qualityScore || 0);
+            const advice = typeof payload.suggestions.qualityAdvice === 'string' ? payload.suggestions.qualityAdvice.trim() : '';
+            // ia: nwarri score w conseil ama ma nsajjel chay automatiquement
+            const analysis = score > 0
+                ? ` Analyse qualite: ${score}/100${advice ? ` - ${advice}` : ''}.`
+                : '';
+
+            this.updateStatus(`Suggestions appliquees${provider}.${analysis} Vous pouvez encore les modifier avant l enregistrement.`, 'success');
         } catch (error) {
             this.updateStatus(error.message || 'Assistant indisponible pour le moment.', 'error');
         } finally {
