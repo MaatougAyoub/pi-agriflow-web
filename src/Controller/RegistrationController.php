@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Service\BrevoEmailService;
 use App\Service\Ocr\TesseractOcrService;
+use App\Service\Security\ReCaptchaVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -25,7 +26,7 @@ final class RegistrationController extends AbstractController
     private const REQUIRED_FARMER_WORD = 'فلاح';
 
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger, BrevoEmailService $brevoEmailService, TesseractOcrService $tesseractOcrService): Response
+    public function register(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, LoggerInterface $logger, BrevoEmailService $brevoEmailService, TesseractOcrService $tesseractOcrService, ReCaptchaVerifier $reCaptchaVerifier): Response
     {
         $errors = [];
         $selectedRole = strtoupper((string) $request->request->get('role', 'AGRICULTEUR'));
@@ -45,6 +46,11 @@ final class RegistrationController extends AbstractController
             $parcelles = trim((string) $request->request->get('parcelles'));
             $carteProFile = $request->files->get('carte_pro');
             $certificationFile = $request->files->get('certification');
+            $recaptchaToken = (string) $request->request->get('g-recaptcha-response', '');
+
+            if (!$reCaptchaVerifier->verify($recaptchaToken, $request->getClientIp())) {
+                $errors[] = 'Verification reCAPTCHA echouee. Veuillez reessayer.';
+            }
 
             if ($nom === '') {
                 $errors[] = 'Veuillez entrer votre nom.';

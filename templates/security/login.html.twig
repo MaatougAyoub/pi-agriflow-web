@@ -226,8 +226,9 @@
         <p class="signin-subtitle">Connectez-vous a votre compte</p>
 
         {% if error %}
+            {% set translated_error = error.messageKey|trans(error.messageData, 'security') %}
             <div class="alert alert-danger">
-                Email ou mot de passe incorrect.
+                {{ translated_error == 'Invalid credentials.' ? 'Email ou mot de passe incorrect.' : translated_error }}
             </div>
         {% endif %}
 
@@ -249,6 +250,12 @@
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
+            {% if recaptcha_site_key is defined and recaptcha_site_key|trim != '' %}
+                <div class="field">
+                    <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                </div>
+            {% endif %}
+
             <div class="inline-row">
                 <label><input type="checkbox" name="_remember_me"> Se souvenir</label>
                 <a href="{{ path('app_forgot_password') }}">Mot de passe oublie ?</a>
@@ -267,4 +274,8 @@
     </section>
 
 </main>
+
+{% if recaptcha_site_key is defined and recaptcha_site_key|trim != '' %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 {% endblock %}

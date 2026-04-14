@@ -178,6 +178,14 @@ body {
     font-size:13px;
 }
 
+.btn-ai {
+    background:#0d47a1;
+    color:#fff;
+    min-height:36px;
+    padding:0 12px;
+    font-size:13px;
+}
+
 .btn:disabled {
     opacity:0.55;
     cursor:not-allowed;
@@ -279,6 +287,16 @@ th {
     font-size:15px;
 }
 
+.pagination-wrap {
+    display:flex;
+    justify-content:center;
+    margin-top:12px;
+}
+
+.pagination-wrap .pagination {
+    margin-bottom:0;
+}
+
 .add-card {
     border:1px solid var(--line);
     border-radius:14px;
@@ -329,6 +347,29 @@ th {
     padding-left:18px;
     display:grid;
     gap:4px;
+}
+
+.ai-tools {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:-4px;
+    margin-bottom:4px;
+}
+
+.ai-feedback {
+    margin:0;
+    font-size:13px;
+    color:#455a64;
+}
+
+.ai-feedback.is-success {
+    color:#1b5e20;
+}
+
+.ai-feedback.is-error {
+    color:#c62828;
 }
 
 @media (max-width: 740px) {
@@ -444,7 +485,11 @@ th {
                 </table>
             </div>
 
-            <p class="count-label">{{ reclamations|length }} reclamation(s)</p>
+            <div class="pagination-wrap">
+                {{ knp_pagination_render(reclamations) }}
+            </div>
+
+            <p class="count-label">{{ reclamations.getTotalItemCount }} reclamation(s) au total</p>
         {% else %}
             <div class="add-card">
                 <h2 class="add-title">Nouvelle reclamation</h2>
@@ -470,6 +515,20 @@ th {
                 {{ form_start(form, {action: path('app_reclamation_index', {tab: 'ajouter'}), attr: {class: 'form-grid', id: 'reclamationAddForm', novalidate: 'novalidate'}}) }}
                     {{ form_row(form.categorie) }}
                     {{ form_row(form.titre) }}
+
+                    <div class="ai-tools">
+                        <button
+                            id="reclamationAiGenerateBtn"
+                            class="btn btn-ai"
+                            type="button"
+                            data-endpoint="{{ path('app_reclamation_generate_description') }}"
+                            data-csrf="{{ csrf_token('reclamation_ai_generate') }}"
+                        >
+                            Generer la description avec IA
+                        </button>
+                        <p id="reclamationAiFeedback" class="ai-feedback" hidden></p>
+                    </div>
+
                     {{ form_row(form.description) }}
 
                     <div class="add-actions">
@@ -497,6 +556,8 @@ th {
         const categorieInput = form.querySelector('#reclamation_categorie');
         const titreInput = form.querySelector('#reclamation_titre');
         const descriptionInput = form.querySelector('#reclamation_description');
+        const aiGenerateBtn = document.getElementById('reclamationAiGenerateBtn');
+        const aiFeedback = document.getElementById('reclamationAiFeedback');
 
         function renderClientError(message) {
             if (!clientErrors) {
@@ -530,6 +591,86 @@ th {
             return null;
         }
 
+        function renderAiFeedback(message, kind) {
+            if (!aiFeedback) {
+                return;
+            }
+
+            aiFeedback.classList.remove('is-success', 'is-error');
+
+            if (!message) {
+                aiFeedback.hidden = true;
+                aiFeedback.textContent = '';
+                return;
+            }
+
+            aiFeedback.hidden = false;
+            aiFeedback.textContent = message;
+
+            if (kind === 'success') {
+                aiFeedback.classList.add('is-success');
+            }
+
+            if (kind === 'error') {
+                aiFeedback.classList.add('is-error');
+            }
+        }
+
+        async function generateDescriptionFromTitle() {
+            if (!aiGenerateBtn || !titreInput || !descriptionInput) {
+                return;
+            }
+
+            const title = titreInput.value.trim();
+            if (title === '') {
+                renderClientError('Veuillez entrer un titre avant de generer une description.');
+                return;
+            }
+
+            const endpoint = aiGenerateBtn.getAttribute('data-endpoint') || '';
+            const csrfToken = aiGenerateBtn.getAttribute('data-csrf') || '';
+
+            if (endpoint === '' || csrfToken === '') {
+                renderAiFeedback('Configuration IA manquante.', 'error');
+                return;
+            }
+
+            renderClientError(null);
+            renderAiFeedback('Generation en cours...', null);
+            aiGenerateBtn.disabled = true;
+
+            try {
+                const body = new URLSearchParams();
+                body.set('titre', title);
+                body.set('_token', csrfToken);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: body.toString()
+                });
+
+                const payload = await response.json().catch(function () {
+                    return {};
+                });
+
+                if (!response.ok || !payload.success || typeof payload.description !== 'string') {
+                    throw new Error(payload.message || 'Generation IA indisponible pour le moment.');
+                }
+
+                descriptionInput.value = payload.description;
+                renderAiFeedback('Description generee automatiquement.', 'success');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Generation IA indisponible pour le moment.';
+                renderAiFeedback(message, 'error');
+            } finally {
+                aiGenerateBtn.disabled = false;
+            }
+        }
+
         form.addEventListener('submit', function (event) {
             const errorMessage = getFirstValidationError();
             if (errorMessage) {
@@ -541,6 +682,12 @@ th {
             renderClientError(null);
         });
 
+        if (aiGenerateBtn) {
+            aiGenerateBtn.addEventListener('click', function () {
+                void generateDescriptionFromTitle();
+            });
+        }
+
         [categorieInput, titreInput, descriptionInput].forEach(function (input) {
             if (!input) {
                 return;
@@ -548,6 +695,10 @@ th {
 
             input.addEventListener('input', function () {
                 renderClientError(null);
+
+                if (input === titreInput || input === descriptionInput) {
+                    renderAiFeedback('', null);
+                }
             });
 
             input.addEventListener('change', function () {

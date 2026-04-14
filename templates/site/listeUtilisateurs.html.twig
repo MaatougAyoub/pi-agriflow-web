@@ -85,6 +85,16 @@
         font-size: 0.92rem;
     }
 
+    .users-pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 14px;
+    }
+
+    .users-pagination .pagination {
+        margin-bottom: 0;
+    }
+
     .image-lightbox {
         position: fixed;
         inset: 0;
@@ -299,7 +309,11 @@
         </div>
     </div>
 
-    <p id="countLabel" class="users-count mt-3 mb-0">{{ users|length }} utilisateur(s)</p>
+    <div class="users-pagination">
+        {{ knp_pagination_render(users) }}
+    </div>
+
+    <p id="countLabel" class="users-count mt-3 mb-0" data-total="{{ users.getTotalItemCount }}">{{ users.getTotalItemCount }} utilisateur(s) au total</p>
 
     <div id="imageLightbox" class="image-lightbox" aria-hidden="true">
         <div class="image-lightbox__dialog" role="dialog" aria-modal="true" aria-labelledby="imageLightboxTitle">
@@ -351,7 +365,8 @@
 
         function updateCount() {
             const visible = rows.filter(row => row.style.display !== 'none').length;
-            countLabel.textContent = visible + ' utilisateur(s)';
+            const total = Number(countLabel.getAttribute('data-total') || rows.length);
+            countLabel.textContent = visible + ' affiche(s) / ' + total + ' utilisateur(s)';
         }
 
         function applyFilter() {

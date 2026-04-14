@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Reclamation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -22,6 +23,13 @@ class ReclamationRepository extends ServiceEntityRepository
      * @return list<Reclamation>
      */
     public function searchWithUser(?string $query, ?string $category): array
+    {
+        return $this->createSearchWithUserQueryBuilder($query, $category)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function createSearchWithUserQueryBuilder(?string $query, ?string $category): QueryBuilder
     {
         $qb = $this->createQueryBuilder('r')
             ->leftJoin('r.utilisateur', 'u')
@@ -44,6 +52,6 @@ class ReclamationRepository extends ServiceEntityRepository
                 ->setParameter('category', $normalizedCategory);
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb;
     }
 }

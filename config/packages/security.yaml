@@ -15,12 +15,9 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: true
-                default_target_path: app_post_login_redirect
+            custom_authenticators:
+                - App\Security\LoginFormAuthenticator
+            entry_point: App\Security\LoginFormAuthenticator
 
             remember_me:
                 secret: '%kernel.secret%'
