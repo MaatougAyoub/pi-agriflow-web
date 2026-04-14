@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Security;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,6 +16,7 @@ final class ReCaptchaVerifier
         private readonly HttpClientInterface $httpClient,
         #[Autowire('%env(string:RECAPTCHA_SECRET_KEY)%')]
         private readonly string $secretKey,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -30,10 +32,7 @@ final class ReCaptchaVerifier
             'secret' => $this->secretKey,
             'response' => $trimmedToken,
         ];
-
-        if (null !== $clientIp && trim($clientIp) !== '') {
-            $body['remoteip'] = $clientIp;
-        }
+        // remoteip is optional and can cause false negatives in local proxy setups.
 
         try {
             $response = $this->httpClient->request('POST', self::VERIFY_ENDPOINT, [
@@ -45,6 +44,12 @@ final class ReCaptchaVerifier
         }
 
         if (($payload['success'] ?? false) !== true) {
+            $this->logger?->warning('reCAPTCHA verification failed.', [
+                'error_codes' => (array) ($payload['error-codes'] ?? []),
+                'hostname' => (string) ($payload['hostname'] ?? ''),
+                'client_ip' => (string) ($clientIp ?? ''),
+            ]);
+
             return false;
         }
 

@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 use App\Service\BrevoEmailService;
 use Doctrine\ORM\EntityManagerInterface;
+use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -30,6 +32,20 @@ final class SecurityController extends AbstractController
             'last_username' => $authenticationUtils->getLastUsername(),
             'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
+    }
+
+    #[Route('/connect/google', name: 'app_connect_google_start', methods: ['GET'])]
+    public function connectGoogle(ClientRegistry $clientRegistry): RedirectResponse
+    {
+        return $clientRegistry
+            ->getClient('google_main')
+            ->redirect(['email', 'profile'], []);
+    }
+
+    #[Route('/connect/google/check', name: 'app_connect_google_check', methods: ['GET'])]
+    public function connectGoogleCheck(): never
+    {
+        throw new \LogicException('La route OAuth Google est geree par le firewall.');
     }
 
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
