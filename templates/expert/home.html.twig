@@ -1,60 +1,75 @@
 {% extends 'base.html.twig' %}
+
 {% block title %}Expert - AGRIFLOW{% endblock %}
 
 {% block sidebar %}
-    <a href="{{ path('expert_home') }}" class="active"><span class="icon">🏠</span> Dashboard</a>
-    <a href="{{ path('expert_irrigation') }}"><span class="icon">💧</span> Irrigation</a>
-    <a href="{{ path('expert_diagnostics') }}"><span class="icon">📝</span> Diagnostics</a>
-    <a href="{{ path('expert_produits') }}"><span class="icon">🧪</span> Produits</a>
+<div class="sidebar bg-light p-3" style="min-width: 250px; min-height: 100vh; border-right: 1px solid #ddd;">
+    <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link active" href="{{ path('expert_home') }}">🏠 Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ path('expert_irrigation') }}">💧 Irrigation</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ path('expert_diagnostics') }}">📝 Diagnostics</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ path('expert_produits') }}">🧪 Produits</a></li>
+    </ul>
+</div>
 {% endblock %}
 
 {% block body %}
-<div style="margin-bottom:30px">
-    <div class="page-subtitle">Bienvenue sur AGRIFLOW</div>
-    <div class="page-title">Tableau de bord Expert</div>
-</div>
+<div class="container py-4">
+    <div class="mb-4">
+        <div class="text-muted">Bienvenue sur AGRIFLOW</div>
+        <h2 class="fw-bold">Tableau de bord Expert</h2>
+    </div>
 
-<div style="display:flex;gap:20px;margin-bottom:30px">
-    <div class="card" style="flex:1;text-align:center;padding:30px">
-        <div style="font-size:42px;font-weight:900;color:#FF9800">
-            {{ diagnostics|filter(d => d.statut == 'en_attente')|length }}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card text-center p-4 shadow-sm">
+                <div class="display-5 fw-bold text-warning">
+                    {{ diagnostics|filter(d => d.statut == 'en_attente' or d.statut is empty)|length }}
+                </div>
+                <div class="text-muted mt-2">Diagnostics en attente</div>
+            </div>
         </div>
-        <div style="color:#95a5a6;margin-top:8px;font-size:14px">Diagnostics en attente</div>
-    </div>
-    <div class="card" style="flex:1;text-align:center;padding:30px">
-        <div style="font-size:42px;font-weight:900;color:#4CAF50">
-            {{ diagnostics|filter(d => d.statut == 'traite')|length }}
+        <div class="col-md-4">
+            <div class="card text-center p-4 shadow-sm">
+                <div class="display-5 fw-bold text-success">
+                    {{ diagnostics|filter(d => d.statut == 'traite')|length }}
+                </div>
+                <div class="text-muted mt-2">Diagnostics traités</div>
+            </div>
         </div>
-        <div style="color:#95a5a6;margin-top:8px;font-size:14px">Diagnostics traités</div>
+        <div class="col-md-4">
+            <div class="card text-center p-4 shadow-sm">
+                <div class="display-5 fw-bold text-primary">{{ total_produits }}</div>
+                <div class="text-muted mt-2">Produits disponibles</div>
+            </div>
+        </div>
     </div>
-    <div class="card" style="flex:1;text-align:center;padding:30px">
-        <div style="font-size:42px;font-weight:900;color:#1B4332">{{ total_produits }}</div>
-        <div style="color:#95a5a6;margin-top:8px;font-size:14px">Produits disponibles</div>
-    </div>
-</div>
 
-<div class="card">
-    <h3 style="color:#1B4332;margin-bottom:20px;font-size:17px">📝 Derniers diagnostics</h3>
-    <table>
-        <tr>
-            <th>Culture</th><th>Description</th><th>Statut</th><th>Date</th>
-        </tr>
-        {% for d in diagnostics|slice(0,5) %}
-        <tr>
-            <td><strong>{{ d.nomCulture }}</strong></td>
-            <td style="color:#6B7280">{{ d.description|slice(0,50) }}...</td>
-            <td>
-                {% if d.statut == 'traite' %}
-                    <span class="badge" style="background:#E8F5E9;color:#4CAF50">TRAITÉ</span>
-                {% else %}
-                    <span class="badge" style="background:#FFF4E5;color:#FF9800">EN ATTENTE</span>
-                {% endif %}
-            </td>
-            <td style="color:#95a5a6">{{ d.dateEnvoi|date('d/m/Y') }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="4" style="text-align:center;color:#95a5a6;padding:30px">Aucun diagnostic.</td></tr>
-        {% endfor %}
-    </table>
+    <div class="card shadow-sm">
+        <div class="card-header bg-white"><h5 class="mb-0">📝 Derniers diagnostics</h5></div>
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr><th>Culture</th><th>Description</th><th>Statut</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    {% for d in diagnostics|slice(0,5) %}
+                    <tr>
+                        <td><strong>{{ d.nomCulture }}</strong></td>
+                        <td class="text-muted">{{ d.description|slice(0,50) }}...</td>
+                        <td>
+                            <span class="badge {{ d.statut == 'traite' ? 'bg-success' : 'bg-warning' }}">
+                                {{ d.statut|upper|default('EN ATTENTE') }}
+                            </span>
+                        </td>
+                        <td class="text-muted">{{ d.dateEnvoi|date('d/m/Y') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center py-4">Aucun diagnostic.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

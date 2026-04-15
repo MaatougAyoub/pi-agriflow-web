@@ -4,19 +4,20 @@
 <section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
 <div class="container">
 
+    {# En-tête gradient #}
     <div style="background:linear-gradient(135deg,#1B4332,#2D6A4F);border-radius:14px;
                 padding:30px 35px;color:white;display:flex;justify-content:space-between;
-                align-items:center;margin-bottom:30px">
+                align-items:center;margin-bottom:25px">
         <div>
-            <div style="font-size:13px;opacity:0.8;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">
+            <div style="font-size:13px;opacity:0.8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">
                 Expert — Remplir le plan
             </div>
             <div style="font-size:24px;font-weight:800;margin-bottom:8px">{{ plan.nomCulture }}</div>
             <div style="opacity:0.85;font-size:14px">
-                Volume proposé : {{ plan.volumeEauPropose }} L &nbsp;|&nbsp;
-                Date : {{ plan.dateDemande ? plan.dateDemande|date('d/m/Y') : '-' }} &nbsp;|&nbsp;
+                Volume : {{ plan.volumeEauPropose }} L |
+                Date : {{ plan.dateDemande ? plan.dateDemande|date('d/m/Y') : '-' }} |
                 <span style="background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:20px">
-                    {{ plan.statut }}
+                    {{ plan.statut ?? 'en attente' }}
                 </span>
             </div>
         </div>
@@ -26,8 +27,94 @@
         </div>
     </div>
 
-    <div style="background:white;border-radius:14px;padding:30px;box-shadow:0 2px 12px rgba(0,0,0,0.07)">
-        <h3 style="margin-bottom:25px;color:#1B4332;font-size:17px">📅 Planning Hebdomadaire</h3>
+    {# Carte des besoins de la culture #}
+    {% if infoCulture is defined %}
+    <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px;background:white;border-radius:12px;padding:18px;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid #2D6A4F">
+            <div style="font-size:12px;color:#888;text-transform:uppercase;margin-bottom:6px">
+                🌱 Besoin quotidien
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#1B4332">
+                {{ infoCulture.besoin_quotidien_mm }} mm/jour
+            </div>
+        </div>
+        <div style="flex:1;min-width:200px;background:white;border-radius:12px;padding:18px;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid #1976D2">
+            <div style="font-size:12px;color:#888;text-transform:uppercase;margin-bottom:6px">
+                📊 Coefficient cultural (Kc)
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#1976D2">
+                {{ infoCulture.coefficient_cultural }}
+            </div>
+        </div>
+        <div style="flex:1;min-width:200px;background:white;border-radius:12px;padding:18px;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid #FFA000">
+            <div style="font-size:12px;color:#888;text-transform:uppercase;margin-bottom:6px">
+                🔥 Sensibilité chaleur
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#FFA000">
+                {{ (infoCulture.sensibilite_chaleur * 100)|round }}%
+            </div>
+        </div>
+        <div style="flex:1;min-width:200px;background:white;border-radius:12px;padding:18px;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);border-left:4px solid #E63946">
+            <div style="font-size:12px;color:#888;text-transform:uppercase;margin-bottom:6px">
+                💧 Besoin hebdomadaire
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#E63946">
+                {{ infoCulture.besoin_hebdomadaire_mm }} mm
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Navigation semaines #}
+    <div style="display:flex;justify-content:center;align-items:center;gap:20px;
+                background:white;border-radius:12px;padding:15px 25px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:20px">
+        <a href="{{ path('expert_irrigation_detail', {id: plan.planId, semaine: semaineOffset - 1}) }}"
+           style="background:#F0F2F5;border:none;padding:8px 18px;border-radius:20px;
+                  cursor:pointer;font-size:18px;color:#1B4332;text-decoration:none;font-weight:700">
+            ◀
+        </a>
+        <div style="font-weight:700;font-size:16px;color:#2D5A27">
+            Semaine du {{ semaineDebut|date('d/m/Y') }}
+            au {{ semaineDebut|date_modify('+6 days')|date('d/m/Y') }}
+        </div>
+        <a href="{{ path('expert_irrigation_detail', {id: plan.planId, semaine: semaineOffset + 1}) }}"
+           style="background:#F0F2F5;border:none;padding:8px 18px;border-radius:20px;
+                  cursor:pointer;font-size:18px;color:#1B4332;text-decoration:none;font-weight:700">
+            ▶
+        </a>
+    </div>
+
+    {# Flash messages #}
+    {% for msg in app.flashes('success') %}
+    <div style="background:#E8F5E9;color:#2D5A27;padding:12px 20px;border-radius:10px;
+                margin-bottom:15px;font-weight:600">✅ {{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('danger') %}
+    <div style="background:#FFEBEE;color:#C62828;padding:12px 20px;border-radius:10px;
+                margin-bottom:15px;font-weight:600">❌ {{ msg }}</div>
+    {% endfor %}
+
+    {# Tableau hebdomadaire #}
+    <div style="background:white;border-radius:14px;padding:30px;
+                box-shadow:0 2px 12px rgba(0,0,0,0.07)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px">
+            <h3 style="color:#1B4332;font-size:17px;margin:0">📅 Planning Hebdomadaire</h3>
+            {% if totalEau is defined %}
+            <div style="display:flex;gap:20px">
+                <span style="font-size:13px;color:#666">
+                    Total eau : <strong style="color:#1B4332">{{ totalEau }} mm</strong>
+                </span>
+                <span style="font-size:13px;color:#666">
+                    Total durée : <strong style="color:#1976D2">{{ totalDuree }} min</strong>
+                </span>
+            </div>
+            {% endif %}
+        </div>
 
         <form method="post" action="{{ path('expert_irrigation_save', {id: plan.planId}) }}">
             <div style="overflow-x:auto">
@@ -37,73 +124,94 @@
                 <thead>
                     <tr>
                         <th style="width:130px;padding:12px 8px;border-bottom:2px solid #f0f0f0;color:#1B4332"></th>
-                        {% for j in jours %}
-                        <th style="text-align:center;padding:12px 8px;border-bottom:2px solid #f0f0f0;color:#1B4332;font-weight:700">
-                            {{ j }}
+                        {% for i, j in jours %}
+                        <th style="text-align:center;padding:12px 8px;border-bottom:2px solid #f0f0f0;
+                                   color:#1B4332;font-weight:700">
+                            {{ j }}<br>
+                            <span style="font-size:11px;color:#95a5a6;font-weight:400">
+                                {{ semaineDebut|date_modify('+' ~ i ~ ' days')|date('d/m') }}
+                            </span>
                         </th>
                         {% endfor %}
+                        <th style="text-align:center;padding:12px 8px;border-bottom:2px solid #f0f0f0;
+                                   color:#1B4332;font-weight:700;background:#f8f9fa;border-radius:0 8px 0 0">
+                            TOTAL
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% set rows = [
+                        {label: 'EAU (mm)',      key: 'eau',   step: '0.1', field: 'eauMm',    icon: '💧', editable: true,  color: '#2D6A4F'},
+                        {label: 'DURÉE (min)',    key: 'duree', step: '1',   field: 'tempsMin', icon: '⏱️', editable: true,  color: '#1976D2'},
+                        {label: 'TEMP (°C)',      key: 'temp',  step: '0.1', field: 'tempC',    icon: '🌡️', editable: false, color: '#E65100'},
+                        {label: 'HUMIDITÉ (%)',   key: 'hum',   step: '0.1', field: 'humidite', icon: '💨', editable: false, color: '#00838F'},
+                        {label: 'PLUIE (mm)',     key: 'pluie', step: '0.1', field: 'pluie',    icon: '🌧️', editable: false, color: '#5C6BC0'},
+                    ] %}
+                    {% for row in rows %}
                     <tr>
-                        <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">EAU (mm)</td>
+                        <td style="font-weight:700;font-size:12px;color:{{ row.color }};text-transform:uppercase;
+                                   padding:12px 8px;border-bottom:1px solid #f5f5f5;white-space:nowrap">
+                            {{ row.icon }} {{ row.label }}
+                        </td>
+                        {% set rowTotal = 0 %}
                         {% for k in joursKeys %}
+                            {% set val = jourData[k] is defined ? attribute(jourData[k], row.field) : 0 %}
+                            {% set rowTotal = rowTotal + (val ?? 0) %}
                         <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
-                            <input type="number" step="0.1" name="eau_{{ k }}"
-                                   value="{{ jourData[k] is defined ? jourData[k].eauMm : 0.0 }}"
-                                   style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                            <input type="number" step="{{ row.step }}"
+                                   name="{{ row.key }}_{{ k }}"
+                                   value="{{ val ?? 0 }}"
+                                   style="width:80px;padding:8px;text-align:center;
+                                          border:1.5px solid {{ row.editable ? '#e0e0e0' : '#f0f0f0' }};
+                                          border-radius:8px;font-size:14px;font-weight:600;
+                                          background:{{ row.editable ? 'white' : '#f8f9fa' }};
+                                          color:{{ row.editable ? '#333' : '#888' }}"
+                                   {% if not row.editable %}readonly{% endif %}>
                         </td>
                         {% endfor %}
-                    </tr>
-                    <tr>
-                        <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">DURÉE (min)</td>
-                        {% for k in joursKeys %}
-                        <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
-                            <input type="number" name="duree_{{ k }}"
-                                   value="{{ jourData[k] is defined ? jourData[k].tempsMin : 0 }}"
-                                   style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
+                        <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center;
+                                   background:#f8f9fa;font-weight:700;font-size:14px;color:{{ row.color }}">
+                            {{ rowTotal|round(1) }}
                         </td>
-                        {% endfor %}
                     </tr>
-                    <tr>
-                        <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">TEMP (°C)</td>
-                        {% for k in joursKeys %}
-                        <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
-                            <input type="number" step="0.1" name="temp_{{ k }}"
-                                   value="{{ jourData[k] is defined ? jourData[k].tempC : 0.0 }}"
-                                   style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
-                        </td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px;border-bottom:1px solid #f5f5f5">HUMIDITÉ (%)</td>
-                        {% for k in joursKeys %}
-                        <td style="padding:8px;border-bottom:1px solid #f5f5f5;text-align:center">
-                            <input type="number" step="0.1" name="hum_{{ k }}"
-                                   value="{{ jourData[k] is defined ? jourData[k].humidite : 0.0 }}"
-                                   style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
-                        </td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td style="font-weight:700;font-size:12px;color:#666;text-transform:uppercase;padding:12px 8px">PLUIE (mm)</td>
-                        {% for k in joursKeys %}
-                        <td style="padding:8px;text-align:center">
-                            <input type="number" step="0.1" name="pluie_{{ k }}"
-                                   value="{{ jourData[k] is defined ? jourData[k].pluie : 0.0 }}"
-                                   style="width:80px;padding:8px;text-align:center;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-weight:600">
-                        </td>
-                        {% endfor %}
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             </div>
 
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:25px">
-                <a href="{{ path('expert_irrigation') }}" class="btn btn-outline-secondary" style="border-radius:20px">← Retour</a>
-                <button type="submit" class="btn" style="background:#2D5A27;color:white;border-radius:20px;padding:10px 30px;font-weight:600">
-                    💾 Enregistrer
-                </button>
+            {# Légende #}
+            <div style="margin-top:15px;padding:12px 16px;background:#FFF8E1;border-radius:8px;
+                        font-size:12px;color:#795548;display:flex;gap:20px;flex-wrap:wrap">
+                <span>💧 <strong>EAU / DURÉE</strong> : modifiables manuellement</span>
+                <span>🌡️ <strong>TEMP / HUMIDITÉ / PLUIE</strong> : remplis automatiquement par l'IA météo</span>
+                <span>⚡ Cliquez <strong>"Optimiser avec l'IA météo"</strong> pour calculer automatiquement les quantités d'eau optimales</span>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:25px;gap:12px;flex-wrap:wrap">
+                <a href="{{ path('expert_irrigation') }}"
+                   style="padding:10px 25px;border-radius:20px;border:1.5px solid #ccc;
+                          color:#666;text-decoration:none;font-weight:600">
+                    ← Retour
+                </a>
+                <div style="display:flex;gap:12px">
+                    {# Bouton IA #}
+                    <button type="submit" formaction="{{ path('expert_irrigation_ia', {id: plan.planId}) }}"
+                            style="padding:10px 25px;border-radius:20px;background:linear-gradient(135deg,#1565C0,#1976D2);
+                                   color:white;border:none;font-weight:600;cursor:pointer;
+                                   box-shadow:0 2px 8px rgba(25,118,210,0.3);transition:all 0.3s"
+                            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(25,118,210,0.4)'"
+                            onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(25,118,210,0.3)'">
+                        ⚡ Optimiser avec l'IA météo
+                    </button>
+                    <button type="submit"
+                            style="padding:10px 30px;border-radius:20px;background:linear-gradient(135deg,#1B4332,#2D6A4F);
+                                   color:white;border:none;font-weight:600;cursor:pointer;
+                                   box-shadow:0 2px 8px rgba(45,90,39,0.3);transition:all 0.3s"
+                            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(45,90,39,0.4)'"
+                            onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(45,90,39,0.3)'">
+                        💾 Enregistrer
+                    </button>
+                </div>
             </div>
         </form>
     </div>

@@ -1,0 +1,119 @@
+{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Diagnostic Expert{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
+
+    <a href="{{ path('expert_diagnostics') }}"
+       style="display:inline-block;margin-bottom:25px;padding:8px 20px;border-radius:20px;
+              border:1.5px solid #ccc;color:#666;text-decoration:none;font-weight:600">
+        ← Retour
+    </a>
+
+    <div style="background:white;border-radius:14px;padding:30px;box-shadow:0 2px 12px rgba(0,0,0,0.07)">
+
+        {# En-tête avec image et description #}
+        <div style="display:flex;gap:30px;margin-bottom:25px">
+            {% if diagnostic.imagePath %}
+            <div style="flex-shrink:0">
+                <img src="/uploads/diagnostics/{{ diagnostic.imagePath }}"
+                     style="width:300px;height:220px;object-fit:cover;border-radius:12px"
+                     onerror="this.style.display='none'">
+            </div>
+            {% endif %}
+            <div style="flex:1">
+                <h2 style="color:#2D5A27;font-size:26px;font-weight:700;margin-bottom:10px">
+                    {{ diagnostic.nomCulture }}
+                </h2>
+                <p style="color:#7f8c8d;font-size:13px;margin-bottom:15px">
+                    Envoyé le {{ diagnostic.dateEnvoi ? diagnostic.dateEnvoi|date('d/m/Y à H:i') : '-' }}
+                    {% if diagnostic.utilisateur %}
+                    par {{ diagnostic.utilisateur.nom ?? diagnostic.utilisateur.email }}
+                    {% endif %}
+                </p>
+                <div style="background:#F8F9FA;padding:15px;border-radius:10px">
+                    <strong style="color:#555">Description du problème :</strong>
+                    <p style="margin-top:8px;color:#444;line-height:1.6">{{ diagnostic.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:25px 0">
+
+        {# Recommandation de produit #}
+        <div style="margin-bottom:25px">
+            <h4 style="color:#2D5A27;font-weight:700;margin-bottom:15px">
+                Recommandation de produit
+            </h4>
+            <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+                <div style="flex:1;min-width:250px">
+                    <label style="display:block;font-weight:600;color:#555;margin-bottom:6px">
+                        Choisir un produit préconisé
+                    </label>
+                    <select id="selectProduit" onchange="ajouterProduit()"
+                            style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px">
+                        <option value="">-- Sélectionner un produit --</option>
+                        {% for p in produits %}
+                        <option value="{{ p.nomProduit }}"
+                                data-dosage="{{ p.dosage }}"
+                                data-frequence="{{ p.frequenceApplication }}"
+                                data-remarques="{{ p.remarques }}">
+                            {{ p.nomProduit }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button onclick="ajouterProduit()"
+                        style="padding:10px 20px;background:#3498db;color:white;border:none;
+                               border-radius:10px;font-weight:600;cursor:pointer">
+                    Ajouter au diagnostic
+                </button>
+            </div>
+        </div>
+
+        {# Zone de réponse expert #}
+        <form method="post" action="{{ path('expert_diagnostic_repondre', {id: diagnostic.idDiagnostic}) }}">
+            <input type="hidden" name="produit_texte" id="produitTexte" value="">
+
+            <div style="margin-bottom:20px">
+                <h4 style="color:#2D5A27;font-weight:700;margin-bottom:10px">
+                    Votre diagnostic expert
+                </h4>
+                <textarea name="reponse" id="reponseExpert"
+                          placeholder="Écrivez vos recommandations ici..."
+                          style="width:100%;padding:15px;border-radius:10px;border:1.5px solid #e0e0e0;
+                                 font-size:14px;min-height:180px;resize:vertical;line-height:1.6">{{ diagnostic.reponseExpert }}</textarea>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:12px">
+                <a href="{{ path('expert_diagnostics') }}"
+                   style="padding:10px 25px;border-radius:20px;border:1.5px solid #ccc;
+                          color:#666;text-decoration:none;font-weight:600">
+                    Annuler
+                </a>
+                <button type="submit"
+                        style="padding:10px 30px;border-radius:20px;background:#2D5A27;
+                               color:white;border:none;font-weight:600;cursor:pointer">
+                    Envoyer la réponse
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+</section>
+
+<script>
+function ajouterProduit() {
+    const sel = document.getElementById('selectProduit');
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt.value) return;
+
+    const bloc = `\n--- PRODUIT RECOMMANDÉ ---\nNom : ${opt.value}\nDosage : ${opt.dataset.dosage || '-'}\nFréquence : ${opt.dataset.frequence || '-'}\nNote : ${opt.dataset.remarques || '-'}\n---------------------------\n`;
+
+    const ta = document.getElementById('reponseExpert');
+    ta.value += bloc;
+    document.getElementById('produitTexte').value = bloc;
+}
+</script>
+{% endblock %}

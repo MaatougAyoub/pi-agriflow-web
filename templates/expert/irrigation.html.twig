@@ -1,35 +1,94 @@
 {# templates/expert/irrigation.html.twig #}
-{% extends 'base.html.twig' %}
+{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Plans d'irrigation{% endblock %}
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
+<div class="container">
 
-{% block body %}
-<h1>Liste des plans d'irrigation</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px">
+        <h1 style="color:#1B4332;font-size:24px;font-weight:800;margin:0">
+            🌿 Liste des plans d'irrigation
+        </h1>
+        <div style="font-size:14px;color:#666">
+            {{ plans|length }} plan(s) au total
+        </div>
+    </div>
 
-<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+    {# Statistiques rapides #}
+    {% set nbAttente = 0 %}
+    {% set nbRempli = 0 %}
+    {% set nbApprouve = 0 %}
     {% for p in plans %}
-        {% set statusColor = '#2D5A27' %}
-        {% if p.statut == 'en_attente' %}
-            {% set statusColor = '#FFA000' %}
-        {% elseif p.statut == 'rempli' %}
-            {% set statusColor = '#2D5A27' %}
-        {% elseif p.statut == 'approuve' %}
-            {% set statusColor = '#1976D2' %}
+        {% if p.statut == 'en_attente' %}{% set nbAttente = nbAttente + 1 %}
+        {% elseif p.statut == 'rempli' %}{% set nbRempli = nbRempli + 1 %}
+        {% elseif p.statut == 'approuve' %}{% set nbApprouve = nbApprouve + 1 %}
         {% endif %}
-
-        <a href="{{ path('expert_irrigation_detail', {'id': p.planId}) }}" class="irrigation-card" style="border-left-color: {{ statusColor }}; display: block; width: 300px; background: white; border-radius: 12px; padding: 16px; text-decoration: none; color: inherit; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <div style="font-size: 17px; font-weight: 700; color: #1B4332; margin-bottom: 4px;">
-                {{ p.nomCulture }}
-            </div>
-            <div style="font-size: 13px; color: #555;">
-                Volume: {{ p.volumeEauPropose }} L | Date: {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
-            </div>
-            <div style="margin-top: 8px;">
-                <span style="background: {{ statusColor }}; color: white; padding: 2px 8px; border-radius: 20px; font-size: 11px;">
-                    {{ p.statut }}
-                </span>
-            </div>
-        </a>
-    {% else %}
-        <p>Aucun plan trouvé.</p>
     {% endfor %}
+
+    <div style="display:flex;gap:15px;margin-bottom:25px;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px;background:white;border-radius:12px;padding:16px;
+                    text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:3px solid #FFA000">
+            <div style="font-size:28px;font-weight:800;color:#FFA000">{{ nbAttente }}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px">En attente</div>
+        </div>
+        <div style="flex:1;min-width:150px;background:white;border-radius:12px;padding:16px;
+                    text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:3px solid #2D5A27">
+            <div style="font-size:28px;font-weight:800;color:#2D5A27">{{ nbRempli }}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px">Rempli</div>
+        </div>
+        <div style="flex:1;min-width:150px;background:white;border-radius:12px;padding:16px;
+                    text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:3px solid #1976D2">
+            <div style="font-size:28px;font-weight:800;color:#1976D2">{{ nbApprouve }}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px">Approuvé</div>
+        </div>
+    </div>
+
+    {# Liste des plans #}
+    <div style="display:flex;flex-wrap:wrap;gap:20px">
+        {% for p in plans %}
+            {% set statusColor = '#FFA000' %}
+            {% set statusIcon = '⏳' %}
+            {% if p.statut == 'rempli' %}
+                {% set statusColor = '#2D5A27' %}
+                {% set statusIcon = '✅' %}
+            {% elseif p.statut == 'approuve' %}
+                {% set statusColor = '#1976D2' %}
+                {% set statusIcon = '🔵' %}
+            {% endif %}
+
+            <a href="{{ path('expert_irrigation_detail', {'id': p.planId}) }}"
+               style="display:block;width:300px;background:white;border-radius:12px;padding:20px;
+                      text-decoration:none;color:inherit;box-shadow:0 2px 8px rgba(0,0,0,0.08);
+                      border-left:4px solid {{ statusColor }};transition:all 0.3s"
+               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,0.12)'"
+               onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div style="font-size:17px;font-weight:700;color:#1B4332;margin-bottom:4px">
+                        🌱 {{ p.nomCulture }}
+                    </div>
+                    <span style="font-size:16px">{{ statusIcon }}</span>
+                </div>
+                <div style="font-size:13px;color:#555;margin-bottom:8px">
+                    💧 Volume : {{ p.volumeEauPropose }} L
+                </div>
+                <div style="font-size:12px;color:#888;margin-bottom:10px">
+                    📅 {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
+                </div>
+                <div>
+                    <span style="background:{{ statusColor }};color:white;padding:3px 12px;
+                                 border-radius:20px;font-size:11px;font-weight:600">
+                        {{ p.statut|replace({'_': ' '})|capitalize }}
+                    </span>
+                </div>
+            </a>
+        {% else %}
+            <div style="width:100%;text-align:center;padding:40px;background:white;border-radius:12px">
+                <div style="font-size:48px;margin-bottom:10px">🌾</div>
+                <p style="color:#888;font-size:16px">Aucun plan d'irrigation trouvé.</p>
+            </div>
+        {% endfor %}
+    </div>
+
 </div>
+</section>
 {% endblock %}

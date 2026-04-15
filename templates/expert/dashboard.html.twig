@@ -1,0 +1,298 @@
+{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Dashboard Expert - AGRIFLOW{% endblock %}
+
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:100vh">
+<div class="container-fluid px-4">
+
+    {# ===== EN-TÊTE ===== #}
+    <div style="margin-bottom:30px">
+        <p style="color:#7f8c8d;margin:0;font-size:13px">Tableau de bord</p>
+        <h2 style="color:#2D5A27;font-weight:800;margin:0;font-size:26px">Espace Expert</h2>
+    </div>
+
+    {# ===== FLASH MESSAGES ===== #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert" style="border-radius:12px;border:none;font-size:14px">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ===== 4 CARTES STATISTIQUES ===== #}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #8E24AA;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">PRODUITS PHYTO</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#8E24AA15;display:flex;align-items:center;justify-content:center;font-size:18px">💊</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#8E24AA;line-height:1">{{ total_produits }}</div>
+                <div style="font-size:12px;color:#95a5a6;margin-top:6px">produits disponibles</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #E65100;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">DIAG. EN ATTENTE</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#E6510015;display:flex;align-items:center;justify-content:center;font-size:18px">⏳</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#E65100;line-height:1">{{ diag_en_attente }}</div>
+                <div style="font-size:12px;color:#95a5a6;margin-top:6px">à traiter</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #2D5A27;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">DIAG. TRAITÉS</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#2D5A2715;display:flex;align-items:center;justify-content:center;font-size:18px">✅</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#2D5A27;line-height:1">{{ diag_traites }}</div>
+                <div style="font-size:12px;color:#95a5a6;margin-top:6px">résolus</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #1976D2;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">PLANS IRRIGATION</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#1976D215;display:flex;align-items:center;justify-content:center;font-size:18px">💧</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#1976D2;line-height:1">{{ total_plans }}</div>
+                <div style="font-size:12px;margin-top:6px">
+                    <span style="color:#E65100;font-weight:600">{{ plans_en_attente }} en attente</span>
+                    · <span style="color:#2D5A27;font-weight:600">{{ plans_remplis }} remplis</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ===== GRAPHIQUE + ACCÈS RAPIDE ===== #}
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);height:100%">
+                <h5 style="color:#2D5A27;font-weight:700;margin-bottom:20px;font-size:16px">
+                    📊 Répartition des statuts
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div style="background:#F8F9FA;border-radius:12px;padding:20px;text-align:center">
+                            <div style="font-size:13px;color:#7f8c8d;font-weight:600;margin-bottom:12px">DIAGNOSTICS</div>
+                            <div style="display:flex;justify-content:center;gap:30px">
+                                <div>
+                                    <div style="font-size:32px;font-weight:900;color:#E65100">{{ diag_en_attente }}</div>
+                                    <div style="font-size:11px;color:#95a5a6;margin-top:2px">En attente</div>
+                                </div>
+                                <div style="width:1px;background:#e0e0e0"></div>
+                                <div>
+                                    <div style="font-size:32px;font-weight:900;color:#2D5A27">{{ diag_traites }}</div>
+                                    <div style="font-size:11px;color:#95a5a6;margin-top:2px">Traités</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div style="background:#F8F9FA;border-radius:12px;padding:20px;text-align:center">
+                            <div style="font-size:13px;color:#7f8c8d;font-weight:600;margin-bottom:12px">PLANS IRRIGATION</div>
+                            <div style="display:flex;justify-content:center;gap:20px">
+                                <div>
+                                    <div style="font-size:32px;font-weight:900;color:#E65100">{{ plans_en_attente }}</div>
+                                    <div style="font-size:11px;color:#95a5a6;margin-top:2px">En attente</div>
+                                </div>
+                                <div style="width:1px;background:#e0e0e0"></div>
+                                <div>
+                                    <div style="font-size:32px;font-weight:900;color:#2D5A27">{{ plans_remplis }}</div>
+                                    <div style="font-size:11px;color:#95a5a6;margin-top:2px">Remplis</div>
+                                </div>
+                                <div style="width:1px;background:#e0e0e0"></div>
+                                <div>
+                                    <div style="font-size:32px;font-weight:900;color:#1976D2">{{ plans_approuves }}</div>
+                                    <div style="font-size:11px;color:#95a5a6;margin-top:2px">Approuvés</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if plans_statut_data is not empty %}
+                <div style="margin-top:20px;position:relative;height:200px">
+                    <canvas id="pieChart"></canvas>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div style="display:flex;flex-direction:column;gap:12px;height:100%">
+                <a href="{{ path('expert_diagnostics') }}" style="text-decoration:none;display:block;flex:1">
+                    <div style="background:white;border-radius:14px;padding:22px;
+                                box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:5px solid #2D5A27;
+                                transition:transform 0.2s;display:flex;align-items:center;gap:15px;height:100%"
+                         onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+                        <div style="width:48px;height:48px;border-radius:12px;background:#2D5A2712;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">📝</div>
+                        <div style="flex:1">
+                            <h6 style="color:#2D5A27;margin:0;font-weight:700;font-size:15px">Diagnostics</h6>
+                            <p style="color:#7f8c8d;font-size:12px;margin:3px 0 0">Traiter les demandes</p>
+                        </div>
+                        <i class="bi bi-chevron-right" style="color:#2D5A27;font-size:18px"></i>
+                    </div>
+                </a>
+                <a href="{{ path('expert_irrigation') }}" style="text-decoration:none;display:block;flex:1">
+                    <div style="background:white;border-radius:14px;padding:22px;
+                                box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:5px solid #1976D2;
+                                transition:transform 0.2s;display:flex;align-items:center;gap:15px;height:100%"
+                         onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+                        <div style="width:48px;height:48px;border-radius:12px;background:#1976D212;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">💧</div>
+                        <div style="flex:1">
+                            <h6 style="color:#1976D2;margin:0;font-weight:700;font-size:15px">Plans Irrigation</h6>
+                            <p style="color:#7f8c8d;font-size:12px;margin:3px 0 0">Remplir les plans</p>
+                        </div>
+                        <i class="bi bi-chevron-right" style="color:#1976D2;font-size:18px"></i>
+                    </div>
+                </a>
+                <a href="{{ path('expert_produits') }}" style="text-decoration:none;display:block;flex:1">
+                    <div style="background:white;border-radius:14px;padding:22px;
+                                box-shadow:0 2px 12px rgba(0,0,0,0.06);border-left:5px solid #8E24AA;
+                                transition:transform 0.2s;display:flex;align-items:center;gap:15px;height:100%"
+                         onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
+                        <div style="width:48px;height:48px;border-radius:12px;background:#8E24AA12;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">💊</div>
+                        <div style="flex:1">
+                            <h6 style="color:#8E24AA;margin:0;font-weight:700;font-size:15px">Produits Phyto</h6>
+                            <p style="color:#7f8c8d;font-size:12px;margin:3px 0 0">Gérer le catalogue</p>
+                        </div>
+                        <i class="bi bi-chevron-right" style="color:#8E24AA;font-size:18px"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ===== DIAGNOSTICS + PLANS RÉCENTS ===== #}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                    <h5 style="color:#2D5A27;font-weight:700;margin:0;font-size:16px">📝 Derniers diagnostics</h5>
+                    <a href="{{ path('expert_diagnostics') }}"
+                       style="color:#2D5A27;font-size:13px;text-decoration:none;font-weight:600;
+                              background:#2D5A2710;padding:5px 12px;border-radius:20px">
+                        Voir tous →
+                    </a>
+                </div>
+                {% for d in diags_recents %}
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                            padding:12px 0;{% if not loop.last %}border-bottom:1px solid #f0f0f0;{% endif %}">
+                    <div style="flex:1">
+                        <div style="font-weight:600;color:#1B4332;font-size:14px">{{ d.nomCulture }}</div>
+                        <div style="font-size:12px;color:#95a5a6;margin-top:2px">
+                            {{ d.description|length > 40 ? d.description|slice(0,40) ~ '...' : d.description }}
+                        </div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;margin-left:12px">
+                        {% if d.statut == 'traite' %}
+                            <span style="background:#2D5A2718;color:#2D5A27;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">Traité</span>
+                        {% else %}
+                            <span style="background:#E6510018;color:#E65100;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">En attente</span>
+                        {% endif %}
+                        <div style="font-size:11px;color:#bdc3c7;margin-top:4px">
+                            {{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align:center;color:#95a5a6;padding:30px">
+                    <div style="font-size:36px;margin-bottom:8px">📝</div>
+                    Aucun diagnostic
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                    <h5 style="color:#2D5A27;font-weight:700;margin:0;font-size:16px">💧 Plans d'irrigation récents</h5>
+                    <a href="{{ path('expert_irrigation') }}"
+                       style="color:#2D5A27;font-size:13px;text-decoration:none;font-weight:600;
+                              background:#2D5A2710;padding:5px 12px;border-radius:20px">
+                        Voir tous →
+                    </a>
+                </div>
+                {% for p in plans_recents %}
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                            padding:12px 0;{% if not loop.last %}border-bottom:1px solid #f0f0f0;{% endif %}">
+                    <div style="flex:1">
+                        <div style="font-weight:600;color:#1B4332;font-size:14px">{{ p.nomCulture }}</div>
+                        <div style="font-size:12px;color:#95a5a6;margin-top:2px">
+                            {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0;margin-left:12px">
+                        {% if p.statut == 'rempli' %}
+                            <span style="background:#2D5A2718;color:#2D5A27;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">Rempli</span>
+                        {% elseif p.statut == 'approuve' %}
+                            <span style="background:#1976D218;color:#1976D2;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">Approuvé</span>
+                        {% else %}
+                            <span style="background:#E6510018;color:#E65100;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">En attente</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align:center;color:#95a5a6;padding:30px">
+                    <div style="font-size:36px;margin-bottom:8px">💧</div>
+                    Aucun plan d'irrigation
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+{% if plans_statut_data is not empty %}
+new Chart(document.getElementById('pieChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ plans_statut_data|keys|json_encode|raw }},
+        datasets: [{
+            data: {{ plans_statut_data|map(v => v)|json_encode|raw }},
+            backgroundColor: ['#E65100', '#2D5A27', '#1976D2'],
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverOffset: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 12, weight: '600' }, color: '#555', padding: 15, usePointStyle: true }
+            }
+        },
+        cutout: '65%',
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
