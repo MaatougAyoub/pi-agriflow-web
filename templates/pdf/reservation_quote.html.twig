@@ -35,8 +35,21 @@
                 vertical-align: middle;
             }
             .hero-logo img {
-                max-width: 220px;
+                display: block;
+                width: 220px;
+                height: auto;
                 max-height: 125px;
+            }
+            .hero-logo-fallback {
+                display: inline-block;
+                padding: 12px 18px;
+                border: 1px solid rgba(216, 243, 220, 0.28);
+                border-radius: 12px;
+                color: #ffffff;
+                font-size: 24px;
+                font-weight: bold;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
             }
             .hero-title {
                 width: 54%;
@@ -226,7 +239,11 @@
                 <table class="hero-table">
                     <tr>
                         <td class="hero-logo">
-                            <img src="{{ logoPath }}" alt="AgriFlow">
+                            {% if logoPath %}
+                                <img src="{{ logoPath }}" alt="Logo AgriFlow">
+                            {% else %}
+                                <div class="hero-logo-fallback">AgriFlow</div>
+                            {% endif %}
                         </td>
                         <td class="hero-title">
                             <h1>Devis Marketplace</h1>

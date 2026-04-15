@@ -40,12 +40,6 @@ final class ReservationPdfService
             $businessDiagnostic = $this->businessDiagnosticService->buildForAnnonce($annonce, $environmentInsights);
         }
 
-        $logoFile = $this->projectDir.'/public/uploads/logo/logo.png';
-
-        if (!is_file($logoFile)) {
-            $logoFile = $this->projectDir.'/public/template/assets/img/logo2-header.png';
-        }
-
         // pdf: twig y7adher html w Dompdf y7awlou fichier PDF
         $html = $this->twig->render('pdf/reservation_quote.html.twig', [
             'reservation' => $reservation,
@@ -55,12 +49,24 @@ final class ReservationPdfService
             'environmentInsights' => $environmentInsights,
             'businessDiagnostic' => $businessDiagnostic,
             'generatedAt' => new \DateTimeImmutable(),
-            'logoPath' => 'file:///'.str_replace('\\', '/', $logoFile),
+            'logoPath' => $this->buildLogoPublicPath(),
         ]);
 
         return new Response($this->dompdfWrapper->getPdf($html), Response::HTTP_OK, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
+    }
+
+    private function buildLogoPublicPath(): ?string
+    {
+        // pdf: path relatif ta7t public/chroot a7sen men file:/// w ma yesta79ech GD
+        $logoFile = $this->projectDir.'/public/uploads/logo/logo-pdf.jpg';
+
+        if (!is_file($logoFile) || !is_readable($logoFile)) {
+            return null;
+        }
+
+        return str_replace('\\', '/', str_replace($this->projectDir.'/public', '', $logoFile));
     }
 }
