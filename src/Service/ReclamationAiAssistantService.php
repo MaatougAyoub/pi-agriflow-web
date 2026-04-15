@@ -16,7 +16,7 @@ final class ReclamationAiAssistantService
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
-        #[Autowire('%env(string:GROQ_API_KEY)%')]
+        #[Autowire('%env(string:GROQ_API_KEY8)%')]
         private readonly string $groqApiKey,
     ) {
     }
