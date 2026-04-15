@@ -10,6 +10,7 @@ use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\ContactRequestType;
 use App\Model\ContactRequest;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -92,9 +93,15 @@ final class SiteController extends AbstractController
 
     #[Route('/admin/utilisateurs', name: 'app_admin_users', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminUsers(UtilisateurRepository $utilisateurRepository): Response
+    public function adminUsers(Request $request, UtilisateurRepository $utilisateurRepository, PaginatorInterface $paginator): Response
     {
-        $users = $utilisateurRepository->findBy([], ['id' => 'DESC']);
+        $users = $paginator->paginate(
+            $utilisateurRepository
+                ->createQueryBuilder('u')
+                ->orderBy('u.id', 'DESC'),
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('site/listeUtilisateurs.html.twig', [
             'users' => $users,

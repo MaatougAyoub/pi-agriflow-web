@@ -15,12 +15,10 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                enable_csrf: true
-                default_target_path: app_post_login_redirect
+            custom_authenticators:
+                - App\Security\LoginFormAuthenticator
+                - App\Security\GoogleOAuthAuthenticator
+            entry_point: App\Security\LoginFormAuthenticator
 
             remember_me:
                 secret: '%kernel.secret%'
@@ -40,20 +38,21 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-      - { path: '^/login', roles: PUBLIC_ACCESS }
-      - { path: '^/forgot-password', roles: PUBLIC_ACCESS }
-      - { path: '^/post-login', roles: IS_AUTHENTICATED_FULLY }
+          - { path: '^/login', roles: PUBLIC_ACCESS }
+          - { path: '^/connect/google', roles: PUBLIC_ACCESS }
+          - { path: '^/forgot-password', roles: PUBLIC_ACCESS }
+          - { path: '^/post-login', roles: IS_AUTHENTICATED_FULLY }
 
-      - { path: '^/admin', roles: ROLE_ADMIN }
+          - { path: '^/admin', roles: ROLE_ADMIN }
 
-      # Parcelles & Cultures (branche collègue)
-      - { path: '^/mes-parcelles', roles: IS_AUTHENTICATED_FULLY }
-      - { path: '^/mes-cultures', roles: IS_AUTHENTICATED_FULLY }
+          # Parcelles & Cultures (branche collègue)
+          - { path: '^/mes-parcelles', roles: IS_AUTHENTICATED_FULLY }
+          - { path: '^/mes-cultures', roles: IS_AUTHENTICATED_FULLY }
 
-      # Espace agriculteur
-      - { path: '^/mon-espace', roles: ROLE_AGRICULTEUR }
-      - { path: '^/mes-reservations', roles: ROLE_AGRICULTEUR }
-      - { path: '^/marketplace/[0-9]+/reserve', roles: ROLE_AGRICULTEUR }
+          # Espace agriculteur
+          - { path: '^/mon-espace', roles: ROLE_AGRICULTEUR }
+          - { path: '^/mes-reservations', roles: ROLE_AGRICULTEUR }
+          - { path: '^/marketplace/[0-9]+/reserve', roles: ROLE_AGRICULTEUR }
 
 when@test:
   security:

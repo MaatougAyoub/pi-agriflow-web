@@ -8,7 +8,10 @@ use App\Entity\Reclamation;
 use App\Entity\Utilisateur;
 use App\Form\ReclamationType;
 use App\Repository\ReclamationRepository;
+use App\Service\ReclamationAiAssistantService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +25,7 @@ final class ReclamationController extends AbstractController
 
     #[Route('', name: 'index', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function index(Request $request, ReclamationRepository $reclamationRepository, EntityManagerInterface $entityManager): Response
+    public function index(Request $request, ReclamationRepository $reclamationRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
     {
         $user = $this->getAuthenticatedUser();
 
@@ -65,9 +68,13 @@ final class ReclamationController extends AbstractController
             $selectedCategory = 'TOUTES';
         }
 
-        $reclamations = $reclamationRepository->searchWithUser(
-            $query !== '' ? $query : null,
-            $selectedCategory !== 'TOUTES' ? $selectedCategory : null
+        $reclamations = $paginator->paginate(
+            $reclamationRepository->createSearchWithUserQueryBuilder(
+                $query !== '' ? $query : null,
+                $selectedCategory !== 'TOUTES' ? $selectedCategory : null
+            ),
+            $request->query->getInt('page', 1),
+            8
         );
 
         $connectedUserId = $user->getId();
@@ -102,6 +109,45 @@ final class ReclamationController extends AbstractController
     public function add(): Response
     {
         return $this->redirectToRoute('app_reclamation_index', ['tab' => 'ajouter']);
+    }
+
+    #[Route('/generer-description', name: 'generate_description', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function generateDescription(Request $request, ReclamationAiAssistantService $reclamationAiAssistantService): JsonResponse
+    {
+        if (!$this->isCsrfTokenValid('reclamation_ai_generate', (string) $request->request->get('_token'))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Jeton CSRF invalide.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $title = trim((string) $request->request->get('titre', ''));
+        if ($title === '') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Veuillez entrer un titre avant de generer une description.',
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        try {
+            $description = $reclamationAiAssistantService->generateDescriptionFromTitle($title);
+
+            return new JsonResponse([
+                'success' => true,
+                'description' => $description,
+            ]);
+        } catch (\DomainException $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        } catch (\Throwable) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Generation IA indisponible pour le moment.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
     }
 
     #[Route('/{id}/supprimer', name: 'delete', methods: ['POST'])]

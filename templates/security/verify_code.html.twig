@@ -58,6 +58,11 @@ body {
     color:var(--danger);
 }
 
+.alert-success {
+    background:#e8f5e9;
+    color:#1b5e20;
+}
+
 .field {
     display:grid;
     gap:7px;
@@ -120,7 +125,7 @@ body {
 <main class="verify-shell">
     <h1 class="verify-title">Verification du code</h1>
     <p class="verify-subtitle">
-        Un code a 6 chiffres a ete genere. Consultez le terminal et collez-le ici.
+        Un code a 6 chiffres a ete envoye a votre adresse email. Collez-le ici.
     </p>
 
     {% if email %}
@@ -131,6 +136,10 @@ body {
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 
+    {% if notice %}
+        <div class="alert alert-success">{{ notice }}</div>
+    {% endif %}
+
     <form method="post">
         <div class="field">
             <label>Code de verification *</label>
@@ -138,6 +147,7 @@ body {
         </div>
         <div class="actions">
             <button class="btn btn-primary" type="submit">Valider</button>
+            <button class="btn btn-secondary" type="submit" name="action" value="resend" formnovalidate>Renvoyer le code</button>
             <a class="btn btn-secondary" href="{{ path('app_register') }}">Retour</a>
         </div>
     </form>
