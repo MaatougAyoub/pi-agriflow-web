@@ -40,6 +40,12 @@ final class ReservationPdfService
             $businessDiagnostic = $this->businessDiagnosticService->buildForAnnonce($annonce, $environmentInsights);
         }
 
+        $logoFile = $this->projectDir.'/public/uploads/logo/logo.png';
+
+        if (!is_file($logoFile)) {
+            $logoFile = $this->projectDir.'/public/template/assets/img/logo2-header.png';
+        }
+
         // pdf: twig y7adher html w Dompdf y7awlou fichier PDF
         $html = $this->twig->render('pdf/reservation_quote.html.twig', [
             'reservation' => $reservation,
@@ -49,7 +55,7 @@ final class ReservationPdfService
             'environmentInsights' => $environmentInsights,
             'businessDiagnostic' => $businessDiagnostic,
             'generatedAt' => new \DateTimeImmutable(),
-            'logoPath' => 'file:///'.str_replace('\\', '/', $this->projectDir.'/public/template/assets/img/logo2-header.png'),
+            'logoPath' => 'file:///'.str_replace('\\', '/', $logoFile),
         ]);
 
         return new Response($this->dompdfWrapper->getPdf($html), Response::HTTP_OK, [
