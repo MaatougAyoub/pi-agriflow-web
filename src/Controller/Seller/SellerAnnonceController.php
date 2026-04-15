@@ -35,6 +35,8 @@ final class SellerAnnonceController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         $user = $this->getSellerUser();
+
+        // owner: espace vendeur y7seb w ywarri ken data mta3 user connecte
         $allAnnonces = $annonceRepository->findByOwnerId($user->getId());
         $receivedReservations = $reservationRepository->findReceivedByOwnerId($user->getId());
         $annonces = $paginator->paginate(
@@ -75,12 +77,15 @@ final class SellerAnnonceController extends AbstractController
     ): Response {
         $user = $this->getSellerUser();
         $annonce = new Annonce();
+
+        // owner: proprietaire ma yjich men form, yet7at direct men session
         $sellerMarketplaceService->assignAnnonceOwner($annonce, $user);
 
         $form = $this->createForm(AnnonceFormType::class, $annonce);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // geocoding: n7awlou n7assnou localisation ama ma nwa9fouch sauvegarde ken API tfaili
             $geocodingOutcome = $annonceGeocodingService->enrichAnnonce($annonce);
             $entityManager->persist($annonce);
             $entityManager->flush();
@@ -113,12 +118,15 @@ final class SellerAnnonceController extends AbstractController
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getSellerUser();
+
+        // security: vendeur ymodifi ken annonce mte3ou, moch annonce mta3 user e5er
         $this->denyAccessUnlessGrantedToOwner($sellerMarketplaceService, $user, $annonce);
 
         $form = $this->createForm(AnnonceFormType::class, $annonce);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // geocoding: edit zeda ya3mel refresh lel adresse normalisee ken localisation tbaddlet
             $geocodingOutcome = $annonceGeocodingService->enrichAnnonce($annonce);
             $entityManager->flush();
 
@@ -150,6 +158,8 @@ final class SellerAnnonceController extends AbstractController
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getSellerUser();
+
+        // security: suppression zeda marbouta bel ownership mta3 annonce
         $this->denyAccessUnlessGrantedToOwner($sellerMarketplaceService, $user, $annonce);
 
         if ($this->isCsrfTokenValid('delete-seller-annonce-'.$annonce->getId(), (string) $request->request->get('_token'))) {
@@ -168,6 +178,7 @@ final class SellerAnnonceController extends AbstractController
         AnnonceAiAssistantService $annonceAiAssistantService
     ): JsonResponse {
         try {
+            // ia: l assistant yrajja3 suggestions bark, ma ysajjel chay wahdou
             $payload = $request->toArray();
             $suggestions = $annonceAiAssistantService->generateSuggestions($payload);
 

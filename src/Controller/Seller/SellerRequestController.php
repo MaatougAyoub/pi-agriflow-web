@@ -34,6 +34,7 @@ final class SellerRequestController extends AbstractController
         $annonceId = $request->query->getInt('annonce');
         $selectedAnnonce = null;
 
+        // filter: ken vendeur yfilteri b annonce, nthabtou eli annonce mte3ou houwa
         if ($annonceId > 0) {
             $selectedAnnonce = $annonceRepository->find($annonceId);
 
@@ -91,6 +92,7 @@ final class SellerRequestController extends AbstractController
         $user = $this->getSellerUser();
         $this->denyAccessUnlessGrantedToOwner($sellerMarketplaceService, $user, $reservation);
 
+        // devis: vendeur ynajjem ytelechargi PDF ken demande 3la annonce mte3ou
         return $reservationPdfService->streamReservationQuote($reservation, 'devis-vendeur');
     }
 
@@ -106,6 +108,7 @@ final class SellerRequestController extends AbstractController
 
         if ($this->isCsrfTokenValid('refuse-seller-reservation-'.$reservation->getId(), (string) $request->request->get('_token'))) {
             try {
+                // metier: refus ybadel statut reservation bark, ma ytouchich stock
                 $sellerMarketplaceService->refuseReservation($reservation);
                 $entityManager->flush();
                 $this->addFlash('success', 'Demande refusee avec succes.');
@@ -133,6 +136,7 @@ final class SellerRequestController extends AbstractController
         Utilisateur $user,
         Reservation $reservation
     ): void {
+        // security: demande recues tetgerra ken men proprietaire mta3 annonce
         if (!$sellerMarketplaceService->isReservationOwner($user, $reservation)) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas gerer cette demande.');
         }

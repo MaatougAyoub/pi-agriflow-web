@@ -12,6 +12,8 @@ use App\Enum\AnnonceType;
 use App\Form\FrontReservationType;
 use App\Repository\AnnonceRepository;
 use App\Repository\ReservationRepository;
+use App\Service\AnnonceBusinessDiagnosticService;
+use App\Service\AnnonceEnvironmentInsightService;
 use App\Service\SellerMarketplaceService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -80,6 +82,8 @@ final class MarketplaceController extends AbstractController
         #[MapEntity(mapping: ['id' => 'id'])] Annonce $annonce,
         AnnonceRepository $annonceRepository,
         ReservationRepository $reservationRepository,
+        AnnonceBusinessDiagnosticService $businessDiagnosticService,
+        AnnonceEnvironmentInsightService $environmentInsightService,
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getUser();
@@ -94,6 +98,8 @@ final class MarketplaceController extends AbstractController
             && !$isOwnerViewer
             && $annonce->getStatut() === AnnonceStatut::DISPONIBLE;
         $similarAnnonces = $annonceRepository->findSimilarPublic($annonce, 4);
+        $environmentInsights = $environmentInsightService->buildForAnnonce($annonce);
+        $businessDiagnostic = $businessDiagnosticService->buildForAnnonce($annonce, $environmentInsights);
 
         return $this->render('marketplace/show.html.twig', [
             'annonce' => $annonce,
@@ -106,6 +112,9 @@ final class MarketplaceController extends AbstractController
                 5
             ),
             'visual' => $this->buildAnnonceVisual($annonce),
+            // api: Open-Meteo yet7seb mel coordonnees eli jethom men geocoding
+            'environmentInsights' => $environmentInsights,
+            'businessDiagnostic' => $businessDiagnostic,
             'similarAnnonces' => $similarAnnonces,
             'similarVisuals' => $this->buildAnnonceVisuals($similarAnnonces),
             'canReserve' => $canReserve,

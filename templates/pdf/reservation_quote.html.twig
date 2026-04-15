@@ -2,109 +2,418 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>Devis reservation {{ reservation.id }}</title>
+        <title>Devis Marketplace #{{ reservation.id }}</title>
         <style>
-            body { font-family: DejaVu Sans, sans-serif; color: #18392b; font-size: 13px; margin: 32px; }
-            .header { display: table; width: 100%; margin-bottom: 24px; }
-            .header > div { display: table-cell; vertical-align: middle; }
-            .logo { width: 160px; }
-            .logo img { max-width: 140px; }
-            .title { text-align: right; }
-            .title h1 { margin: 0; font-size: 24px; }
-            .title p { margin: 6px 0 0; color: #5b6b5d; }
-            .panel { border: 1px solid #d7e3d8; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
-            .panel h2 { margin: 0 0 12px; font-size: 16px; }
-            .grid { width: 100%; border-collapse: collapse; }
-            .grid td { padding: 8px 0; vertical-align: top; }
-            .grid td:first-child { width: 34%; color: #627264; font-weight: bold; }
-            .amounts { width: 100%; border-collapse: collapse; margin-top: 16px; }
-            .amounts td { padding: 10px 12px; border-bottom: 1px solid #e2ebe3; }
-            .amounts tr:last-child td { font-weight: bold; font-size: 15px; border-bottom: none; }
-            .footer-note { margin-top: 24px; font-size: 12px; color: #5b6b5d; }
+            @page { margin: 24px; }
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                background: #eef3ea;
+                color: #18392b;
+                font-family: DejaVu Sans, sans-serif;
+                font-size: 12px;
+                line-height: 1.45;
+            }
+            .document {
+                background: #ffffff;
+                border: 1px solid #d8e5d5;
+            }
+            .hero {
+                background: #030705;
+                color: #ffffff;
+                padding: 22px 28px;
+            }
+            .hero-table,
+            .summary-table,
+            .two-col,
+            .amounts {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .hero-logo {
+                width: 46%;
+                vertical-align: middle;
+            }
+            .hero-logo img {
+                display: block;
+                width: 220px;
+                height: auto;
+                max-height: 125px;
+            }
+            .hero-logo-fallback {
+                display: inline-block;
+                padding: 12px 18px;
+                border: 1px solid rgba(216, 243, 220, 0.28);
+                border-radius: 12px;
+                color: #ffffff;
+                font-size: 24px;
+                font-weight: bold;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+            }
+            .hero-title {
+                width: 54%;
+                text-align: right;
+                vertical-align: middle;
+            }
+            .hero-title h1 {
+                margin: 0 0 8px;
+                font-size: 30px;
+                letter-spacing: 0.02em;
+            }
+            .hero-title p {
+                margin: 3px 0;
+                color: #d8f3dc;
+            }
+            .ref-badge {
+                display: inline-block;
+                margin-top: 8px;
+                padding: 7px 12px;
+                border-radius: 999px;
+                background: #d8f3dc;
+                color: #18392b;
+                font-weight: bold;
+            }
+            .content {
+                padding: 24px 28px 20px;
+            }
+            .summary {
+                margin-bottom: 18px;
+                border: 1px solid #d8e5d5;
+                background: #f5f8f2;
+            }
+            .summary-table td {
+                width: 25%;
+                padding: 13px 14px;
+                border-right: 1px solid #d8e5d5;
+                vertical-align: top;
+            }
+            .summary-table td:last-child { border-right: none; }
+            .label {
+                display: block;
+                margin-bottom: 5px;
+                color: #627264;
+                font-size: 10px;
+                font-weight: bold;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+            .value {
+                display: block;
+                color: #18392b;
+                font-weight: bold;
+                font-size: 13px;
+            }
+            .section-title {
+                margin: 0 0 10px;
+                color: #18392b;
+                font-size: 15px;
+                letter-spacing: 0.02em;
+            }
+            .panel {
+                margin-bottom: 16px;
+                padding: 16px;
+                border: 1px solid #dce8d9;
+                background: #ffffff;
+            }
+            .panel--soft {
+                background: #f8faf5;
+            }
+            .two-col td {
+                width: 50%;
+                vertical-align: top;
+            }
+            .two-col td:first-child {
+                padding-right: 8px;
+            }
+            .two-col td:last-child {
+                padding-left: 8px;
+            }
+            .info-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .info-table td {
+                padding: 7px 0;
+                border-bottom: 1px solid #edf2ea;
+                vertical-align: top;
+            }
+            .info-table tr:last-child td { border-bottom: none; }
+            .info-table td:first-child {
+                width: 38%;
+                color: #627264;
+                font-weight: bold;
+            }
+            .person-card {
+                min-height: 92px;
+                padding: 14px;
+                border: 1px solid #dce8d9;
+                background: #f8faf5;
+            }
+            .person-card strong {
+                display: block;
+                margin-bottom: 4px;
+                color: #18392b;
+                font-size: 14px;
+            }
+            .amounts {
+                margin-top: 12px;
+                border: 1px solid #d8e5d5;
+            }
+            .amounts td {
+                padding: 11px 14px;
+                border-bottom: 1px solid #d8e5d5;
+            }
+            .amounts td:last-child {
+                text-align: right;
+                font-weight: bold;
+            }
+            .amounts tr:nth-child(2) td {
+                background: #f8faf5;
+                color: #1d5f3a;
+            }
+            .amounts tr.total td {
+                background: #18392b;
+                color: #ffffff;
+                font-size: 17px;
+                border-bottom: none;
+            }
+            .diagnostic-box {
+                border: 1px solid #cfe2d1;
+                background: #f3f8f1;
+            }
+            .diagnostic-head {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 10px;
+            }
+            .diagnostic-head td {
+                vertical-align: middle;
+            }
+            .diagnostic-score {
+                display: inline-block;
+                padding: 10px 14px;
+                border-radius: 12px;
+                background: #18392b;
+                color: #ffffff;
+                font-weight: bold;
+                font-size: 15px;
+            }
+            .pill {
+                display: inline-block;
+                margin: 0 6px 7px 0;
+                padding: 6px 10px;
+                border-radius: 999px;
+                font-size: 10px;
+                font-weight: bold;
+            }
+            .pill-success {
+                background: #e4f4e8;
+                color: #1d5f3a;
+            }
+            .pill-warning {
+                background: #fff0cf;
+                color: #8a6110;
+            }
+            .advice {
+                margin: 8px 0 0;
+                padding-left: 18px;
+                color: #496046;
+            }
+            .footer {
+                margin-top: 18px;
+                padding: 14px 28px 18px;
+                border-top: 1px solid #d8e5d5;
+                background: #f8faf5;
+                color: #5b6b5d;
+                font-size: 10.5px;
+            }
+            .footer strong {
+                color: #18392b;
+            }
         </style>
     </head>
     <body>
-        <div class="header">
-            <div class="logo">
-                <img src="{{ logoPath }}" alt="AgriFlow">
+        <div class="document">
+            <div class="hero">
+                <table class="hero-table">
+                    <tr>
+                        <td class="hero-logo">
+                            {% if logoPath %}
+                                <img src="{{ logoPath }}" alt="Logo AgriFlow">
+                            {% else %}
+                                <div class="hero-logo-fallback">AgriFlow</div>
+                            {% endif %}
+                        </td>
+                        <td class="hero-title">
+                            <h1>Devis Marketplace</h1>
+                            <p>Reservation agricole generee automatiquement</p>
+                            <p>{{ generatedAt|date('d/m/Y H:i') }}</p>
+                            <span class="ref-badge">Reference #{{ reservation.id }}</span>
+                        </td>
+                    </tr>
+                </table>
             </div>
-            <div class="title">
-                <h1>Devis de reservation</h1>
-                <p>Reference #{{ reservation.id }} - genere le {{ generatedAt|date('d/m/Y H:i') }}</p>
-            </div>
-        </div>
 
-        <div class="panel">
-            <h2>Annonce concernee</h2>
-            <table class="grid">
-                <tr><td>Titre</td><td>{{ annonce.titre }}</td></tr>
-                <tr><td>Type</td><td>{{ annonce.type.label() }}</td></tr>
-                <tr><td>Categorie</td><td>{{ annonce.categorie }}</td></tr>
-                <tr><td>Localisation</td><td>{{ annonce.localisationNormalisee ?: annonce.localisation }}</td></tr>
-                <tr><td>Tarif</td><td>{{ annonce.prix }} TND / {{ annonce.unitePrix }}</td></tr>
-            </table>
-        </div>
+            <div class="content">
+                <div class="summary">
+                    <table class="summary-table">
+                        <tr>
+                            <td>
+                                <span class="label">Type</span>
+                                <span class="value">{{ annonce.type.label() }}</span>
+                            </td>
+                            <td>
+                                <span class="label">Statut</span>
+                                <span class="value">{{ reservation.statut.label() }}</span>
+                            </td>
+                            <td>
+                                <span class="label">Localisation</span>
+                                <span class="value">{{ annonce.localisationNormalisee ?: annonce.localisation }}</span>
+                            </td>
+                            <td>
+                                <span class="label">Score</span>
+                                <span class="value">
+                                    {% if businessDiagnostic %}
+                                        {{ businessDiagnostic.score }}/100
+                                    {% else %}
+                                        Non calcule
+                                    {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
 
-        <div class="panel">
-            <h2>Parties</h2>
-            <table class="grid">
-                <tr>
-                    <td>Client</td>
-                    <td>
-                        {% if client %}
-                            {{ client.nom }} {{ client.prenom }}<br>
-                            {{ client.email }}
+                <table class="two-col">
+                    <tr>
+                        <td>
+                            <div class="panel">
+                                <h2 class="section-title">Annonce concernee</h2>
+                                <table class="info-table">
+                                    <tr><td>Titre</td><td>{{ annonce.titre }}</td></tr>
+                                    <tr><td>Categorie</td><td>{{ annonce.categorie }}</td></tr>
+                                    <tr><td>Tarif</td><td>{{ annonce.prix }} TND / {{ annonce.unitePrix }}</td></tr>
+                                    <tr><td>Stock</td><td>{{ annonce.quantiteDisponible }} unite(s)</td></tr>
+                                </table>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="panel">
+                                <h2 class="section-title">Detail de la demande</h2>
+                                <table class="info-table">
+                                    {% if annonce.isLocation() %}
+                                        <tr><td>Periode</td><td>{{ reservation.dateDebut|date('d/m/Y') }} au {{ reservation.dateFin|date('d/m/Y') }}</td></tr>
+                                        <tr><td>Duree</td><td>{{ reservation.nombreJours }} jour(s)</td></tr>
+                                    {% else %}
+                                        <tr><td>Periode</td><td>Vente ponctuelle</td></tr>
+                                    {% endif %}
+                                    <tr><td>Quantite</td><td>{{ reservation.quantite }}</td></tr>
+                                    <tr><td>Message</td><td>{{ reservation.message ?: 'Aucune note complementaire.' }}</td></tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="two-col">
+                    <tr>
+                        <td>
+                            <div class="person-card">
+                                <span class="label">Client</span>
+                                {% if client %}
+                                    <strong>{{ client.nom }} {{ client.prenom }}</strong>
+                                    {{ client.email }}
+                                {% else %}
+                                    <strong>Client #{{ reservation.clientId }}</strong>
+                                    Informations utilisateur non chargees
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="person-card">
+                                <span class="label">Vendeur</span>
+                                {% if vendeur %}
+                                    <strong>{{ vendeur.nom }} {{ vendeur.prenom }}</strong>
+                                    {{ vendeur.email }}
+                                {% else %}
+                                    <strong>Vendeur #{{ reservation.proprietaireId }}</strong>
+                                    Informations utilisateur non chargees
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="panel panel--soft">
+                    <h2 class="section-title">Recapitulatif financier</h2>
+                    <table class="amounts">
+                        <tr>
+                            <td>Sous-total hors commission</td>
+                            <td>{{ (reservation.prixTotalAsFloat - reservation.commissionAsFloat)|number_format(2, '.', ' ') }} TND</td>
+                        </tr>
+                        <tr>
+                            <td>Commission plateforme</td>
+                            <td>{{ reservation.commission }} TND</td>
+                        </tr>
+                        <tr class="total">
+                            <td>Total TTC</td>
+                            <td>{{ reservation.prixTotal }} TND</td>
+                        </tr>
+                    </table>
+                </div>
+
+                {% if businessDiagnostic %}
+                    <div class="panel diagnostic-box">
+                        <table class="diagnostic-head">
+                            <tr>
+                                <td>
+                                    <h2 class="section-title">Analyse Marketplace</h2>
+                                    <span class="label">Diagnostic metier avance</span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <span class="diagnostic-score">{{ businessDiagnostic.score }}/100 - {{ businessDiagnostic.level }}</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="info-table">
+                            <tr>
+                                <td>Commission</td>
+                                <td>Commission plateforme appliquee: {{ businessDiagnostic.commissionRateLabel }}</td>
+                            </tr>
+                            <tr>
+                                <td>APIs externes</td>
+                                <td>
+                                    Meteo: {{ businessDiagnostic.weatherAvailable ? 'disponible' : 'indisponible' }} -
+                                    Qualite de l air: {{ businessDiagnostic.airQualityAvailable ? 'disponible' : 'indisponible' }}
+                                </td>
+                            </tr>
+                        </table>
+
+                        <div style="margin-top: 10px;">
+                            {% for badge in businessDiagnostic.badges %}
+                                <span class="pill pill-{{ badge.state }}">{{ badge.label }}</span>
+                            {% endfor %}
+                        </div>
+
+                        {% if businessDiagnostic.advice is not empty %}
+                            <ul class="advice">
+                                {% for advice in businessDiagnostic.advice %}
+                                    <li>{{ advice }}</li>
+                                {% endfor %}
+                            </ul>
                         {% else %}
-                            Client #{{ reservation.clientId }}
+                            <p style="margin: 8px 0 0; color: #496046;">Aucun point bloquant detecte pour cette annonce.</p>
                         {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <td>Vendeur</td>
-                    <td>
-                        {% if vendeur %}
-                            {{ vendeur.nom }} {{ vendeur.prenom }}<br>
-                            {{ vendeur.email }}
-                        {% else %}
-                            Vendeur #{{ reservation.proprietaireId }}
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr><td>Statut</td><td>{{ reservation.statut.label() }}</td></tr>
-            </table>
-        </div>
-
-        <div class="panel">
-            <h2>Detail de la demande</h2>
-            <table class="grid">
-                {% if annonce.isLocation() %}
-                    <tr><td>Periode</td><td>{{ reservation.dateDebut|date('d/m/Y') }} au {{ reservation.dateFin|date('d/m/Y') }}</td></tr>
-                    <tr><td>Duree calculee</td><td>{{ reservation.nombreJours }} jour(s)</td></tr>
-                {% else %}
-                    <tr><td>Periode</td><td>Vente ponctuelle</td></tr>
+                    </div>
                 {% endif %}
-                <tr><td>Quantite</td><td>{{ reservation.quantite }}</td></tr>
-                <tr><td>Message</td><td>{{ reservation.message ?: 'Aucune note complementaire.' }}</td></tr>
-            </table>
+            </div>
 
-            <table class="amounts">
-                <tr>
-                    <td>Sous-total</td>
-                    <td>{{ (reservation.prixTotalAsFloat - reservation.commissionAsFloat)|number_format(2, '.', ' ') }} TND</td>
-                </tr>
-                <tr>
-                    <td>Commission plateforme</td>
-                    <td>{{ reservation.commission }} TND</td>
-                </tr>
-                <tr>
-                    <td>Total TTC</td>
-                    <td>{{ reservation.prixTotal }} TND</td>
-                </tr>
-            </table>
+            <div class="footer">
+                <strong>AgriFlow Marketplace</strong> - Devis genere automatiquement pour consultation client, suivi vendeur et supervision administrateur.
+                Ce document recapitule la demande de reservation et ne remplace pas un contrat signe.
+            </div>
         </div>
-
-        <p class="footer-note">
-            Ce devis est genere automatiquement depuis le module Marketplace AgriFlow pour consultation, suivi vendeur et supervision administrateur.
-        </p>
     </body>
 </html>
