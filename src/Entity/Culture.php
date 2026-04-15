@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CultureRepository;
 
@@ -86,7 +87,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?float $superficie = null;
 
     public function getSuperficie(): ?float
@@ -128,7 +129,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?float $recolte_estime = null;
 
     public function getRecolte_estime(): ?float
@@ -211,7 +212,7 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?float $prix_vente = null;
 
     public function getPrix_vente(): ?float

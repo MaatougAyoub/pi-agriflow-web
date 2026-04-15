@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Postuler à la demande{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Postuler à la demande</h3>
+                    <p class="mb-0 text-muted">{{ requestTitle }}</p>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.fullName, 'Nom complet *', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.fullName, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.fullName) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.phone, 'Téléphone *', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.phone, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.phone) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.email, 'Email *', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.yearsOfExperience, 'Années d\'expérience *', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.yearsOfExperience, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.yearsOfExperience) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.expectedSalary, 'Salaire attendu (DT)', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.expectedSalary, {'attr': {'class': 'form-control', 'placeholder': 'Indiquez 0 si le salaire de l\'offre vous convient'}}) }}
+                                {{ form_errors(form.expectedSalary) }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.motivation, 'Lettre de motivation *', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.motivation, {'attr': {'class': 'form-control', 'rows': 6}}) }}
+                        {{ form_errors(form.motivation) }}
+                        <small class="form-text text-muted">Minimum 30 caractères requis</small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Envoyer ma candidature
+                        </button>
+                        <a href="{{ path('collab_request_details', {'id': collabRequest.id}) }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </a>
+                    </div>
+                    
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation côté client similaire à ESPRIT-PIDEV
+    const form = document.querySelector('form');
+    const fullNameField = document.querySelector('#{{ form.fullName.vars.id }}');
+    const phoneField = document.querySelector('#{{ form.phone.vars.id }}');
+    const emailField = document.querySelector('#{{ form.email.vars.id }}');
+    const motivationField = document.querySelector('#{{ form.motivation.vars.id }}');
+    const salaryField = document.querySelector('#{{ form.expectedSalary.vars.id }}');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validation nom complet
+        if (fullNameField.value.trim().length < 3) {
+            showError(fullNameField, 'Veuillez entrer votre nom complet.');
+            isValid = false;
+        }
+        
+        // Validation téléphone
+        if (phoneField.value.trim().length < 8) {
+            showError(phoneField, 'Veuillez entrer un numéro de téléphone valide.');
+            isValid = false;
+        }
+        
+        // Validation email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailField.value.trim())) {
+            showError(emailField, 'Veuillez entrer un email valide.');
+            isValid = false;
+        }
+        
+        // Validation motivation
+        if (motivationField.value.trim().length < 30) {
+            showError(motivationField, 'Votre lettre de motivation doit contenir au moins 30 caractères.');
+            isValid = false;
+        }
+        
+        // Validation salaire
+        const salaryValue = salaryField.value.trim();
+        if (salaryValue && (isNaN(salaryValue) || parseFloat(salaryValue) < 0)) {
+            showError(salaryField, 'Veuillez entrer un nombre valide.');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        
+        // Retirer les messages d'erreur existants
+        const existingError = field.parentNode.querySelector('.invalid-feedback');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Ajouter le nouveau message d'erreur
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+        
+        // Retirer l'erreur quand l'utilisateur modifie le champ
+        field.addEventListener('input', function() {
+            field.classList.remove('is-invalid');
+            const feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.remove();
+            }
+        }, { once: true });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

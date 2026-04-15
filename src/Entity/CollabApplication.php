@@ -38,69 +38,29 @@ class CollabApplication
     private ?Utilisateur $candidate = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez compléter le nom complet.'),
-        new Assert\Length(
-            min: 3,
-            max: 255,
-            minMessage: 'Le nom complet doit contenir au moins {{ limit }} caractères.',
-            maxMessage: 'Le nom complet ne peut pas dépasser {{ limit }} caractères.',
-        ),
-    ])]
+    #[Assert\NotBlank(message: 'Le nom complet est obligatoire.')]
     private ?string $fullName = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez compléter le numéro de téléphone.'),
-        new Assert\Regex(pattern: '/^[0-9]+$/', message: 'Le téléphone ne doit contenir que des chiffres.'),
-        new Assert\Length(
-            min: 8,
-            max: 20,
-            minMessage: 'Le téléphone doit contenir au moins {{ limit }} chiffres.',
-            maxMessage: 'Le téléphone ne peut pas dépasser {{ limit }} chiffres.',
-        ),
-    ])]
+    #[Assert\NotBlank(message: 'Le téléphone est obligatoire.')]
     private ?string $phone = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez compléter l’adresse e-mail.'),
-        new Assert\Email(message: 'Veuillez saisir une adresse e-mail valide.'),
-        new Assert\Length(max: 100, maxMessage: 'L’e-mail ne peut pas dépasser {{ limit }} caractères.'),
-    ])]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
+    #[Assert\Email(message: 'Adresse email invalide.')]
     private ?string $email = null;
 
     #[ORM\Column(options: ['default' => 0])]
-    #[Assert\NotNull(message: 'Les années d\'expérience sont obligatoires.')]
-    #[Assert\Range(
-        notInRangeMessage: 'Les années d\'expérience doivent être comprises entre {{ min }} et {{ max }}.',
-        min: 0,
-        max: 50,
-    )]
+    #[Assert\PositiveOrZero(message: 'Les années d\'expérience ne peuvent pas être négatives.')]
     private ?int $yearsOfExperience = 0;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez compléter la lettre de motivation.'),
-        new Assert\Length(
-            min: 30,
-            max: 8000,
-            minMessage: 'La lettre de motivation doit contenir au moins {{ limit }} caractères.',
-            maxMessage: 'La lettre de motivation ne peut pas dépasser {{ limit }} caractères.',
-        ),
-    ])]
+    #[Assert\NotBlank(message: 'La motivation est obligatoire.')]
     private ?string $motivation = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
-    #[Assert\Sequentially([
-        new Assert\NotBlank(message: 'Veuillez compléter le salaire attendu (indiquez 0 si le salaire de l’offre vous convient).'),
-        new Assert\Range(
-            min: 0,
-            max: 99999.99,
-            notInRangeMessage: 'Le salaire attendu doit être compris entre {{ min }} et {{ max }} DT.',
-        ),
-    ])]
-    private ?string $expectedSalary = '0.00';
+    #[Assert\PositiveOrZero(message: 'Le salaire attendu ne peut pas être négatif.')]
+    private ?float $expectedSalary = 0.00;
 
     #[ORM\Column(length: 50, options: ['default' => 'PENDING'])]
     private ?string $status = 'PENDING';
@@ -206,27 +166,14 @@ class CollabApplication
         return $this;
     }
 
-    public function getExpectedSalary(): ?string
+    public function getExpectedSalary(): ?float
     {
         return $this->expectedSalary;
     }
 
-    public function getExpectedSalaryAsFloat(): float
+    public function setExpectedSalary(float $expectedSalary): static
     {
-        return (float) ($this->expectedSalary ?? 0);
-    }
-
-    public function setExpectedSalary(string|float|int|null $expectedSalary): static
-    {
-        if ($expectedSalary === null || $expectedSalary === '') {
-            $this->expectedSalary = '';
-
-            return $this;
-        }
-
-        $this->expectedSalary = \is_string($expectedSalary)
-            ? $expectedSalary
-            : number_format((float) $expectedSalary, 2, '.', '');
+        $this->expectedSalary = $expectedSalary;
 
         return $this;
     }

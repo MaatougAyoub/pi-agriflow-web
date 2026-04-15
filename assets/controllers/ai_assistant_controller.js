@@ -20,12 +20,12 @@ export default class extends Controller {
         event.preventDefault();
 
         if (!this.hasUrlValue || !this.urlValue) {
-            this.updateStatus('Assistant indisponible: route non configuree.', 'error');
+            this.updateStatus('Assistant indisponible : route non configurée.', 'error');
             return;
         }
 
         this.triggerTarget.disabled = true;
-        this.updateStatus('Generation en cours...', 'loading');
+        this.updateStatus('Génération en cours...', 'loading');
 
         try {
             const response = await fetch(this.urlValue, {
@@ -56,7 +56,7 @@ export default class extends Controller {
             this.applySuggestion(this.unitePrixFieldTarget, payload.suggestions.unitePrix);
 
             const provider = payload.suggestions.provider ? ` (${payload.suggestions.provider})` : '';
-            this.updateStatus(`Suggestions appliquees${provider}. Vous pouvez encore les modifier avant l enregistrement.`, 'success');
+            this.updateStatus(`Suggestions appliquées${provider}. Vous pouvez encore les modifier avant l'enregistrement.`, 'success');
         } catch (error) {
             this.updateStatus(error.message || 'Assistant indisponible pour le moment.', 'error');
         } finally {

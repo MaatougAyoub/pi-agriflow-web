@@ -1,83 +1,84 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Service;
 
 use App\Entity\CollabApplication;
 use App\Entity\CollabRequest;
+use App\Model\MatchScore;
 
 /**
- * Calculates a compatibility match score between a candidate application
- * and a collaboration request — mirrors CandidateMatchingService.java.
+ * 🤖 Service d'IA pour le Matching automatique Candidat ↔ Demande.
+ * Port exact de CandidateMatchingService.java du projet JavaFX.
+ *
+ * Analyse la compatibilité entre un candidat et une demande via 4 critères :
+ * - Expérience (0-100)
+ * - Salaire (0-100)
+ * - Localisation (0-100)
+ * - Disponibilité (0-100)
  */
 class CandidateMatchingService
 {
-    /** Minimum score (0–100) to be considered a good match. */
-    public const GOOD_MATCH_THRESHOLD = 70.0;
-
-    /** Weights for each criterion (must sum to 1.0). */
-    private const WEIGHT_EXPERIENCE   = 0.35;
-    private const WEIGHT_SALARY       = 0.40;
-    private const WEIGHT_AVAILABILITY = 0.25;
-
+    /** Villes tunisiennes principales (pour le score de localisation) */
     private const TUNISIAN_CITIES = [
-        'tunis', 'sfax', 'sousse', 'nabeul', 'bizerte', 'kairouan', 'monastir',
-        'mahdia', 'medenine', 'beja', 'jendouba', 'siliana', 'kef', 'kasserine',
-        'sidi bouzid', 'gafsa', 'tozeur', 'kebili', 'gabes', 'tataouine', 'zaghouan',
-        'ariana', 'ben arous', 'manouba',
+        'tunis', 'ariana', 'ben arous', 'manouba',
+        'nabeul', 'zaghouan', 'bizerte', 'béja',
+        'jendouba', 'kef', 'siliana', 'sousse',
+        'monastir', 'mahdia', 'sfax', 'kairouan',
+        'kasserine', 'sidi bouzid', 'gabès', 'médenine',
+        'tataouine', 'gafsa', 'tozeur', 'kébili',
     ];
 
     /**
-     * Returns a match score (0–100) for a single application.
-     *
-     * @return array{total: float, experience: float, salary: float, availability: float}
+     * Calcule le score de compatibilité pour une candidature.
      */
-    public function calculateScore(CollabApplication $application, CollabRequest $request): array
+    public function calculateMatchScore(CollabApplication $application, CollabRequest $request): MatchScore
     {
-        $experience   = $this->experienceScore($application->getYearsOfExperience() ?? 0);
-        $salary       = $this->salaryScore(
-            $application->getExpectedSalaryAsFloat(),
-            $request->getSalaryPerDayAsFloat(),
-        );
-        $availability = $this->availabilityScore($request);
+        $score = new MatchScore($application);
 
-        $total = round(
-            $experience   * self::WEIGHT_EXPERIENCE
-            + $salary     * self::WEIGHT_SALARY
-            + $availability * self::WEIGHT_AVAILABILITY,
-            2,
-        );
+        // 1️⃣ Score d'expérience (0-100)
+        $score->setExperienceScore($this->calculateExperienceScore((int) $application->getYearsOfExperience()));
 
-        return [
-            'total'        => $total,
-            'experience'   => $experience,
-            'salary'       => $salary,
-            'availability' => $availability,
-        ];
+        // 2️⃣ Score de salaire (0-100)
+        $score->setSalaryScore($this->calculateSalaryScore(
+            (float) $application->getExpectedSalary(),
+            (float) $request->getSalary()
+        ));
+
+        // 3️⃣ Score de localisation (0-100)
+        $score->setLocationScore($this->calculateLocationScore($request->getLocation()));
+
+        // 4️⃣ Score de disponibilité (0-100)
+        $score->setAvailabilityScore(100.0); // A postulé = disponible
+
+        // Calculer le score total
+        $score->calculateTotalScore();
+
+        return $score;
     }
 
     /**
-     * Ranks applications by descending total match score.
+     * Classe toutes les candidatures par score décroissant.
      *
-     * @param  CollabApplication[] $applications
-     * @return array<array{application: CollabApplication, score: array}>
+     * @param CollabApplication[] $applications
+     * @return MatchScore[]
      */
     public function rankApplications(array $applications, CollabRequest $request): array
     {
-        $ranked = array_map(fn (CollabApplication $app) => [
-            'application' => $app,
-            'score'       => $this->calculateScore($app, $request),
-        ], $applications);
+        $scores = [];
+        foreach ($applications as $app) {
+            $scores[] = $this->calculateMatchScore($app, $request);
+        }
 
-        usort($ranked, fn ($a, $b) => $b['score']['total'] <=> $a['score']['total']);
+        // Trier par score décroissant (meilleur candidat en premier)
+        usort($scores, fn(MatchScore $a, MatchScore $b) => $b->getTotalScore() <=> $a->getTotalScore());
 
-        return $ranked;
+        return $scores;
     }
 
-    // ── Private helpers ─────────────────────────────────────────────────────
-
-    private function experienceScore(int $years): float
+    /**
+     * Score basé sur l'expérience.
+     */
+    private function calculateExperienceScore(int $years): float
     {
         return match (true) {
             $years >= 10 => 100.0,
@@ -89,50 +90,48 @@ class CandidateMatchingService
         };
     }
 
-    private function salaryScore(float $expected, float $offered): float
+    /**
+     * Score basé sur le salaire.
+     */
+    private function calculateSalaryScore(float $expectedSalary, float $offeredSalary): float
     {
-        if ($offered <= 0) {
-            return 50.0; // neutral when no salary data
-        }
-
-        if ($expected <= $offered) {
+        if ($expectedSalary <= $offeredSalary) {
             return 100.0;
         }
 
-        $diff = (($expected - $offered) / $offered) * 100;
+        if ($offeredSalary <= 0) {
+            return 50.0;
+        }
+
+        $difference = (($expectedSalary - $offeredSalary) / $offeredSalary) * 100;
 
         return match (true) {
-            $diff <= 5  => 95.0,
-            $diff <= 10 => 85.0,
-            $diff <= 20 => 65.0,
-            $diff <= 30 => 45.0,
-            $diff <= 50 => 25.0,
-            default     => 10.0,
+            $difference <= 5  => 95.0,
+            $difference <= 10 => 85.0,
+            $difference <= 20 => 65.0,
+            $difference <= 30 => 45.0,
+            $difference <= 50 => 25.0,
+            default           => 10.0,
         };
     }
 
-    private function availabilityScore(CollabRequest $request): float
+    /**
+     * Score basé sur la localisation.
+     */
+    private function calculateLocationScore(?string $location): float
     {
-        // If the request is still open and not expired the candidate is considered available.
-        if ($request->isOpen() && !$request->isExpired()) {
-            return 100.0;
+        if ($location === null || $location === '') {
+            return 50.0;
         }
 
-        return 50.0;
-    }
+        $lowerLocation = mb_strtolower(trim($location));
 
-    /**
-     * Whether a location string mentions a known Tunisian city (used for display only).
-     */
-    public function isKnownTunisianCity(string $location): bool
-    {
-        $lower = mb_strtolower(trim($location));
         foreach (self::TUNISIAN_CITIES as $city) {
-            if (str_contains($lower, $city)) {
-                return true;
+            if (str_contains($lowerLocation, $city)) {
+                return 85.0;
             }
         }
 
-        return false;
+        return 70.0;
     }
 }

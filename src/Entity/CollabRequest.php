@@ -33,79 +33,37 @@ class CollabRequest
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
-    #[Assert\Length(
-        min: 3,
-        max: 255,
-        minMessage: 'Le titre doit faire au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.',
-    )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'La description est obligatoire.')]
-    #[Assert\Length(
-        min: 20,
-        max: 10000,
-        minMessage: 'La description doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.',
-    )]
     private ?string $description = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La localisation est obligatoire.')]
-    #[Assert\Length(
-        min: 2,
-        max: 100,
-        minMessage: 'La localisation doit faire au moins {{ limit }} caractères.',
-        maxMessage: 'La localisation ne peut pas dépasser {{ limit }} caractères.',
-    )]
     private ?string $location = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
-    private ?string $latitude = null;
+    private ?float $latitude = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
-    private ?string $longitude = null;
+    private ?float $longitude = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotNull(message: 'La date de début est obligatoire.')]
-    #[Assert\GreaterThanOrEqual(
-        value: 'today',
-        groups: ['collab_create'],
-        message: 'La date de début ne peut pas être antérieure à aujourd\'hui.',
-    )]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotNull(message: 'La date de fin est obligatoire.')]
-    #[Assert\Expression(
-        'this.getStartDate() === null or value > this.getStartDate()',
-        message: 'La date de fin doit être ultérieure à la date de début.',
-    )]
-    #[Assert\GreaterThanOrEqual(
-        value: 'today',
-        groups: ['collab_create'],
-        message: 'La date de fin ne peut pas être antérieure à aujourd\'hui.',
-    )]
     private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(options: ['default' => 1])]
-    #[Assert\NotNull(message: 'Le nombre de personnes est obligatoire.')]
-    #[Assert\Range(
-        notInRangeMessage: 'Le nombre de personnes doit être compris entre {{ min }} et {{ max }}.',
-        min: 1,
-        max: 50,
-    )]
+    #[Assert\Positive(message: 'Le nombre de personnes doit être au moins 1.')]
     private ?int $neededPeople = 1;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
-    #[Assert\NotBlank(message: 'Le salaire journalier est obligatoire.')]
-    #[Assert\Range(
-        min: 0,
-        max: 99999.99,
-        notInRangeMessage: 'Le salaire par jour doit être compris entre {{ min }} et {{ max }} DT.',
-    )]
-    private ?string $salary = '0.00';
+    #[Assert\PositiveOrZero(message: 'Le salaire ne peut pas être négatif.')]
+    private ?float $salary = 0.00;
 
     #[ORM\Column(length: 50, options: ['default' => 'PENDING'])]
     private ?string $status = 'PENDING';
@@ -175,24 +133,24 @@ class CollabRequest
         return $this;
     }
 
-    public function getLatitude(): ?string
+    public function getLatitude(): ?float
     {
         return $this->latitude;
     }
 
-    public function setLatitude(?string $latitude): static
+    public function setLatitude(?float $latitude): static
     {
         $this->latitude = $latitude;
 
         return $this;
     }
 
-    public function getLongitude(): ?string
+    public function getLongitude(): ?float
     {
         return $this->longitude;
     }
 
-    public function setLongitude(?string $longitude): static
+    public function setLongitude(?float $longitude): static
     {
         $this->longitude = $longitude;
 
@@ -235,26 +193,26 @@ class CollabRequest
         return $this;
     }
 
-    public function getSalary(): ?string
+    public function getSalary(): ?float
     {
         return $this->salary;
     }
 
-    /** Salaire journalier (même champ que `salary` dans le schéma AgriFlow). */
-    public function getSalaryPerDayAsFloat(): float
+    public function getSalaryPerDay(): ?float
     {
-        return (float) ($this->salary ?? 0);
+        return $this->salary;
     }
 
-    /** @deprecated Utilisez getSalaryPerDayAsFloat() */
-    public function getSalaryAsFloat(): float
+    public function setSalary(float $salary): static
     {
-        return $this->getSalaryPerDayAsFloat();
+        $this->salary = $salary;
+
+        return $this;
     }
 
-    public function setSalary(string|float|int $salary): static
+    public function setSalaryPerDay(float $salaryPerDay): static
     {
-        $this->salary = \is_string($salary) ? $salary : number_format((float) $salary, 2, '.', '');
+        $this->salary = $salaryPerDay;
 
         return $this;
     }

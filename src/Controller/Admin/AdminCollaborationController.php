@@ -51,7 +51,11 @@ class AdminCollaborationController extends AbstractController
         $requests = $qb->getQuery()->getResult();
 
         // Stats globales (sans filtre)
-        $allRequests = $requestRepo->findAll();
+        $allRequests = $requestRepo->createQueryBuilder('r')
+            ->select('r')
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
 
         $applicationCounts = [];
         foreach ($requests as $req) {
