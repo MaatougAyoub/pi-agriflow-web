@@ -1,4 +1,4 @@
-﻿{% extends 'layouts/front.html.twig' %}
+{% extends 'layouts/front.html.twig' %}
 {% block page_title %}Diagnostics Expert{% endblock %}
 {% block front_body %}
 <section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
@@ -11,8 +11,12 @@
             {% for d in diagnostics %}
             <tr>
                 <td>{{ d.nomCulture }}</td>
-                <td>{{ d.description|slice(0,50) }}...</td>
-                <td><span class="badge rounded-pill" style="background:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">{{ d.statut }}</span></td>
+                <td>
+                    <a href="{{ path('expert_diagnostic_detail', {id: d.idDiagnostic}) }}"
+                    style="color:#2D5A27;font-weight:600;text-decoration:none">
+                        Traiter →
+                    </a>
+                </td>                <td><span class="badge rounded-pill" style="background:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">{{ d.statut }}</span></td>
                 <td>{{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}</td>
                 <td>
                     {% if d.statut == 'en_attente' or d.statut is null %}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 13px; color: #333; background: white; }
+
+    .page { padding: 30px 40px; max-width: 794px; margin: 0 auto; }
+
+    /* En-tête */
+    .header { display: table; width: 100%; border-bottom: 3px solid #2D5A27; padding-bottom: 15px; margin-bottom: 20px; }
+    .header-left { display: table-cell; vertical-align: middle; width: 60%; }
+    .header-right { display: table-cell; vertical-align: middle; text-align: right; width: 40%; }
+    .logo-text { font-size: 28px; font-weight: bold; color: #2D5A27; letter-spacing: 2px; }
+    .logo-sub { font-size: 11px; color: #666; margin-top: 3px; }
+    .doc-type { font-size: 13px; font-weight: bold; color: #2D5A27; text-transform: uppercase; letter-spacing: 1px; }
+    .doc-num { font-size: 11px; color: #888; margin-top: 4px; }
+
+    /* Bandeau titre */
+    .title-band { background: #2D5A27; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; }
+    .title-band h1 { font-size: 18px; font-weight: bold; margin: 0; }
+    .title-band p { font-size: 11px; opacity: 0.85; margin-top: 3px; }
+
+    /* Infos patient */
+    .info-grid { display: table; width: 100%; margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; }
+    .info-row { display: table-row; }
+    .info-cell { display: table-cell; padding: 10px 15px; border-bottom: 1px solid #f0f0f0; width: 50%; }
+    .info-label { font-size: 10px; color: #888; text-transform: uppercase; font-weight: bold; }
+    .info-value { font-size: 13px; color: #333; font-weight: 600; margin-top: 2px; }
+
+    /* Section */
+    .section { margin-bottom: 18px; }
+    .section-title { font-size: 12px; font-weight: bold; color: #2D5A27; text-transform: uppercase;
+                     letter-spacing: 1px; border-bottom: 1px solid #e8f5e9; padding-bottom: 6px; margin-bottom: 10px; }
+    .section-content { background: #F8FAF8; border-left: 3px solid #2D5A27; padding: 12px 15px;
+                       border-radius: 0 6px 6px 0; font-size: 13px; line-height: 1.7; color: #444; }
+
+    /* Image */
+    .image-box { text-align: center; margin-bottom: 18px; }
+    .image-box img { max-width: 280px; max-height: 200px; border-radius: 8px; border: 1px solid #e0e0e0; }
+
+    /* Ordonnance box */
+    .ordonnance-box { border: 2px solid #2D5A27; border-radius: 8px; padding: 18px 20px; margin-bottom: 20px; }
+    .ordonnance-header { display: table; width: 100%; margin-bottom: 12px; }
+    .ordonnance-icon { display: table-cell; width: 40px; font-size: 24px; vertical-align: middle; }
+    .ordonnance-title { display: table-cell; vertical-align: middle; }
+    .ordonnance-title strong { font-size: 14px; color: #2D5A27; display: block; }
+    .ordonnance-title span { font-size: 11px; color: #888; }
+    .ordonnance-content { font-size: 13px; line-height: 1.8; color: #333; white-space: pre-wrap; }
+
+    /* Statut */
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px;
+                    font-weight: bold; background: #E8F5E9; color: #2D5A27; border: 1px solid #c8e6c9; }
+
+    /* Signature */
+    .signature-section { display: table; width: 100%; margin-top: 25px; border-top: 1px solid #e0e0e0; padding-top: 20px; }
+    .sig-left { display: table-cell; width: 50%; vertical-align: bottom; }
+    .sig-right { display: table-cell; width: 50%; text-align: right; vertical-align: bottom; }
+    .sig-box { border: 1px dashed #ccc; border-radius: 6px; padding: 15px; text-align: center;
+               display: inline-block; min-width: 160px; }
+    .sig-label { font-size: 11px; color: #888; margin-top: 8px; }
+    .stamp-circle { width: 80px; height: 80px; border: 2px solid #2D5A27; border-radius: 50%;
+                    display: inline-block; text-align: center; line-height: 80px;
+                    font-size: 10px; color: #2D5A27; font-weight: bold; }
+
+    /* Footer */
+    .footer { margin-top: 25px; padding-top: 12px; border-top: 2px solid #2D5A27;
+              text-align: center; font-size: 10px; color: #888; }
+    .footer strong { color: #2D5A27; }
+
+    /* Watermark confidentiel */
+    .confidential { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+                    font-size: 60px; color: rgba(45,90,39,0.05); font-weight: bold;
+                    text-transform: uppercase; white-space: nowrap; pointer-events: none; z-index: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+    {# En-tête #}
+    <div class="header">
+        <div class="header-left">
+            <div class="logo-text">🌱 AGRIFLOW</div>
+            <div class="logo-sub">Plateforme de gestion agricole intelligente</div>
+        </div>
+        <div class="header-right">
+            <div class="doc-type">Ordonnance Agricole</div>
+            <div class="doc-num">N° DIAG-{{ diagnostic.idDiagnostic }}-{{ date|date('Y') }}</div>
+            <div class="doc-num" style="margin-top:4px">Émise le {{ date|date('d/m/Y à H:i') }}</div>
+        </div>
+    </div>
+
+    {# Bandeau titre #}
+    <div class="title-band">
+        <h1>Ordonnance de Diagnostic Agricole</h1>
+        <p>Document officiel établi par un expert agronome certifié AGRIFLOW</p>
+    </div>
+
+    {# Informations culture #}
+    <div class="info-grid">
+        <div class="info-row">
+            <div class="info-cell">
+                <div class="info-label">Culture concernée</div>
+                <div class="info-value">{{ diagnostic.nomCulture }}</div>
+            </div>
+            <div class="info-cell">
+                <div class="info-label">Date du diagnostic</div>
+                <div class="info-value">{{ diagnostic.dateEnvoi ? diagnostic.dateEnvoi|date('d/m/Y') : '-' }}</div>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-cell">
+                <div class="info-label">Statut</div>
+                <div class="info-value">
+                    <span class="status-badge">✅ Traité par expert</span>
+                </div>
+            </div>
+            <div class="info-cell">
+                <div class="info-label">Date de réponse</div>
+                <div class="info-value">
+                    {{ diagnostic.dateReponse ? diagnostic.dateReponse|date('d/m/Y') : date|date('d/m/Y') }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Description du problème #}
+    <div class="section">
+        <div class="section-title">Description du problème observé</div>
+        <div class="section-content">{{ diagnostic.description }}</div>
+    </div>
+
+    {# Ordonnance expert #}
+    <div class="ordonnance-box">
+        <div class="ordonnance-header">
+            <div class="ordonnance-icon">📋</div>
+            <div class="ordonnance-title">
+                <strong>Recommandations et Prescriptions de l'Expert</strong>
+                <span>Diagnostic établi par un agronome certifié AGRIFLOW</span>
+            </div>
+        </div>
+        <div class="ordonnance-content">{{ diagnostic.reponseExpert }}</div>
+    </div>
+
+    {# Signature #}
+    <div class="signature-section">
+        <div class="sig-left">
+            <div style="font-size:11px;color:#888;margin-bottom:8px">Document certifié par :</div>
+            <div class="sig-box">
+                <div style="font-size:12px;font-weight:bold;color:#2D5A27">Expert Agronome</div>
+                <div style="font-size:10px;color:#888;margin-top:4px">AGRIFLOW Certified</div>
+                <div style="margin-top:15px;border-top:1px solid #ddd;padding-top:8px;font-size:10px;color:#aaa">
+                    Signature électronique
+                </div>
+            </div>
+        </div>
+        <div class="sig-right">
+            <div class="stamp-circle">AGRIFLOW<br>EXPERT<br>{{ date|date('Y') }}</div>
+        </div>
+    </div>
+
+    {# Avertissement légal #}
+    <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:6px;padding:10px 14px;
+                margin-top:18px;font-size:11px;color:#795548;line-height:1.6">
+        <strong>⚠️ Important :</strong> Ce document est une recommandation établie sur la base de l'analyse
+        visuelle fournie. Pour tout problème grave, consultez un expert agricole en personne.
+        Ce document est valable pour la saison en cours uniquement.
+    </div>
+
+    {# Footer #}
+    <div class="footer">
+        <strong>AGRIFLOW</strong> — Plateforme de gestion agricole intelligente |
+        Document généré automatiquement le {{ date|date('d/m/Y à H:i') }} |
+        Réf: DIAG-{{ diagnostic.idDiagnostic }}
+    </div>
+
+</div>
+</body>
+</html>

@@ -33,10 +33,23 @@
             </span>
         </div>
 
+        
         {% if diagnostic.reponseExpert %}
-        <div class="mt-4 p-3 rounded-3" style="background:#E8F5E9">
-            <strong style="color:#2D5A27">💬 Réponse de l'expert :</strong>
-            <p class="mt-2">{{ diagnostic.reponseExpert }}</p>
+        <div style="background:#E8F5E9;padding:20px;border-radius:10px;margin-top:20px">
+            <strong style="color:#2D5A27">💬 Réponse de l expert :</strong>
+            <p style="margin-top:10px;line-height:1.7">{{ diagnostic.reponseExpert }}</p>
+
+            <div style="margin-top:15px;padding-top:15px;border-top:1px solid #c8e6c9">
+                <a href="{{ path('agriculteur_diagnostic_pdf', {id: diagnostic.idDiagnostic}) }}"
+                style="display:inline-flex;align-items:center;gap:8px;
+                        background:#2D5A27;color:white;padding:10px 22px;
+                        border-radius:20px;text-decoration:none;font-weight:600;font-size:14px">
+                    Télécharger l ordonnance PDF
+                </a>
+                <span style="font-size:12px;color:#7f8c8d;margin-left:12px">
+                    Format A4 — Ordonnance officielle AGRIFLOW
+                </span>
+            </div>
         </div>
         {% endif %}
     </div>

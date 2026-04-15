@@ -15,5 +15,9 @@
     <body class="{% block body_class %}{% endblock %}">
         {% include 'partials/_flash.html.twig' %}
         {% block body %}{% endblock %}
+                {# ====== NOTIFICATIONS MERCURE (temps réel) ====== #}
+        {% if app.user %}
+            {% include 'partials/_mercure_notifications.html.twig' %}
+        {% endif %}
     </body>
 </html>

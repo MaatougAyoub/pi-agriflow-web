@@ -2,18 +2,22 @@
 
 namespace App\Controller;
 
+use Dompdf\Dompdf;
+use App\Service\NotificationService;
+use Dompdf\Options;
 use App\Entity\Diagnosti;
 use App\Entity\PlansIrrigation;
 use App\Repository\CultureRepository;
 use App\Repository\DiagnostiRepository;
 use App\Repository\PlansIrrigationRepository;
 use App\Repository\PlansIrrigationJourRepository;
+use App\Service\AIService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/agriculteur')]
@@ -31,33 +35,41 @@ class AgriculteurController extends AbstractController
     }
 
     #[Route('/diagnostics/nouveau', name: 'agriculteur_diagnostic_new')]
-    public function nouveauDiagnostic(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
-    {
+    public function nouveauDiagnostic(
+        Request $request,
+        EntityManagerInterface $em,
+        SluggerInterface $slugger,
+        CultureRepository $cultureRepo,
+        NotificationService $notificationService  // ← AJOUTÉ
+    ): Response {
+        $user     = $this->getUser();
+        $cultures = $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
+
         if ($request->isMethod('POST')) {
             $diagnostic = new Diagnosti();
             $diagnostic->setNomCulture($request->request->get('nomCulture'));
             $diagnostic->setDescription($request->request->get('description'));
             $diagnostic->setStatut('en_attente');
             $diagnostic->setDateEnvoi(new \DateTime());
-            $diagnostic->setUtilisateur($this->getUser());
+            $diagnostic->setUtilisateur($user);
 
             $uploadedFile = $request->files->get('image');
             if ($uploadedFile) {
-                $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $extension = $uploadedFile->getClientOriginalExtension();
-                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-                if (!in_array(strtolower($extension), $allowedExtensions)) {
-                    $this->addFlash('danger', 'Format non supporté.');
-                } else {
-                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
+                $extension         = $uploadedFile->getClientOriginalExtension();
+                $originalFilename  = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename      = $slugger->slug($originalFilename);
+                $newFilename       = $safeFilename . '-' . uniqid() . '.' . $extension;
+
+                $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+                if (in_array(strtolower($extension), $allowedExtensions)) {
                     try {
-                        $uploadedFile->move(
-                            $this->getParameter('diagnostics_images_directory'),
-                            $newFilename
-                        );
+                        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/diagnostics';
+                        if (!is_dir($uploadDir)) {
+                            mkdir($uploadDir, 0777, true);
+                        }
+                        $uploadedFile->move($uploadDir, $newFilename);
                         $diagnostic->setImagePath($newFilename);
-                    } catch (FileException $e) {
+                    } catch (\Exception $e) {
                         $this->addFlash('danger', 'Erreur upload image.');
                     }
                 }
@@ -65,14 +77,98 @@ class AgriculteurController extends AbstractController
 
             $em->persist($diagnostic);
             $em->flush();
+
+            // ✅ NOTIFICATION MERCURE : Notifier les experts du nouveau diagnostic
+            try {
+                $notificationService->notifyNewDiagnostic($diagnostic);
+            } catch (\Exception $e) {
+                // Log l'erreur mais ne bloque pas le flux
+            }
+
             $this->addFlash('success', 'Diagnostic envoyé avec succès.');
             return $this->redirectToRoute('agriculteur_diagnostics');
         }
 
-        return $this->render('agriculteur/nouveau_diagnostic.html.twig');
+        return $this->render('agriculteur/nouveau_diagnostic.html.twig', [
+            'cultures' => $cultures,
+        ]);
     }
 
-    #[Route('/diagnostics/{id}', name: 'agriculteur_diagnostic_detail')]
+
+    #[Route('/diagnostics/analyser-ia', name: 'agriculteur_ia_analyser', methods: ['POST'])]
+    public function analyserIA(Request $request, AIService $aiService): JsonResponse
+    {
+        try {
+            $uploadedFile = $request->files->get('image');
+            
+            if (!$uploadedFile) {
+                return $this->json(['error' => 'Aucune image fournie.'], 400);
+            }
+            
+            if ($uploadedFile->getError() !== UPLOAD_ERR_OK) {
+                return $this->json(['error' => 'Erreur lors de l\'upload (code: ' . $uploadedFile->getError() . ').'], 400);
+            }
+            
+            // Limite de taille (4 Mo)
+            $maxSize = 4 * 1024 * 1024;
+            if ($uploadedFile->getSize() > $maxSize) {
+                return $this->json(['error' => 'L\'image ne doit pas dépasser 4 Mo.'], 400);
+            }
+            
+            // ============================================================
+            // CORRECTION : Déterminer le MIME type à partir de l'extension
+            // au lieu de $uploadedFile->getMimeType() qui nécessite fileinfo
+            // ============================================================
+            $extension = strtolower($uploadedFile->getClientOriginalExtension());
+            
+            $mimeMap = [
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png'  => 'image/png',
+                'gif'  => 'image/gif',
+                'webp' => 'image/webp',
+            ];
+            
+            if (!isset($mimeMap[$extension])) {
+                return $this->json([
+                    'error' => 'Format non supporté (.' . $extension . '). Utilisez JPG, PNG, GIF ou WEBP.'
+                ], 400);
+            }
+            
+            $mimeType = $mimeMap[$extension];
+            
+            // Lecture et encodage de l'image
+            $imageContent = file_get_contents($uploadedFile->getPathname());
+            if ($imageContent === false) {
+                return $this->json(['error' => 'Impossible de lire l\'image.'], 500);
+            }
+            
+            $base64 = base64_encode($imageContent);
+            
+            // Appel au service IA
+            $description = $aiService->analyserImage($base64, $mimeType);
+            
+            return $this->json([
+                'description' => $description,
+                'success'     => true,
+            ]);
+            
+        } catch (\RuntimeException $e) {
+            return $this->json([
+                'error'   => $e->getMessage(),
+                'success' => false,
+            ], 500);
+        } catch (\Exception $e) {
+            return $this->json([
+                'error'   => 'Erreur inattendue : ' . $e->getMessage(),
+                'success' => false,
+            ], 500);
+        }
+    }
+
+
+
+   #[Route('/diagnostics/{id}', name: 'agriculteur_diagnostic_detail')]
     public function diagnosticDetail(int $id, DiagnostiRepository $repo): Response
     {
         $diagnostic = $repo->find($id);
@@ -89,10 +185,7 @@ class AgriculteurController extends AbstractController
     #[Route('/irrigation', name: 'agriculteur_irrigation')]
     public function irrigation(PlansIrrigationRepository $planRepo): Response
     {
-        $user = $this->getUser();
-        // Récupérer les plans liés aux cultures de cet agriculteur
-        $plans = $planRepo->findByProprietaire($user->getId());
-
+        $plans = $planRepo->findByProprietaire($this->getUser()->getId());
         return $this->render('agriculteur/irrigation.html.twig', [
             'plans' => $plans,
         ]);
@@ -103,39 +196,42 @@ class AgriculteurController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         CultureRepository $cultureRepo,
-        PlansIrrigationRepository $planRepo
+        PlansIrrigationRepository $planRepo,
+        NotificationService $notificationService  // ← AJOUTÉ
     ): Response {
-        $user = $this->getUser();
+        $user     = $this->getUser();
         $cultures = $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
 
         if ($request->isMethod('POST')) {
-            $cultureId = $request->request->get('culture');
-            $volumeEau = (float)$request->request->get('volume_eau', 0);
-
-            $culture = $cultureRepo->find($cultureId);
+            $culture = $cultureRepo->find($request->request->get('culture'));
             if (!$culture) {
                 $this->addFlash('danger', 'Culture invalide.');
                 return $this->redirectToRoute('agriculteur_irrigation_new');
             }
 
-            // Trouver le dernier ID pour éviter l'erreur "No identity value"
             $lastId = $em->getRepository(PlansIrrigation::class)
                 ->createQueryBuilder('p')
                 ->select('MAX(p.plan_id)')
                 ->getQuery()
                 ->getSingleScalarResult();
-            $newId = ($lastId ?: 0) + 1;
 
             $plan = new PlansIrrigation();
-            $plan->setPlanId($newId);
+            $plan->setPlanId(($lastId ?: 0) + 1);
             $plan->setCulture($culture);
             $plan->setNomCulture($culture->getNom());
-            $plan->setVolumeEauPropose($volumeEau);
+            $plan->setVolumeEauPropose((float)$request->request->get('volume_eau', 0));
             $plan->setDateDemande(new \DateTime());
             $plan->setStatut('en_attente');
 
             $em->persist($plan);
             $em->flush();
+
+            // ✅ NOTIFICATION MERCURE : Notifier les experts du nouveau plan
+            try {
+                $notificationService->notifyNewIrrigationPlan($plan);
+            } catch (\Exception $e) {
+                // Log l'erreur mais ne bloque pas le flux
+            }
 
             $this->addFlash('success', 'Plan créé avec succès.');
             return $this->redirectToRoute('agriculteur_irrigation');
@@ -157,7 +253,7 @@ class AgriculteurController extends AbstractController
             throw $this->createNotFoundException('Plan introuvable.');
         }
 
-        $jours = $jourRepo->findBy(['plan_id' => $id]);
+        $jours    = $jourRepo->findBy(['plan_id' => $id]);
         $jourData = [];
         foreach ($jours as $jour) {
             $jourData[$jour->getJour()] = $jour;
@@ -167,5 +263,48 @@ class AgriculteurController extends AbstractController
             'plan'     => $plan,
             'jourData' => $jourData,
         ]);
+    }
+    #[Route('/diagnostics/{id}/ordonnance', name: 'agriculteur_diagnostic_pdf')]
+    public function telechargerOrdonnance(int $id, DiagnostiRepository $repo): Response
+    {
+        $diagnostic = $repo->find($id);
+
+        if (!$diagnostic || $diagnostic->getUtilisateur() !== $this->getUser()) {
+            throw $this->createNotFoundException('Diagnostic introuvable.');
+        }
+
+        if (!$diagnostic->getReponseExpert()) {
+            $this->addFlash('danger', 'Aucune réponse expert disponible.');
+            return $this->redirectToRoute('agriculteur_diagnostic_detail', ['id' => $id]);
+        }
+
+        // Générer le HTML de l'ordonnance
+        $html = $this->renderView('agriculteur/ordonnance_pdf.html.twig', [
+            'diagnostic' => $diagnostic,
+            'date'       => new \DateTime(),
+        ]);
+
+        // Configurer DomPDF
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'ordonnance-' . $diagnostic->getNomCulture() . '-' .
+            (new \DateTime())->format('d-m-Y') . '.pdf';
+
+        return new Response(
+            $dompdf->output(),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
     }
 }
