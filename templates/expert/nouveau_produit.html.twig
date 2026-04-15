@@ -1,35 +1,296 @@
 ﻿{% extends 'layouts/front.html.twig' %}
-{% block page_title %}Nouveau Produit{% endblock %}
+
+{% block page_title %}Nouveau Produit Phytosanitaire{% endblock %}
+
 {% block front_body %}
-<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
-<div class="container">
-    <div class="card shadow-sm border-0 rounded-4 p-4" style="max-width:600px;margin:0 auto">
-        <h3 style="color:#2D5A27;font-weight:700">💊 Nouveau produit phytosanitaire</h3>
-        <form method="post" class="mt-4">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Nom du produit</label>
-                <input type="text" name="nomProduit" class="form-control" required>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Dosage</label>
-                    <input type="text" name="dosage" class="form-control">
+<section style="padding: 60px 0; background: linear-gradient(135deg, #f0f7ee 0%, #e8f0e6 50%, #dce8da 100%); min-height: 85vh;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb bg-transparent p-0 mb-0">
+                        <li class="breadcrumb-item"><a href="{{ path('expert_index') }}" class="text-decoration-none" style="color: #2D5A27;"><i class="bi bi-house-door"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('expert_produits') }}" class="text-decoration-none" style="color: #2D5A27;">Produits</a></li>
+                        <li class="breadcrumb-item active text-muted">Nouveau</li>
+                    </ol>
+                </nav>
+
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="backdrop-filter: blur(10px);">
+                    <!-- Header -->
+                    <div class="card-header border-0 p-4 text-white position-relative" style="background: linear-gradient(135deg, #2D5A27 0%, #3d7a35 50%, #4a9440 100%);">
+                        <div class="position-absolute top-0 end-0 opacity-25" style="font-size: 6rem; margin-top: -10px; margin-right: 10px;">🌿</div>
+                        <div class="d-flex align-items-center position-relative">
+                            <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; backdrop-filter: blur(5px);">
+                                <span style="font-size: 1.6rem;">💊</span>
+                            </div>
+                            <div>
+                                <h3 class="mb-0 fw-bold" style="letter-spacing: -0.5px;">Nouveau produit phytosanitaire</h3>
+                                <small class="opacity-75">Formulaire d'enregistrement</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5 bg-white">
+                        <div class="alert alert-light border-0 rounded-3 mb-4 d-flex align-items-start" style="background: #f8fdf7;">
+                            <i class="bi bi-lightbulb text-warning me-2 mt-1" style="font-size: 1.1rem;"></i>
+                            <span class="text-muted small">Renseignez le nom du produit puis cliquez sur <strong>"Remplir avec IA"</strong> pour obtenir automatiquement le dosage, la fréquence et les précautions.</span>
+                        </div>
+
+                        <form method="post" class="needs-validation" novalidate>
+
+                            <!-- Nom du produit + bouton IA -->
+                            <div class="mb-4">
+                                <label for="nomProduit" class="form-label fw-bold text-dark">
+                                    <i class="bi bi-tag-fill me-1" style="color: #2D5A27;"></i>
+                                    Nom du produit <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-lg has-validation">
+                                    <span class="input-group-text bg-light border-end-0" style="border-color: #dee2e6;"><i class="bi bi-search" style="color: #2D5A27;"></i></span>
+                                    <input type="text"
+                                           id="nomProduit"
+                                           name="nomProduit"
+                                           class="form-control border-start-0 border-end-0 ps-0"
+                                           placeholder="Ex: Fongicide Bio-X, Oidium-Fix..."
+                                           required
+                                           minlength="3"
+                                           maxlength="100"
+                                           style="font-size: 1rem;">
+                                    <button type="button" id="btnIA" class="btn border input-group-text px-3" title="Remplir automatiquement avec l'IA"
+                                            style="background: linear-gradient(135deg, #eaf4e8, #d4edcf); color: #2D5A27; border-color: #c3dbbe; transition: all 0.3s ease; font-weight: 600;">
+                                        <span id="btnIA-icon"><i class="bi bi-stars"></i></span>
+                                        <span id="btnIA-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                        <span class="ms-1 d-none d-sm-inline" style="font-size: 0.85rem;">Remplir avec IA</span>
+                                    </button>
+                                    <div class="invalid-feedback">
+                                        Veuillez saisir un nom de produit valide (min. 3 caractères).
+                                    </div>
+                                </div>
+                                <div id="ia-error" class="alert alert-danger py-2 px-3 mt-2 rounded-3 small d-none" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    <span id="ia-error-text"></span>
+                                </div>
+                                <div id="ia-success" class="alert alert-success py-2 px-3 mt-2 rounded-3 small d-none" role="alert">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Champs remplis automatiquement par l'IA. Vous pouvez les modifier.
+                                </div>
+                            </div>
+
+                            <hr class="my-4 opacity-25">
+
+                            <div class="row">
+                                <!-- Dosage -->
+                                <div class="col-md-6 mb-4">
+                                    <label for="dosage" class="form-label fw-bold text-dark">
+                                        <i class="bi bi-droplet-fill me-1" style="color: #2D5A27;"></i>
+                                        Dosage <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-moisture" style="color: #2D5A27;"></i></span>
+                                        <input type="text"
+                                               id="dosage"
+                                               name="dosage"
+                                               class="form-control border-start-0 ps-0"
+                                               placeholder="Ex: 500ml/ha"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Précisez le dosage recommandé.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fréquence -->
+                                <div class="col-md-6 mb-4">
+                                    <label for="frequence" class="form-label fw-bold text-dark">
+                                        <i class="bi bi-calendar-check-fill me-1" style="color: #2D5A27;"></i>
+                                        Fréquence <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event" style="color: #2D5A27;"></i></span>
+                                        <input type="text"
+                                               id="frequence"
+                                               name="frequence"
+                                               class="form-control border-start-0 ps-0"
+                                               placeholder="Ex: Tous les 15 jours"
+                                               required>
+                                        <div class="invalid-feedback">
+                                            Indiquez la fréquence d'application.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Remarques -->
+                            <div class="mb-4">
+                                <label for="remarques" class="form-label fw-bold text-dark">
+                                    <i class="bi bi-shield-exclamation me-1" style="color: #e67e22;"></i>
+                                    Remarques & Précautions
+                                </label>
+                                <textarea id="remarques"
+                                          name="remarques"
+                                          class="form-control"
+                                          rows="4"
+                                          style="resize: vertical; min-height: 100px;"
+                                          placeholder="Précautions d'emploi, contre-indications, délai avant récolte, EPI requis..."></textarea>
+                                <div class="form-text"><i class="bi bi-info-circle me-1"></i> Facultatif, mais recommandé pour la sécurité.</div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="d-flex flex-column flex-sm-row gap-3 mt-5 pt-3 border-top">
+                                <button type="submit" class="btn btn-lg flex-grow-1 shadow-sm text-white"
+                                        style="background: linear-gradient(135deg, #2D5A27, #3d7a35); border: none; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; padding: 14px;">
+                                    <i class="bi bi-check-circle-fill me-2"></i> Enregistrer le produit
+                                </button>
+                                <a href="{{ path('expert_produits') }}" class="btn btn-lg btn-outline-secondary flex-grow-1"
+                                   style="border-radius: 12px; font-weight: 600; padding: 14px;">
+                                    <i class="bi bi-x-circle me-1"></i> Annuler
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Fréquence</label>
-                    <input type="text" name="frequence" class="form-control">
+
+                <!-- Footer info -->
+                <div class="mt-4 text-center">
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-info-circle me-1"></i> Les champs marqués d'une <span class="text-danger fw-bold">*</span> sont obligatoires.
+                    </p>
+                    <p class="text-muted small">
+                        <i class="bi bi-stars me-1" style="color:#2D5A27;"></i> Le bouton IA utilise l'intelligence artificielle pour pré-remplir les champs automatiquement.
+                    </p>
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Remarques</label>
-                <textarea name="remarques" class="form-control" rows="3"></textarea>
-            </div>
-            <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn" style="background:#2D5A27;color:white;border-radius:20px">Enregistrer</button>
-                <a href="{{ path('expert_produits') }}" class="btn btn-outline-secondary" style="border-radius:20px">Annuler</a>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 </section>
+
+<style>
+    .form-control:focus {
+        border-color: #2D5A27;
+        box-shadow: 0 0 0 0.25rem rgba(45, 90, 39, 0.15);
+    }
+    .btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.05);
+    }
+    .btn:active {
+        transform: translateY(0);
+    }
+    .input-group-text {
+        color: #2D5A27;
+    }
+    #btnIA:hover {
+        background: linear-gradient(135deg, #2D5A27, #3d7a35) !important;
+        color: white !important;
+        border-color: #2D5A27 !important;
+    }
+    .ia-filled {
+        border-color: #2D5A27 !important;
+        background-color: #f0f9ee !important;
+        transition: background-color 0.5s ease, border-color 0.5s ease;
+    }
+    .card {
+        transition: box-shadow 0.3s ease;
+    }
+    .card:hover {
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.12) !important;
+    }
+    textarea.form-control:focus {
+        border-color: #2D5A27;
+        box-shadow: 0 0 0 0.25rem rgba(45, 90, 39, 0.15);
+    }
+</style>
+
+<script>
+    (function () {
+        'use strict';
+
+        // Validation Bootstrap
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+
+        // Bouton IA
+        document.getElementById('btnIA').addEventListener('click', async function () {
+            const nomProduit = document.getElementById('nomProduit').value.trim();
+            const iaError    = document.getElementById('ia-error');
+            const iaErrorText = document.getElementById('ia-error-text');
+            const iaSuccess  = document.getElementById('ia-success');
+            const icon       = document.getElementById('btnIA-icon');
+            const spinner    = document.getElementById('btnIA-spinner');
+
+            iaError.classList.add('d-none');
+            iaSuccess.classList.add('d-none');
+
+            if (nomProduit.length < 3) {
+                iaErrorText.textContent = 'Veuillez saisir au moins 3 caractères avant d\'utiliser l\'IA.';
+                iaError.classList.remove('d-none');
+                return;
+            }
+
+            // Afficher le spinner
+            icon.classList.add('d-none');
+            spinner.classList.remove('d-none');
+            this.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('nomProduit', nomProduit);
+
+                const response = await fetch('{{ path('expert_produit_suggest') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                // Vérifier que la réponse est bien du JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Le serveur n\'a pas retourné du JSON. Vérifiez la configuration de la route et la clé API Groq.');
+                }
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Erreur serveur (code ' + response.status + ').');
+                }
+
+                // Remplir les champs
+                const dosageInput    = document.getElementById('dosage');
+                const frequenceInput = document.getElementById('frequence');
+                const remarquesInput = document.getElementById('remarques');
+
+                dosageInput.value    = data.dosage    || '';
+                frequenceInput.value = data.frequence || '';
+                remarquesInput.value = data.remarques || '';
+
+                // Effet visuel de remplissage
+                [dosageInput, frequenceInput, remarquesInput].forEach(function (el) {
+                    el.classList.add('ia-filled');
+                    setTimeout(function () { el.classList.remove('ia-filled'); }, 2500);
+                });
+
+                iaSuccess.classList.remove('d-none');
+                setTimeout(function() { iaSuccess.classList.add('d-none'); }, 5000);
+
+            } catch (err) {
+                iaErrorText.textContent = err.message;
+                iaError.classList.remove('d-none');
+            } finally {
+                icon.classList.remove('d-none');
+                spinner.classList.add('d-none');
+                this.disabled = false;
+            }
+        });
+    })();
+</script>
 {% endblock %}
