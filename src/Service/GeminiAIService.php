@@ -53,7 +53,9 @@ class GeminiAIService
             $description
         );
 
-        return $this->generateContent($prompt, $description);
+        // Important : si Gemini échoue (clé invalide, quota, parsing, etc.), on retourne une chaîne vide.
+        // La route AJAX pourra ainsi renvoyer une erreur au front plutôt que de "sembler" fonctionner.
+        return $this->generateContent($prompt, '');
     }
 
     /**
@@ -87,7 +89,10 @@ class GeminiAIService
             $motivation
         );
 
-        return $this->generateContent($prompt, "Analyse indisponible pour le moment.");
+        return $this->generateContent(
+            $prompt,
+            "Analyse indisponible pour le moment (erreur Gemini : clé/configuration ou quota)."
+        );
     }
 
     /**

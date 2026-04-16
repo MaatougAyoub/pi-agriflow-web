@@ -73,6 +73,7 @@ class CollaborationController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, GeminiAIService $gemini): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user) {
             $this->addFlash('warning', 'Vous devez être connecté pour créer une demande.');
             return $this->redirectToRoute('app_login');
@@ -250,6 +251,7 @@ class CollaborationController extends AbstractController
     public function edit(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, GeminiAIService $gemini): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Vous ne pouvez modifier que vos propres demandes.');
             return $this->redirectToRoute('app_collab_index');
@@ -314,6 +316,7 @@ class CollaborationController extends AbstractController
     public function delete(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, CollabApplicationRepository $appRepo): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Vous ne pouvez supprimer que vos propres demandes.');
             return $this->redirectToRoute('app_collab_index');
@@ -341,6 +344,7 @@ class CollaborationController extends AbstractController
     public function apply(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, CollabApplicationRepository $appRepo): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user) {
             $this->addFlash('warning', 'Vous devez être connecté pour postuler.');
             return $this->redirectToRoute('app_login');
@@ -406,9 +410,16 @@ class CollaborationController extends AbstractController
      * Voir les candidatures reçues pour une de mes demandes
      */
     #[Route('/{id}/candidatures', name: 'app_collab_view_applications', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function viewApplications(CollabRequest $collabRequest, CollabApplicationRepository $appRepo, CandidateMatchingService $matchingService, GeminiAIService $gemini): Response
+    public function viewApplications(
+        CollabRequest $collabRequest,
+        CollabApplicationRepository $appRepo,
+        CandidateMatchingService $matchingService,
+        GeminiAIService $gemini,
+        Request $request
+    ): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Accès refusé.');
             return $this->redirectToRoute('app_collab_index');
@@ -421,14 +432,34 @@ class CollaborationController extends AbstractController
 
         // IA : Analyse de fit pour le meilleur candidat (IA 2)
         $aiAnalyses = [];
-        foreach ($applications as $app) {
-            // On ne fait l'analyse IA que pour les scores > 50% pour économiser le quota, ou sur demande
-            $score = 0;
-            foreach ($rankedScores as $rs) {
-                if ($rs->getApplication()->getId() === $app->getId()) { $score = $rs->getTotalScore(); break; }
-            }
-            if ($score > 50) {
-                $aiAnalyses[$app->getId()] = $gemini->analyzeCandidateFit($collabRequest->getDescription(), $app->getMotivation());
+        // Important : Gemini a un quota. Au lieu d'appeler l'IA pour potentiellement plusieurs candidats,
+        // on analyse uniquement le "meilleur candidat" (1 requête Gemini par page).
+        if (!empty($rankedScores)) {
+            $best = $rankedScores[0];
+            $bestApp = $best->getApplication();
+            $cacheKey = sprintf(
+                'ai_fit_cache:%d:%d',
+                $collabRequest->getId(),
+                $bestApp->getId()
+            );
+
+            $session = $request->getSession();
+            $cached = $session->get($cacheKey);
+
+            if (is_string($cached) && $cached !== '') {
+                $aiAnalyses[$bestApp->getId()] = $cached;
+            } else {
+                $analysis = $gemini->analyzeCandidateFit(
+                    $collabRequest->getDescription(),
+                    $bestApp->getMotivation()
+                );
+
+                // On évite de "verrouiller" un échec (quota, clé invalide...) dans le cache.
+                if (!str_starts_with($analysis, 'Analyse indisponible')) {
+                    $session->set($cacheKey, $analysis);
+                }
+
+                $aiAnalyses[$bestApp->getId()] = $analysis;
             }
         }
 
@@ -521,7 +552,11 @@ class CollaborationController extends AbstractController
 
         try {
             $improved = $gemini->improveDescription($title, $description);
-            // Si l'IA renvoie la même chose ou échoue silencieusement, on garde l'original
+            // Si Gemini échoue (clé invalide/403/quota/etc.), GeminiAIService renvoie une chaîne vide.
+            if (trim($improved) === '') {
+                return $this->json(['error' => 'IA indisponible : erreur Gemini (clé/configuration ou quota).'], 503);
+            }
+
             return $this->json(['improved' => $improved]);
         } catch (\Exception $e) {
             return $this->json(['error' => 'IA indisponible pour le moment'], 500);
