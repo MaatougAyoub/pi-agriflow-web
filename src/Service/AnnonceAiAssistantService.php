@@ -23,21 +23,27 @@ final class AnnonceAiAssistantService
         private readonly string $openAiApiKey,
         #[Autowire('%env(string:OPENAI_MODEL)%')]
         private readonly string $openAiModel,
+        #[Autowire('%env(string:GROQ_API_KEY)%')]
+        private readonly string $groqApiKey,
+        #[Autowire('%env(string:GROQ_MODEL)%')]
+        private readonly string $groqModel,
     ) {
     }
 
     /**
      * @param array{titre?: mixed, description?: mixed, categorie?: mixed, unitePrix?: mixed, type?: mixed, localisation?: mixed} $context
      *
-     * @return array{titre: string, description: string, categorie: string, unitePrix: string, provider: string}
+     * @return array{titre: string, description: string, categorie: string, unitePrix: string, qualityScore: int, qualityAdvice: string, provider: string}
      */
     public function generateSuggestions(array $context): array
     {
         $provider = $this->resolveProvider();
         $prompt = $this->buildPrompt($context);
 
+        // ia: provider yetbadel mel .env.local, ama formulaire yeb9a nafsou
         $rawText = match ($provider) {
             'openai' => $this->requestOpenAi($prompt),
+            'groq' => $this->requestGroq($prompt),
             default => $this->requestGemini($prompt),
         };
 
@@ -48,6 +54,9 @@ final class AnnonceAiAssistantService
             'description' => $this->sanitizeSuggestion($decoded['description'] ?? $context['description'] ?? '', 2000),
             'categorie' => $this->sanitizeSuggestion($decoded['categorie'] ?? $context['categorie'] ?? '', 120),
             'unitePrix' => $this->sanitizeSuggestion($decoded['unitePrix'] ?? $context['unitePrix'] ?? '', 20),
+            // ia: score hedha y3awen vendeur ychouf qualite annonce 9bal validation
+            'qualityScore' => $this->sanitizeScore($decoded['qualityScore'] ?? 0),
+            'qualityAdvice' => $this->sanitizeSuggestion($decoded['qualityAdvice'] ?? '', 220),
             'provider' => $provider,
         ];
     }
@@ -56,7 +65,7 @@ final class AnnonceAiAssistantService
     {
         $provider = strtolower(trim($this->provider));
 
-        return in_array($provider, ['gemini', 'openai'], true) ? $provider : 'gemini';
+        return in_array($provider, ['gemini', 'openai', 'groq'], true) ? $provider : 'gemini';
     }
 
     private function requestGemini(string $prompt): string
@@ -150,6 +159,54 @@ final class AnnonceAiAssistantService
         }
     }
 
+    private function requestGroq(string $prompt): string
+    {
+        // groq: cle tab9a local fi .env.local, ma tetpushach lel GitHub
+        if ('' === trim($this->groqApiKey)) {
+            throw new \DomainException('Assistant indisponible: la cle Groq est absente.');
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer '.$this->groqApiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => $this->groqModel,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => 'Tu retournes uniquement un objet JSON valide, sans introduction, sans markdown, sans commentaire.',
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt,
+                        ],
+                    ],
+                    'response_format' => ['type' => 'json_object'],
+                    'temperature' => 0.4,
+                ],
+                'timeout' => 30,
+            ]);
+
+            $payload = $response->toArray(false);
+            // groq: API chat completions traja3 texte fi choices[0].message.content
+            $text = $this->extractTextFromChatCompletion($payload);
+
+            if ('' === $text) {
+                throw new \RuntimeException('Groq n a retourne aucun texte.');
+            }
+
+            return $text;
+        } catch (\DomainException $exception) {
+            throw $exception;
+        } catch (\Throwable $exception) {
+            $this->logger->warning('Assistant IA Groq indisponible.', ['error' => $exception->getMessage()]);
+            throw new \DomainException('Assistant indisponible pour le moment.');
+        }
+    }
+
     /**
      * @param array<string, mixed> $payload
      */
@@ -167,6 +224,16 @@ final class AnnonceAiAssistantService
         });
 
         return trim(implode("\n", $texts));
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function extractTextFromChatCompletion(array $payload): string
+    {
+        $content = $payload['choices'][0]['message']['content'] ?? null;
+
+        return is_string($content) ? trim($content) : '';
     }
 
     /**
@@ -191,6 +258,8 @@ Retourne uniquement un objet JSON valide avec exactement ces cles:
 - description
 - categorie
 - unitePrix
+- qualityScore
+- qualityAdvice
 
 Contraintes:
 - style professionnel et clair
@@ -199,6 +268,8 @@ Contraintes:
 - description exploitable en quelques phrases
 - categorie courte
 - unitePrix adaptee au type de l annonce
+- qualityScore entier entre 0 et 100 selon clarte, completude et pertinence
+- qualityAdvice conseil court et concret pour ameliorer l annonce
 - pour une vente, privilegier une unite liee a la quantite
 - pour une location, privilegier une unite liee a la duree
 
@@ -219,6 +290,16 @@ PROMPT, $encodedPayload ?: '{}');
         $decoded = json_decode($normalized, true);
 
         if (!is_array($decoded)) {
+            // ia: ken model zed phrase 9bal JSON, nesta5rjou JSON men west texte
+            $firstBrace = strpos($normalized, '{');
+            $lastBrace = strrpos($normalized, '}');
+
+            if (false !== $firstBrace && false !== $lastBrace && $lastBrace > $firstBrace) {
+                $decoded = json_decode(substr($normalized, $firstBrace, $lastBrace - $firstBrace + 1), true);
+            }
+        }
+
+        if (!is_array($decoded)) {
             throw new \DomainException('Assistant indisponible pour le moment.');
         }
 
@@ -234,5 +315,14 @@ PROMPT, $encodedPayload ?: '{}');
         }
 
         return substr($text, 0, $maxLength);
+    }
+
+    private function sanitizeScore(mixed $value): int
+    {
+        if (!is_numeric($value)) {
+            return 0;
+        }
+
+        return max(0, min(100, (int) round((float) $value)));
     }
 }

@@ -6,6 +6,8 @@
     {% set visualSrc = visual.isExternal ? visual.image : asset(visual.image) %}
     {% set normalizedLocation = annonce.localisationNormalisee ?: annonce.localisation %}
     {% set hasMapCoordinates = annonce.latitude is not null and annonce.longitude is not null %}
+    {% set environment = environmentInsights|default(null) %}
+    {% set diagnostic = businessDiagnostic|default(null) %}
     <section class="section pt-5">
         <div class="container">
             <div class="row g-5">
@@ -71,6 +73,93 @@
                             </div>
                         </div>
                     </div>
+
+                    {% if environment and hasMapCoordinates %}
+                        {# api: houni nwarri meteo w qualite air men Open-Meteo ken annonce 3andha coordonnees #}
+                        <div class="agf-environment-panel mt-4">
+                            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                                <div>
+                                    <span class="agf-page-kicker mb-2">APIs externes</span>
+                                    <h3 class="h5 mb-1">Meteo et qualite de l air</h3>
+                                    <p class="small text-muted mb-0">Donnees courtes calculees depuis la localisation de l annonce.</p>
+                                </div>
+                                <span class="badge text-bg-light">{{ environment.source }}</span>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="agf-info-box h-100">
+                                        <span class="small text-muted d-block">Open-Meteo Forecast</span>
+                                        {% if environment.weather.available %}
+                                            <strong>{{ environment.weather.temperature ?? 'N/A' }} deg C - {{ environment.weather.label }}</strong>
+                                            <div class="small text-muted mt-2">
+                                                Vent {{ environment.weather.windSpeed ?? 'N/A' }} km/h,
+                                                humidite {{ environment.weather.humidity ?? 'N/A' }}%,
+                                                pluie {{ environment.weather.precipitation ?? 'N/A' }} mm
+                                            </div>
+                                        {% else %}
+                                            <strong>Indisponible</strong>
+                                            <div class="small text-muted mt-2">{{ environment.weather.message }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="agf-info-box h-100">
+                                        <span class="small text-muted d-block">Open-Meteo Air Quality</span>
+                                        {% if environment.airQuality.available %}
+                                            <strong>AQI {{ environment.airQuality.europeanAqi ?? 'N/A' }} - {{ environment.airQuality.level }}</strong>
+                                            <div class="small text-muted mt-2">
+                                                PM10 {{ environment.airQuality.pm10 ?? 'N/A' }},
+                                                PM2.5 {{ environment.airQuality.pm25 ?? 'N/A' }}
+                                            </div>
+                                        {% else %}
+                                            <strong>Indisponible</strong>
+                                            <div class="small text-muted mt-2">{{ environment.airQuality.message }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if diagnostic %}
+                        {# diagnostic: score metier yjma3 stock statut prix localisation APIs w image #}
+                        <div class="agf-diagnostic-panel mt-4">
+                            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+                                <div>
+                                    <span class="agf-page-kicker mb-2">Fonctionnalite metier avancee</span>
+                                    <h3 class="h5 mb-1">Diagnostic Marketplace</h3>
+                                    <p class="small text-muted mb-0">{{ diagnostic.summary }}</p>
+                                </div>
+                                <div class="agf-diagnostic-score text-center">
+                                    <strong>{{ diagnostic.score }}/100</strong>
+                                    <span>{{ diagnostic.level }}</span>
+                                </div>
+                            </div>
+
+                            <div class="agf-diagnostic-badges">
+                                {% for badge in diagnostic.badges %}
+                                    <span class="agf-diagnostic-badge agf-diagnostic-badge--{{ badge.state }}">
+                                        {{ badge.label }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="agf-diagnostic-note mt-3">
+                                Commission plateforme appliquee dans les reservations: <strong>{{ diagnostic.commissionRateLabel }}</strong>.
+                            </div>
+
+                            {% if diagnostic.advice is not empty %}
+                                <ul class="agf-diagnostic-advice mt-3 mb-0">
+                                    {% for advice in diagnostic.advice %}
+                                        <li>{{ advice }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="agf-diagnostic-note mt-3 mb-0">Aucun point bloquant detecte pour cette annonce.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
 
                 <div class="col-lg-5">

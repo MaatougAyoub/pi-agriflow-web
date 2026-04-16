@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Service\BrevoEmailService;
 use Doctrine\ORM\EntityManagerInterface;
+use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,12 +34,27 @@ final class SecurityController extends AbstractController
         ]);
     }
 
+    #[Route('/connect/google', name: 'app_connect_google_start', methods: ['GET'])]
+    public function connectGoogle(ClientRegistry $clientRegistry): RedirectResponse
+    {
+        return $clientRegistry
+            ->getClient('google_main')
+            ->redirect(['email', 'profile'], []);
+    }
+
+    #[Route('/connect/google/check', name: 'app_connect_google_check', methods: ['GET'])]
+    public function connectGoogleCheck(): never
+    {
+        throw new \LogicException('La route OAuth Google est geree par le firewall.');
+    }
+
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(
         Request $request,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        BrevoEmailService $brevoEmailService
     ): Response {
         $session = $request->getSession();
         $email = trim((string) $request->request->get('email', ''));
@@ -93,9 +111,13 @@ final class SecurityController extends AbstractController
                                 'password_hash' => $passwordHasher->hashPassword($user, $newPassword),
                             ]);
 
-                            $this->generateAndLogForgotPasswordCode($session, $verifiedEmail, $logger);
+                            try {
+                                $this->generateAndSendForgotPasswordCode($session, $verifiedEmail, $logger, $brevoEmailService, 'Reinitialisation du mot de passe');
 
-                            return $this->redirectToRoute('app_forgot_password_verify');
+                                return $this->redirectToRoute('app_forgot_password_verify');
+                            } catch (\Throwable $exception) {
+                                $passwordError = $exception->getMessage();
+                            }
                         }
                     }
                 }
@@ -115,10 +137,13 @@ final class SecurityController extends AbstractController
     public function forgotPasswordVerify(
         Request $request,
         EntityManagerInterface $entityManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        BrevoEmailService $brevoEmailService
     ): Response {
         $session = $request->getSession();
         $pending = $session->get(self::SESSION_FORGOT_PASSWORD_PENDING);
+        $error = null;
+        $notice = null;
 
         if (
             !is_array($pending)
@@ -131,43 +156,63 @@ final class SecurityController extends AbstractController
         $email = (string) $pending['email'];
 
         if (!$session->has(self::SESSION_FORGOT_PASSWORD_CODE)) {
-            $this->generateAndLogForgotPasswordCode($session, $email, $logger);
+            try {
+                $this->generateAndSendForgotPasswordCode($session, $email, $logger, $brevoEmailService, 'Reinitialisation du mot de passe');
+                $notice = 'Un code de verification a ete envoye par email.';
+            } catch (\Throwable $exception) {
+                $error = $exception->getMessage();
+            }
         }
 
-        $error = null;
-
         if ($request->isMethod('POST')) {
-            $submittedCode = trim((string) $request->request->get('verification_code'));
-            $expectedCode = (string) $session->get(self::SESSION_FORGOT_PASSWORD_CODE, '');
+            $action = (string) $request->request->get('action', 'verify');
 
-            if (!preg_match('/^\d{6}$/', $submittedCode) || $submittedCode !== $expectedCode) {
-                $error = 'Le code n\'est pas correct, veuillez entrer le nouveau code.';
-                $this->generateAndLogForgotPasswordCode($session, $email, $logger);
+            if ('resend' === $action) {
+                try {
+                    $this->generateAndSendForgotPasswordCode($session, $email, $logger, $brevoEmailService, 'Reinitialisation du mot de passe');
+                    $notice = 'Un nouveau code a ete envoye par email.';
+                } catch (\Throwable $exception) {
+                    $error = $exception->getMessage();
+                }
             } else {
-                $user = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
+                $submittedCode = trim((string) $request->request->get('verification_code'));
+                $expectedCode = (string) $session->get(self::SESSION_FORGOT_PASSWORD_CODE, '');
 
-                if (!$user instanceof Utilisateur) {
+                if (!preg_match('/^\d{6}$/', $submittedCode) || $submittedCode !== $expectedCode) {
+                    $error = 'Le code n\'est pas correct, veuillez entrer le nouveau code.';
+
+                    try {
+                        $this->generateAndSendForgotPasswordCode($session, $email, $logger, $brevoEmailService, 'Reinitialisation du mot de passe');
+                    } catch (\Throwable $exception) {
+                        $error .= ' ' . $exception->getMessage();
+                    }
+                } else {
+                    $user = $entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
+
+                    if (!$user instanceof Utilisateur) {
+                        $session->remove(self::SESSION_FORGOT_PASSWORD_PENDING);
+                        $session->remove(self::SESSION_FORGOT_PASSWORD_CODE);
+                        $this->addFlash('error', 'Aucun compte n\'est enregistre avec cet email.');
+
+                        return $this->redirectToRoute('app_forgot_password');
+                    }
+
+                    $user->setMotDePasse((string) $pending['password_hash']);
+                    $entityManager->flush();
+
                     $session->remove(self::SESSION_FORGOT_PASSWORD_PENDING);
                     $session->remove(self::SESSION_FORGOT_PASSWORD_CODE);
-                    $this->addFlash('error', 'Aucun compte n\'est enregistre avec cet email.');
 
-                    return $this->redirectToRoute('app_forgot_password');
+                    $this->addFlash('success', 'Mot de passe modifie avec succes. Vous pouvez maintenant vous connecter.');
+
+                    return $this->redirectToRoute('app_login');
                 }
-
-                $user->setMotDePasse((string) $pending['password_hash']);
-                $entityManager->flush();
-
-                $session->remove(self::SESSION_FORGOT_PASSWORD_PENDING);
-                $session->remove(self::SESSION_FORGOT_PASSWORD_CODE);
-
-                $this->addFlash('success', 'Mot de passe modifie avec succes. Vous pouvez maintenant vous connecter.');
-
-                return $this->redirectToRoute('app_login');
             }
         }
 
         return $this->render('security/forgot_password_verify.html.twig', [
             'error' => $error,
+            'notice' => $notice,
             'email' => $email,
         ], null !== $error ? new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY) : null);
     }
@@ -246,7 +291,7 @@ final class SecurityController extends AbstractController
         return array_values(array_unique($roles));
     }
 
-    private function generateAndLogForgotPasswordCode($session, string $email, LoggerInterface $logger): string
+    private function generateAndSendForgotPasswordCode($session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
     {
         $code = (string) random_int(100000, 999999);
         $session->set(self::SESSION_FORGOT_PASSWORD_CODE, $code);
@@ -254,7 +299,10 @@ final class SecurityController extends AbstractController
         $logger->info('Forgot password verification code generated', [
             'email' => $email,
             'code' => $code,
+            'context' => $context,
         ]);
+
+        $brevoEmailService->sendVerificationCode($email, $code, $context);
 
         return $code;
     }

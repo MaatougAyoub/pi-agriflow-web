@@ -1,0 +1,372 @@
+﻿{% extends 'layouts/front.html.twig' %}
+{% block page_title %}Dashboard - AGRIFLOW{% endblock %}
+
+{% block front_body %}
+<section style="padding:40px 0;background:#F0F2F5;min-height:100vh">
+<div class="container-fluid px-4">
+
+    {# ===== EN-TÊTE ===== #}
+    <div style="margin-bottom:30px">
+        <p style="color:#7f8c8d;margin:0;font-size:13px">Tableau de bord</p>
+        <h2 style="color:#2D5A27;font-weight:800;margin:0;font-size:26px">Mon Exploitation</h2>
+    </div>
+
+    {# ===== FLASH MESSAGES ===== #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert" style="border-radius:12px;border:none;font-size:14px">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ===== 4 CARTES STATISTIQUES ===== #}
+    <div class="row g-3 mb-4">
+        {# Carte 1 : Parcelles #}
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #2D5A27;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">PARCELLES</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#2D5A2715;display:flex;align-items:center;justify-content:center;font-size:18px">🌾</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#2D5A27;line-height:1">{{ nb_parcelles }}</div>
+                <div style="font-size:12px;color:#95a5a6;margin-top:6px">surfaces enregistrées</div>
+            </div>
+        </div>
+
+        {# Carte 2 : Cultures #}
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #1976D2;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">CULTURES</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#1976D215;display:flex;align-items:center;justify-content:center;font-size:18px">🌱</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#1976D2;line-height:1">{{ nb_cultures }}</div>
+                <div style="font-size:12px;color:#95a5a6;margin-top:6px">cultures actives</div>
+            </div>
+        </div>
+
+        {# Carte 3 : Eau / Semaine #}
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #E65100;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">EAU / SEMAINE</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#E6510015;display:flex;align-items:center;justify-content:center;font-size:18px">💧</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#E65100;line-height:1">{{ total_eau_semaine }}</div>
+                <div style="font-size:12px;color:#95a5a6;margin-top:6px">litres nécessaires</div>
+            </div>
+        </div>
+
+        {# Carte 4 : Diagnostics #}
+        <div class="col-6 col-md-3">
+            <div style="background:white;border-radius:16px;padding:22px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);border-top:4px solid #8E24AA;
+                        transition:transform 0.2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:13px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">DIAGNOSTICS</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:#8E24AA15;display:flex;align-items:center;justify-content:center;font-size:18px">📝</div>
+                </div>
+                <div style="font-size:38px;font-weight:900;color:#8E24AA;line-height:1">{{ nb_diagnostics }}</div>
+                <div style="font-size:12px;margin-top:6px">
+                    <span style="color:#E65100;font-weight:600">{{ diag_en_attente }} en attente</span>
+                    · <span style="color:#2D5A27;font-weight:600">{{ diag_traites }} traités</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ===== GRAPHIQUES ===== #}
+    <div class="row g-3 mb-4">
+        {# Bar chart : Besoin en eau par culture #}
+        <div class="col-md-8">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);height:100%">
+                <h5 style="color:#2D5A27;font-weight:700;margin-bottom:20px;font-size:16px">
+                    💧 Besoin en eau par culture (L/semaine)
+                </h5>
+                {% if besoin_eau_data is empty %}
+                <div style="text-align:center;color:#95a5a6;padding:50px 20px">
+                    <div style="font-size:48px;margin-bottom:10px">🌱</div>
+                    <p style="font-size:14px;margin:0">Aucune culture enregistrée</p>
+                    <p style="font-size:12px;margin-top:4px">Ajoutez des cultures pour voir les besoins en eau</p>
+                </div>
+                {% else %}
+                <div style="position:relative;height:280px">
+                    <canvas id="barChart"></canvas>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Pie chart : Répartition des cultures #}
+        <div class="col-md-4">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06);height:100%">
+                <h5 style="color:#2D5A27;font-weight:700;margin-bottom:20px;font-size:16px">
+                    🌿 Répartition des cultures
+                </h5>
+                {% if types_data is empty %}
+                <div style="text-align:center;color:#95a5a6;padding:50px 20px">
+                    <div style="font-size:48px;margin-bottom:10px">📊</div>
+                    <p style="font-size:14px;margin:0">Aucune donnée disponible</p>
+                </div>
+                {% else %}
+                <div style="position:relative;height:280px">
+                    <canvas id="pieChart"></canvas>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ===== PLANS IRRIGATION + DIAGNOSTICS RÉCENTS ===== #}
+    <div class="row g-3">
+        {# Plans irrigation récents #}
+        <div class="col-md-6">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                    <h5 style="color:#2D5A27;font-weight:700;margin:0;font-size:16px">💧 Plans d'irrigation récents</h5>
+                    <a href="{{ path('agriculteur_irrigation') }}"
+                       style="color:#2D5A27;font-size:13px;text-decoration:none;font-weight:600;
+                              background:#2D5A2710;padding:5px 12px;border-radius:20px;transition:background 0.2s"
+                       onmouseover="this.style.background='#2D5A2720'" onmouseout="this.style.background='#2D5A2710'">
+                        Voir tous →
+                    </a>
+                </div>
+                {% for p in plans_recents %}
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                            padding:12px 0;{% if not loop.last %}border-bottom:1px solid #f0f0f0;{% endif %}">
+                    <div style="flex:1">
+                        <div style="font-weight:600;color:#1B4332;font-size:14px">{{ p.nomCulture }}</div>
+                        <div style="font-size:12px;color:#95a5a6;margin-top:2px">
+                            {{ p.dateDemande ? p.dateDemande|date('d/m/Y') : '-' }}
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0;margin-left:12px">
+                        {% if p.statut == 'rempli' %}
+                            <span style="background:#2D5A2718;color:#2D5A27;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">
+                                Rempli
+                            </span>
+                        {% elseif p.statut == 'approuve' %}
+                            <span style="background:#1976D218;color:#1976D2;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">
+                                Approuvé
+                            </span>
+                        {% else %}
+                            <span style="background:#E6510018;color:#E65100;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">
+                                En attente
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align:center;color:#95a5a6;padding:30px">
+                    <div style="font-size:36px;margin-bottom:8px">💧</div>
+                    <p style="margin:0;font-size:14px">Aucun plan d'irrigation</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Diagnostics récents #}
+        <div class="col-md-6">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                    <h5 style="color:#2D5A27;font-weight:700;margin:0;font-size:16px">📝 Diagnostics récents</h5>
+                    <a href="{{ path('agriculteur_diagnostics') }}"
+                       style="color:#2D5A27;font-size:13px;text-decoration:none;font-weight:600;
+                              background:#2D5A2710;padding:5px 12px;border-radius:20px;transition:background 0.2s"
+                       onmouseover="this.style.background='#2D5A2720'" onmouseout="this.style.background='#2D5A2710'">
+                        Voir tous →
+                    </a>
+                </div>
+                {% for d in diags_recents %}
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                            padding:12px 0;{% if not loop.last %}border-bottom:1px solid #f0f0f0;{% endif %}">
+                    <div style="flex:1">
+                        <div style="font-weight:600;color:#1B4332;font-size:14px">{{ d.nomCulture }}</div>
+                        <div style="font-size:12px;color:#95a5a6;margin-top:2px">
+                            {{ d.description|length > 45 ? d.description|slice(0,45) ~ '...' : d.description }}
+                        </div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;margin-left:12px">
+                        {% if d.statut == 'traite' %}
+                            <span style="background:#2D5A2718;color:#2D5A27;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">
+                                Traité
+                            </span>
+                        {% else %}
+                            <span style="background:#E6510018;color:#E65100;padding:4px 14px;
+                                         border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase">
+                                En attente
+                            </span>
+                        {% endif %}
+                        <div style="font-size:11px;color:#bdc3c7;margin-top:4px">
+                            {{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="text-align:center;color:#95a5a6;padding:30px">
+                    <div style="font-size:36px;margin-bottom:8px">📝</div>
+                    <p style="margin:0;font-size:14px">Aucun diagnostic pour le moment</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# ===== LISTE DES CULTURES ===== #}
+    {% if cultures is not empty %}
+    <div class="row g-3 mt-3">
+        <div class="col-12">
+            <div style="background:white;border-radius:16px;padding:25px;
+                        box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+                    <h5 style="color:#2D5A27;font-weight:700;margin:0;font-size:16px">🌱 Mes cultures</h5>
+                    <a href="{{ path('app_culture_index') }}"
+                       style="color:#2D5A27;font-size:13px;text-decoration:none;font-weight:600;
+                              background:#2D5A2710;padding:5px 12px;border-radius:20px">
+                        Gérer →
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table style="width:100%;border-collapse:separate;border-spacing:0">
+                        <thead>
+                            <tr>
+                                <th style="padding:10px 15px;font-size:12px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #f0f0f0">Culture</th>
+                                <th style="padding:10px 15px;font-size:12px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #f0f0f0">Type</th>
+                                <th style="padding:10px 15px;font-size:12px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #f0f0f0">Superficie</th>
+                                <th style="padding:10px 15px;font-size:12px;color:#7f8c8d;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #f0f0f0">Besoin eau/jour</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in cultures %}
+                            <tr style="{% if not loop.last %}border-bottom:1px solid #f8f8f8{% endif %}">
+                                <td style="padding:12px 15px;font-weight:600;color:#1B4332;font-size:14px">{{ c.nom }}</td>
+                                <td style="padding:12px 15px">
+                                    <span style="background:#2D5A2712;color:#2D5A27;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600">
+                                        {{ c.typeCulture|default('AUTRE') }}
+                                    </span>
+                                </td>
+                                <td style="padding:12px 15px;color:#555;font-size:13px">{{ c.superficie|default('-') }} ha</td>
+                                <td style="padding:12px 15px;color:#1976D2;font-weight:600;font-size:13px">
+                                    {{ ((c.superficie|default(1)) * 2)|round(1) }} L
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</section>
+
+{# ===== CHART.JS ===== #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+{% if besoin_eau_data is not empty %}
+const barCtx = document.getElementById('barChart').getContext('2d');
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ besoin_eau_data|map(d => d.nom)|json_encode|raw }},
+        datasets: [{
+            label: 'Besoin eau (L/semaine)',
+            data: {{ besoin_eau_data|map(d => d.besoin)|json_encode|raw }},
+            backgroundColor: [
+                '#2D5A27','#1976D2','#E65100','#8E24AA',
+                '#F57C00','#0097A7','#C62828','#558B2F'
+            ],
+            borderRadius: 8,
+            borderSkipped: false,
+            maxBarThickness: 50,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1B4332',
+                titleFont: { size: 13, weight: '600' },
+                bodyFont: { size: 12 },
+                cornerRadius: 8,
+                padding: 12,
+                callbacks: {
+                    label: function(ctx) {
+                        return ctx.parsed.y + ' L/semaine';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#f5f5f5', drawBorder: false },
+                ticks: { color: '#7f8c8d', font: { size: 12 } }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#7f8c8d', font: { size: 12 } }
+            }
+        }
+    }
+});
+{% endif %}
+
+{% if types_data is not empty %}
+const pieCtx = document.getElementById('pieChart').getContext('2d');
+new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ types_data|keys|json_encode|raw }},
+        datasets: [{
+            data: {{ types_data|map(v => v)|json_encode|raw }},
+            backgroundColor: [
+                '#2D5A27','#1976D2','#E65100','#8E24AA',
+                '#F57C00','#0097A7','#C62828','#558B2F'
+            ],
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverOffset: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    font: { size: 12, weight: '600' },
+                    color: '#555',
+                    padding: 15,
+                    usePointStyle: true,
+                    pointStyleWidth: 10,
+                }
+            }
+        },
+        cutout: '65%',
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

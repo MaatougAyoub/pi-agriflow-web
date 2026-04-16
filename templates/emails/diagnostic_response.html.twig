@@ -1,0 +1,53 @@
+{# templates/emails/diagnostic_response.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #2d6a4f, #40916c); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header .icon { font-size: 48px; margin-bottom: 10px; }
+        .content { padding: 30px; }
+        .content h2 { color: #2d6a4f; margin-top: 0; }
+        .info-box { background: #f0fdf4; border-left: 4px solid #2d6a4f; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+        .info-box strong { color: #1b4332; }
+        .response-box { background: #fefce8; border-left: 4px solid #ca8a04; padding: 15px; margin: 15px 0; border-radius: 0 8px 8px 0; }
+        .btn { display: inline-block; background: #2d6a4f; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; margin-top: 15px; font-weight: bold; }
+        .btn:hover { background: #1b4332; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🌿</div>
+            <h1>Votre diagnostic est prêt !</h1>
+        </div>
+        <div class="content">
+            <h2>Bonjour {{ agriculteur.email }},</h2>
+            <p>Bonne nouvelle ! Un expert a analysé votre diagnostic et vous a envoyé sa réponse.</p>
+
+            <div class="info-box">
+                <strong>🌱 Culture :</strong> {{ diagnostic.nomCulture }}<br>
+                <strong>📅 Date d'envoi :</strong> {{ diagnostic.dateEnvoi|date('d/m/Y à H:i') }}<br>
+                <strong>📋 Description :</strong> {{ diagnostic.description|default('Non renseignée') }}
+            </div>
+
+            <div class="response-box">
+                <strong>💬 Réponse de l'expert :</strong><br><br>
+                {{ diagnostic.reponseExpert|nl2br }}
+            </div>
+
+            <p>Vous pouvez consulter le détail complet de votre diagnostic et télécharger l'ordonnance en PDF depuis votre espace personnel.</p>
+
+            <a href="#" class="btn">📄 Voir mon diagnostic</a>
+        </div>
+        <div class="footer">
+            <p>© {{ 'now'|date('Y') }} AgriSmart — Plateforme Intelligente d'Agriculture</p>
+            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,32 +1,241 @@
-﻿{% extends 'layouts/front.html.twig' %}
-
+{% extends 'layouts/front.html.twig' %}
 {% block page_title %}Nouveau Diagnostic{% endblock %}
-
 {% block front_body %}
 <section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
-<div class="container">
-    <div class="card shadow-sm border-0 rounded-4 p-4" style="max-width:700px;margin:0 auto">
-        <h3 style="color:#2D5A27;font-weight:700">📝 Nouveau diagnostic</h3>
-        <form method="post" enctype="multipart/form-data" class="mt-4">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Culture concernée</label>
-                <input type="text" name="nomCulture" class="form-control" required>
+<div class="container" style="max-width:900px">
+
+    <a href="{{ path('agriculteur_diagnostics') }}"
+       style="display:inline-block;margin-bottom:25px;padding:8px 20px;border-radius:20px;
+              border:1.5px solid #ccc;color:#666;text-decoration:none;font-weight:600">
+        ← Retour
+    </a>
+
+    <div style="background:white;border-radius:14px;padding:30px;box-shadow:0 2px 12px rgba(0,0,0,0.07)">
+        <h2 style="color:#1B4332;font-size:22px;font-weight:800;margin-bottom:25px">
+            🔬 Diagnostic Intelligent
+        </h2>
+
+        <form method="post" action="{{ path('agriculteur_diagnostic_new') }}" enctype="multipart/form-data" id="diagnosticForm">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px">
+
+                {# Colonne gauche : Image #}
+                <div>
+                    <h4 style="color:#2D5A27;font-weight:700;margin-bottom:15px">📷 Photo du symptôme</h4>
+
+                    <div id="imagePreviewZone"
+                         style="width:100%;height:220px;border:2px dashed #ccc;border-radius:12px;
+                                display:flex;align-items:center;justify-content:center;
+                                background:#FAFAFA;margin-bottom:15px;overflow:hidden;cursor:pointer"
+                         onclick="document.getElementById('imageInput').click()">
+                        <img id="imagePreview" src="" alt=""
+                             style="display:none;max-width:100%;max-height:100%;object-fit:contain;border-radius:10px">
+                        <span id="imagePlaceholder" style="color:#aaa;font-size:14px">
+                            📷 Cliquez pour charger une image
+                        </span>
+                    </div>
+
+                    <input type="file" name="image" id="imageInput" accept=".jpg,.jpeg,.png,.gif,.webp"
+                           style="display:none" onchange="previewImage(this)">
+
+                    <div style="display:flex;gap:10px;margin-bottom:15px">
+                        <button type="button" onclick="document.getElementById('imageInput').click()"
+                                style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #ccc;
+                                       background:white;color:#555;font-weight:600;cursor:pointer">
+                            📁 Charger l'image
+                        </button>
+                        <button type="button" id="btnAnalyseIA" onclick="lancerAnalyseIA()"
+                                style="flex:1;padding:10px;border-radius:10px;border:none;
+                                       background:#00897B;color:white;font-weight:600;cursor:pointer;
+                                       opacity:0.5;transition:all 0.2s"
+                                disabled>
+                            🤖 Analyse IA
+                        </button>
+                    </div>
+
+                    {# Zone de message #}
+                    <div id="iaMessage" style="display:none;padding:12px;border-radius:10px;
+                                               font-size:13px;margin-top:10px;line-height:1.5"></div>
+
+                    {# Loader #}
+                    <div id="iaLoader" style="display:none;text-align:center;padding:15px">
+                        <div style="display:inline-block;width:30px;height:30px;border:3px solid #e0e0e0;
+                                    border-top:3px solid #00897B;border-radius:50%;animation:spin 1s linear infinite">
+                        </div>
+                        <p style="color:#666;font-size:13px;margin-top:8px">Analyse en cours... (peut prendre 10-30s)</p>
+                    </div>
+                </div>
+
+                {# Colonne droite : Formulaire #}
+                <div>
+                    <div style="margin-bottom:20px">
+                        <label style="display:block;font-weight:600;color:#555;margin-bottom:6px">
+                            Culture concernée
+                        </label>
+                        <select name="nomCulture" required
+                                style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px">
+                            <option value="">-- Sélectionner --</option>
+                            {% for c in cultures %}
+                            <option value="{{ c.nom }}">{{ c.nom }} ({{ c.typeCulture ?? '-' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom:20px">
+                        <label style="display:block;font-weight:600;color:#555;margin-bottom:6px">
+                            Description détaillée
+                        </label>
+                        <textarea name="description" id="descriptionField" required
+                                  placeholder="Décrivez les symptômes observés sur votre culture..."
+                                  style="width:100%;padding:15px;border-radius:10px;border:1.5px solid #e0e0e0;
+                                         font-size:14px;min-height:180px;resize:vertical;line-height:1.6"></textarea>
+                    </div>
+
+                    <div style="background:#E8F5E9;padding:12px 16px;border-radius:10px;font-size:12px;color:#2D5A27">
+                        💡 <strong>Conseil :</strong> Chargez une photo puis cliquez sur "Analyse IA" pour
+                        générer automatiquement une description du problème observé.
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Description des symptômes</label>
-                <textarea name="description" class="form-control" rows="5" required></textarea>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Photo (optionnelle)</label>
-                <input type="file" name="image" class="form-control" accept="image/*">
-                <small class="text-muted">Formats acceptés : JPG, PNG, GIF (max 5 Mo)</small>
-            </div>
-            <div class="d-flex gap-2 mt-4 justify-content-end">
-                <a href="{{ path('agriculteur_diagnostics') }}" class="btn btn-outline-secondary" style="border-radius:20px">Annuler</a>
-                <button type="submit" class="btn" style="background:#2D5A27;color:white;border-radius:20px">📤 Envoyer</button>
+
+            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:25px">
+                <a href="{{ path('agriculteur_diagnostics') }}"
+                   style="padding:10px 25px;border-radius:20px;border:1.5px solid #ccc;
+                          color:#666;text-decoration:none;font-weight:600">
+                    Annuler
+                </a>
+                <button type="submit"
+                        style="padding:10px 30px;border-radius:20px;background:#2D5A27;
+                               color:white;border:none;font-weight:600;cursor:pointer">
+                    📤 Envoyer le rapport
+                </button>
             </div>
         </form>
     </div>
+
 </div>
 </section>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('imagePlaceholder');
+    const btnIA = document.getElementById('btnAnalyseIA');
+    
+    hideMessage();
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        if (file.size > 4 * 1024 * 1024) {
+            showMessage('L\'image ne doit pas dépasser 4 Mo.', 'error');
+            input.value = '';
+            return;
+        }
+        
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            showMessage('Format non supporté. Utilisez JPG, PNG, GIF ou WEBP.', 'error');
+            input.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+            btnIA.disabled = false;
+            btnIA.style.opacity = '1';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+        placeholder.style.display = 'block';
+        btnIA.disabled = true;
+        btnIA.style.opacity = '0.5';
+    }
+}
+
+async function lancerAnalyseIA() {
+    const fileInput = document.getElementById('imageInput');
+    const btnIA = document.getElementById('btnAnalyseIA');
+    const loader = document.getElementById('iaLoader');
+    const descField = document.getElementById('descriptionField');
+    
+    if (!fileInput.files || !fileInput.files[0]) {
+        showMessage('Veuillez d\'abord charger une image.', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('image', fileInput.files[0]);
+    
+    // Désactiver le bouton et afficher le loader
+    btnIA.disabled = true;
+    btnIA.textContent = '⏳ Analyse...';
+    loader.style.display = 'block';
+    hideMessage();
+    
+    try {
+        const response = await fetch('{{ path("agriculteur_ia_analyser") }}', {
+            method: 'POST',
+            body: formData,
+        });
+        
+        // Vérifier que la réponse est du JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Réponse non-JSON:', text.substring(0, 500));
+            throw new Error('Le serveur a retourné une réponse invalide. Vérifiez les logs Symfony.');
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showMessage(data.error, 'error');
+        } else if (data.description) {
+            descField.value = data.description;
+            showMessage('✅ Analyse terminée ! La description a été générée.', 'success');
+        } else {
+            showMessage('Réponse inattendue du serveur.', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Erreur IA:', error);
+        showMessage('Erreur : ' + error.message, 'error');
+    } finally {
+        btnIA.disabled = false;
+        btnIA.textContent = '🤖 Analyse IA';
+        loader.style.display = 'none';
+    }
+}
+
+function showMessage(text, type) {
+    const msgDiv = document.getElementById('iaMessage');
+    msgDiv.style.display = 'block';
+    msgDiv.textContent = text;
+    
+    if (type === 'error') {
+        msgDiv.style.background = '#FFEBEE';
+        msgDiv.style.color = '#C62828';
+        msgDiv.style.borderLeft = '4px solid #C62828';
+    } else {
+        msgDiv.style.background = '#E8F5E9';
+        msgDiv.style.color = '#2D5A27';
+        msgDiv.style.borderLeft = '4px solid #2D5A27';
+    }
+}
+
+function hideMessage() {
+    document.getElementById('iaMessage').style.display = 'none';
+}
+</script>
 {% endblock %}

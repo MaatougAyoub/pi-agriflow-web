@@ -3,28 +3,87 @@
 {% block front_body %}
 <section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 style="color:#2D5A27;font-weight:800">📝 Mes Diagnostics</h2>
-        <a href="{{ path('agriculteur_diagnostic_new') }}" class="btn" style="background:#2D5A27;color:white;border-radius:20px;padding:10px 25px">+ Nouveau diagnostic</a>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px">
+        <div>
+            <p style="color:#7f8c8d;margin:0;font-size:13px">Suivi des analyses</p>
+            <h2 style="color:#2D5A27;font-weight:800;margin:0">Mes Diagnostics</h2>
+        </div>
+        <a href="{{ path('agriculteur_diagnostic_new') }}"
+           style="background:#2D5A27;color:white;padding:10px 25px;border-radius:20px;
+                  text-decoration:none;font-weight:600">
+            + Nouveau diagnostic
+        </a>
     </div>
-    <div class="card shadow-sm border-0 rounded-4 p-4">
-        <table class="table">
-            <thead><tr><th>Culture</th><th>Description</th><th>Statut</th><th>Réponse expert</th><th>Date</th></tr></thead>
-            <tbody>
-            {% for d in diagnostics %}
-            <tr>
-                <td>{{ d.nomCulture }}</td>
-                <td>{{ d.description|slice(0,50) }}...</td>
-                <td><span class="badge rounded-pill" style="background:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">{{ d.statut ?? 'en attente' }}</span></td>
-                <td>{{ d.reponseExpert ?? '⏳ En attente' }}</td>
-                <td>{{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}</td>
-            </tr>
+
+    {% for msg in app.flashes('success') %}
+    <div style="background:#E8F5E9;color:#2D5A27;padding:12px 20px;border-radius:10px;
+                margin-bottom:15px;font-weight:600">✅ {{ msg }}</div>
+    {% endfor %}
+
+    <div style="display:flex;flex-direction:column;gap:15px">
+    {% for d in diagnostics %}
+    <a href="{{ path('agriculteur_diagnostic_detail', {id: d.idDiagnostic}) }}"
+       style="text-decoration:none;color:inherit">
+        <div style="background:white;border-radius:14px;padding:20px 25px;
+                    display:flex;gap:20px;align-items:flex-start;
+                    box-shadow:0 2px 8px rgba(0,0,0,0.06);
+                    border-left:4px solid {% if d.statut == 'traite' %}#2D5A27{% else %}#F39C12{% endif %};
+                    transition:box-shadow 0.2s;cursor:pointer"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'"
+             onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+
+            {% if d.imagePath %}
+            <img src="/uploads/diagnostics/{{ d.imagePath }}"
+                 style="width:80px;height:80px;object-fit:cover;border-radius:10px;flex-shrink:0"
+                 onerror="this.style.display='none'">
             {% else %}
-            <tr><td colspan="5" class="text-center text-muted">Aucun diagnostic.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+            <div style="width:80px;height:80px;background:#F3F4F6;border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:24px;flex-shrink:0">🌱</div>
+            {% endif %}
+
+            <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                    <h4 style="margin:0;color:#1B4332;font-size:16px;font-weight:700">
+                        {{ d.nomCulture }}
+                    </h4>
+                    <span style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+                                 background:{% if d.statut == 'traite' %}#E8F5E9{% else %}#FFF3E0{% endif %};
+                                 color:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">
+                        {{ d.statut|default('en attente')|replace({'_': ' '}) }}
+                    </span>
+                </div>
+                <p style="color:#666;font-size:13px;margin:0 0 8px 0;line-height:1.5">
+                    {{ d.description|slice(0,100) }}{% if d.description|length > 100 %}...{% endif %}
+                </p>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:12px;color:#95a5a6">
+                        {{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y à H:i') : '-' }}
+                    </span>
+                    {% if d.reponseExpert %}
+                    <span style="font-size:12px;color:#2D5A27;font-weight:600">
+                        Réponse disponible →
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </a>
+    {% else %}
+    <div style="background:white;border-radius:14px;padding:50px;text-align:center;
+                box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+        <div style="font-size:50px;margin-bottom:15px">🔬</div>
+        <p style="color:#95a5a6;font-size:16px;margin:0">Aucun diagnostic envoyé.</p>
+        <a href="{{ path('agriculteur_diagnostic_new') }}"
+           style="display:inline-block;margin-top:15px;background:#2D5A27;color:white;
+                  padding:10px 25px;border-radius:20px;text-decoration:none;font-weight:600">
+            Créer mon premier diagnostic
+        </a>
     </div>
+    {% endfor %}
+    </div>
+
 </div>
 </section>
 {% endblock %}

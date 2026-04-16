@@ -133,6 +133,17 @@ body {
     color:var(--success);
 }
 
+.error-list {
+    margin:0;
+    padding-left:18px;
+    display:grid;
+    gap:4px;
+}
+
+.error-list li {
+    word-break:break-word;
+}
+
 .form-grid {
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -300,15 +311,21 @@ body {
 
         <div id="clientErrors"></div>
 
-        {% for error in errors %}
-            <div class="alert alert-danger">{{ error }}</div>
-        {% endfor %}
+        {% if errors is not empty %}
+            <div class="alert alert-danger">
+                <ul class="error-list">
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
 
         {% if success_message %}
             <div class="alert alert-success">{{ success_message }}</div>
         {% endif %}
 
-        <form method="post" enctype="multipart/form-data" novalidate>
+        <form method="post" enctype="multipart/form-data" novalidate data-turbo="false">
             <div class="form-grid">
                 <div class="field full">
                     <label>Type d'utilisateur *</label>
@@ -394,6 +411,12 @@ body {
                 </div>
             </div>
 
+            {% if recaptcha_site_key is defined and recaptcha_site_key|trim != '' %}
+                <div class="section-box">
+                    <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                </div>
+            {% endif %}
+
             <div class="actions">
                 <button class="btn btn-primary" type="submit">S'inscrire</button>
                 <a class="btn btn-secondary" href="{{ path('site_home') }}">Annuler</a>
@@ -411,6 +434,10 @@ body {
         </div>
     </section>
 </main>
+
+{% if recaptcha_site_key is defined and recaptcha_site_key|trim != '' %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 
 <script>
 (function () {
@@ -533,6 +560,16 @@ body {
             if (validationError) {
                 event.preventDefault();
                 renderClientError(validationError);
+                return;
+            }
+
+            const recaptchaResponseField = form.querySelector('textarea[name="g-recaptcha-response"]');
+            const recaptchaResponse = recaptchaResponseField ? recaptchaResponseField.value.trim() : '';
+            const recaptchaWidget = form.querySelector('.g-recaptcha');
+
+            if (recaptchaWidget && recaptchaResponse === '') {
+                event.preventDefault();
+                renderClientError('Veuillez valider le reCAPTCHA avant de continuer.');
             }
         });
     }
