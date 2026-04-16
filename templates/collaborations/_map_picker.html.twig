@@ -1,0 +1,288 @@
+{# templates/collaborations/_map_picker.html.twig #}
+<div class="mb-3">
+    <label class="form-label d-flex justify-content-between">
+        Emplacement sur la carte
+        <small class="text-muted">Cliquez sur la carte pour définir l'emplacement de la parcelle</small>
+    </label>
+    
+    <div id="map" style="height: 350px; border-radius: 12px; border: 1px solid #ddd;" class="shadow-sm"></div>
+    
+    <div class="mt-2 d-flex gap-2">
+        <button type="button" id="btn-geolocate" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-cursor-fill me-1"></i>Ma position actuelle
+        </button>
+        <div id="map-status" class="small text-muted align-self-center"></div>
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Map Picker & AI Script Loading...");
+
+    // 1. Configuration & Sélecteurs
+    const defaultLat = 36.8065;
+    const defaultLng = 10.1815;
+    
+    // On cherche les champs de manière plus large pour supporter différents formulaires
+    const latField = document.querySelector('input[id$="_latitude"]');
+    const lngField = document.querySelector('input[id$="_longitude"]');
+    const locationField = document.querySelector('input[id$="_location"]');
+    const mapDiv = document.getElementById('map');
+
+    // 2. Initialisation Carte (seulement si la div existe)
+    if (mapDiv && latField && lngField) {
+        console.log("Initialisation de la carte...");
+        const initialLat = (latField.value && !isNaN(latField.value)) ? parseFloat(latField.value) : defaultLat;
+        const initialLng = (lngField.value && !isNaN(lngField.value)) ? parseFloat(lngField.value) : defaultLng;
+        
+        const map = L.map('map').setView([initialLat, initialLng], (latField.value ? 13 : 6));
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        setTimeout(() => { map.invalidateSize(); }, 300);
+
+        let marker;
+        if (latField.value) {
+            marker = L.marker([initialLat, initialLng]).addTo(map);
+        }
+
+        function updateCoords(lat, lng) {
+            latField.value = lat.toFixed(6);
+            lngField.value = lng.toFixed(6);
+            if (marker) marker.setLatLng([lat, lng]);
+            else marker = L.marker([lat, lng]).addTo(map);
+            
+            const status = document.getElementById('map-status');
+            if (status) status.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(r => r.json())
+                .then(data => {
+                    const address = (data && data.address) ? data.address : {};
+                    const city = address.city || address.town || address.village || address.county || "";
+                    if (city && locationField) locationField.value = city;
+                    if (status) status.textContent = "📍 " + (address.suburb || city || "Position fixee");
+                })
+                .catch(() => { if (status) status.textContent = "📍 Coordonnées OK"; });
+        }
+
+        map.on('click', e => updateCoords(e.latlng.lat, e.latlng.lng));
+
+        const btnGeo = document.getElementById('btn-geolocate');
+        if (btnGeo) {
+            btnGeo.addEventListener('click', () => {
+                if (!navigator.geolocation) return alert("Géolocalisation non supportée");
+                const status = document.getElementById('map-status');
+                if (status) status.textContent = "🔍 Recherche locale...";
+                navigator.geolocation.getCurrentPosition(
+                    p => { map.setView([p.coords.latitude, p.coords.longitude], 13); updateCoords(p.coords.latitude, p.coords.longitude); },
+                    e => { alert("Erreur localisation : " + e.message); if (status) status.textContent = ""; }
+                );
+            });
+        }
+    }
+
+    // 3. Bouton IA (IA 1)
+    const btnAi = document.getElementById('btn-ai-improve');
+    const titleField = document.querySelector('input[id$="_title"]');
+    const descField = document.querySelector('textarea[id$="_description"]');
+
+    if (btnAi && descField && titleField) {
+        btnAi.addEventListener('click', async () => {
+            const title = titleField.value;
+            const description = descField.value;
+
+            if (!title || !description) return alert("Veuillez remplir le titre et la description d'abord.");
+
+            btnAi.disabled = true;
+            btnAi.innerHTML = '<span class="spinner-border spinner-border-sm"></span> IA...';
+
+            try {
+                const response = await fetch("{{ path('app_collab_ai_improve') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.improved) {
+                    descField.value = data.improved;
+                } else {
+                    console.warn("IA : ", data.error);
+                }
+            } catch (err) {
+                console.error("Erreur réseau IA :", err);
+            } finally {
+                btnAi.disabled = false;
+                btnAi.innerHTML = '<i class="bi bi-robot me-1"></i>Améliorer avec l\'IA';
+            }
+        });
+    }
+
+    // 4. Moderation preventive immediate (client side)
+    const currentForm = document.querySelector('form[name="collab_request"]');
+    if (currentForm && titleField && descField) {
+        const blockedPatterns = [
+            'crypto', 'cryptomonnaie', 'cryptomonnaies', 'bitcoin', 'ethereum',
+            'iphone', 'samsung', 'playstation', 'casino', 'forex',
+            'arnaque', 'escroquerie', 'fraude', 'spam', 'argent facile', 'revenu rapide'
+        ];
+
+        function getModerationFeedback(text) {
+            const normalized = (text || '').toLowerCase();
+            for (const pattern of blockedPatterns) {
+                if (normalized.includes(pattern)) {
+                    return `🤖 IA Moderation : annonce rejetee (mot detecte: "${pattern}").`;
+                }
+            }
+            return null;
+        }
+
+        function ensureModerationAlert() {
+            let alert = document.getElementById('moderation-inline-alert');
+            if (!alert) {
+                alert = document.createElement('div');
+                alert.id = 'moderation-inline-alert';
+                alert.className = 'alert alert-danger mb-4';
+                alert.setAttribute('role', 'alert');
+                const firstChild = currentForm.firstElementChild;
+                if (firstChild) {
+                    currentForm.insertBefore(alert, firstChild);
+                } else {
+                    currentForm.appendChild(alert);
+                }
+            }
+            return alert;
+        }
+
+        currentForm.addEventListener('submit', function (event) {
+            const reason = getModerationFeedback(`${titleField.value} ${descField.value}`);
+            if (!reason) {
+                const existing = document.getElementById('moderation-inline-alert');
+                if (existing) existing.remove();
+                return;
+            }
+
+            event.preventDefault();
+            const alert = ensureModerationAlert();
+            alert.textContent = reason;
+            alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+    }
+});
+</script>
+<script data-turbo-temporary>
+(function () {
+    function ensureAiStatusElement(button) {
+        let status = document.getElementById('ai-improve-status');
+
+        if (!status && button && button.parentElement) {
+            status = document.createElement('div');
+            status.id = 'ai-improve-status';
+            status.className = 'small mt-2 text-muted';
+            button.parentElement.insertAdjacentElement('afterend', status);
+        }
+
+        return status;
+    }
+
+    function setAiStatus(statusElement, message, tone) {
+        if (!statusElement) {
+            return;
+        }
+
+        const toneClass = {
+            success: 'text-success',
+            danger: 'text-danger',
+            warning: 'text-warning',
+            muted: 'text-muted',
+        }[tone] || 'text-muted';
+
+        statusElement.className = 'small mt-2 ' + toneClass;
+        statusElement.textContent = message;
+    }
+
+    function mountAiImproveButton() {
+        const currentButton = document.getElementById('btn-ai-improve');
+        const titleField = document.querySelector('input[id$="_title"]');
+        const descField = document.querySelector('textarea[id$="_description"]');
+
+        if (!currentButton || !titleField || !descField || !currentButton.parentNode) {
+            return;
+        }
+
+        const cleanButton = currentButton.cloneNode(true);
+        currentButton.parentNode.replaceChild(cleanButton, currentButton);
+
+        const aiStatus = ensureAiStatusElement(cleanButton);
+
+        cleanButton.addEventListener('click', async () => {
+            const title = titleField.value.trim();
+            const description = descField.value.trim();
+
+            if (!title || !description) {
+                setAiStatus(aiStatus, 'Veuillez remplir le titre et la description avant d utiliser l IA.', 'warning');
+                return;
+            }
+
+            cleanButton.disabled = true;
+            cleanButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> IA...';
+            setAiStatus(aiStatus, 'Amelioration en cours...', 'muted');
+
+            try {
+                const response = await fetch("{{ path('app_collab_ai_improve') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify({ title, description }),
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                const data = contentType.includes('application/json')
+                    ? await response.json()
+                    : { error: 'Reponse inattendue du serveur.' };
+
+                if (response.ok && typeof data.improved === 'string' && data.improved.trim() !== '') {
+                    const improvedText = data.improved.trim();
+                    descField.value = improvedText;
+                    descField.dispatchEvent(new Event('input', { bubbles: true }));
+                    descField.dispatchEvent(new Event('change', { bubbles: true }));
+
+                    if (improvedText === description) {
+                        setAiStatus(aiStatus, 'L IA n a pas propose de reformulation differente pour ce texte.', 'warning');
+                    } else {
+                        setAiStatus(aiStatus, 'La description a ete mise a jour par l IA.', 'success');
+                    }
+                } else {
+                    setAiStatus(aiStatus, data.error || 'IA indisponible pour le moment.', 'danger');
+                }
+            } catch (error) {
+                console.error('Erreur reseau IA :', error);
+                setAiStatus(aiStatus, 'Erreur reseau lors de l appel IA.', 'danger');
+            } finally {
+                cleanButton.disabled = false;
+                cleanButton.innerHTML = '<i class="bi bi-robot me-1"></i>Ameliorer avec l\'IA';
+            }
+        });
+    }
+
+    mountAiImproveButton();
+
+    if (!window.__collabAiImproveTurboBound) {
+        window.__collabAiImproveTurboBound = true;
+        document.addEventListener('turbo:load', mountAiImproveButton);
+    }
+})();
+</script>

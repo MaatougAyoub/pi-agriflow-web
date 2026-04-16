@@ -16,16 +16,17 @@
 
         {# Résumé de la demande #}
         <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4;">
-            <div class="card-body p-3 d-flex flex-wrap gap-4">
+            <div class="card-body p-3 d-flex flex-wrap gap-4 align-items-center">
                 <span><i class="bi bi-geo-alt text-success me-1"></i>{{ request.location }}</span>
                 <span><i class="bi bi-cash text-success me-1"></i>{{ request.salary }} DT/jour</span>
                 <span><i class="bi bi-people text-success me-1"></i>{{ request.neededPeople }} personne(s)</span>
                 <span><i class="bi bi-calendar text-success me-1"></i>{{ request.startDate|date('d/m/Y') }} → {{ request.endDate|date('d/m/Y') }}</span>
-                <span class="ms-auto fw-bold">{{ applications|length }} candidature(s)</span>
+                <span class="ms-auto fw-bold fst-italic text-primary"><i class="bi bi-robot me-1"></i>IA Matching Activée</span>
+                <span class="fw-bold">{{ rankedScores|length }} candidature(s)</span>
             </div>
         </div>
 
-        {% if applications|length == 0 %}
+        {% if rankedScores|length == 0 %}
             <div class="text-center py-5">
                 <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
                 <h3 class="text-muted mt-3">Aucune candidature reçue</h3>
@@ -36,65 +37,109 @@
                 <table class="table table-hover align-middle bg-white shadow-sm" style="border-radius: 12px; overflow: hidden;">
                     <thead class="table-light">
                         <tr>
-                            <th>Candidat</th>
-                            <th>Contact</th>
+                            <th style="width: 25%;">Candidat</th>
+                            <th class="text-center" style="width: 25%;">Score Matching IA</th>
                             <th class="text-center">Expérience</th>
-                            <th class="text-center">Salaire demandé</th>
-                            <th>Motivation</th>
+                            <th class="text-center">Recommandation</th>
                             <th class="text-center">Statut</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for app in applications %}
+                        {% for score in rankedScores %}
+                        {% set app = score.application %}
                         <tr>
                             <td>
-                                <div class="fw-bold">{{ app.fullName }}</div>
-                                <small class="text-muted">Postulé le {{ app.appliedAt|date('d/m/Y à H:i') }}</small>
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">{{ app.fullName }}</div>
+                                        <div class="small text-muted"><i class="bi bi-envelope me-1"></i>{{ app.email }}</div>
+                                        <div class="small text-muted"><i class="bi bi-telephone me-1"></i>{{ app.phone }}</div>
+                                    </div>
+                                </div>
                             </td>
                             <td>
-                                <div><i class="bi bi-envelope me-1 text-muted"></i>{{ app.email }}</div>
-                                <div><i class="bi bi-telephone me-1 text-muted"></i>{{ app.phone }}</div>
+                                <div class="px-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-bold">{{ score.scoreEmoji }} {{ score.totalScore|round }}%</span>
+                                        <span class="small text-muted">{{ score.starsDisplay }}</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ score.totalScore }}%; background-color: {{ score.scoreColor }};" 
+                                             aria-valuenow="{{ score.totalScore }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="mt-2 small d-flex flex-wrap gap-2 text-muted" style="font-size: 0.75rem;">
+                                        <span title="Basé sur les années d'expérience">Exp: {{ score.experienceScore|round }}%</span>
+                                        <span title="Comparaison salaire demandé vs proposé">Prix: {{ score.salaryScore|round }}%</span>
+                                        <span title="Pertinence géographique">Lieu: {{ score.locationScore|round }}%</span>
+                                    </div>
+                                </div>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-info text-dark px-3 py-2">{{ app.yearsOfExperience }} ans</span>
+                                <span class="badge bg-light text-dark border px-3 py-2">{{ app.yearsOfExperience }} ans</span>
+                                <div class="small fw-bold mt-1">{{ app.expectedSalary }} DT</div>
                             </td>
-                            <td class="text-center fw-bold">{{ app.expectedSalary }} DT</td>
-                            <td style="max-width: 250px;">
-                                <span title="{{ app.motivation }}">
-                                    {{ app.motivation|length > 80 ? app.motivation|slice(0, 80) ~ '...' : app.motivation }}
+                            <td class="text-center">
+                                <span class="small fw-bold px-2 py-1 rounded" style="background-color: {{ score.scoreColor }}22; color: {{ score.scoreColor }};">
+                                    {{ score.recommendation }}
                                 </span>
                             </td>
                             <td class="text-center">
                                 {% if app.status == 'PENDING' %}
-                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-hourglass-split me-1"></i>En attente</span>
+                                    <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-hourglass-split me-1"></i>Attente</span>
                                 {% elseif app.status == 'APPROVED' %}
-                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle me-1"></i>Acceptée</span>
+                                    <span class="badge bg-success px-2 py-1"><i class="bi bi-check-circle me-1"></i>Acceptée</span>
                                 {% elseif app.status == 'REJECTED' %}
-                                    <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle me-1"></i>Refusée</span>
+                                    <span class="badge bg-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i>Refusée</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if app.status == 'PENDING' %}
-                                    <div class="btn-group btn-group-sm">
-                                        <form method="post" action="{{ path('app_collab_update_app_status', {id: app.id, action: 'approve'}) }}" style="display:inline;">
+                                    <div class="d-flex flex-column gap-1">
+                                        <form method="post" action="{{ path('app_collab_update_app_status', {id: app.id, action: 'approve'}) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('status' ~ app.id) }}">
-                                            <button type="submit" class="btn btn-success" title="Accepter"
-                                                    onclick="return confirm('Accepter la candidature de {{ app.fullName }} ?');">
-                                                <i class="bi bi-check-lg"></i> Accepter
+                                            <button type="submit" class="btn btn-success btn-sm w-100" 
+                                                    onclick="return confirm('Accepter {{ app.fullName }} ?');">
+                                                Accepter
                                             </button>
                                         </form>
-                                        <form method="post" action="{{ path('app_collab_update_app_status', {id: app.id, action: 'reject'}) }}" style="display:inline;">
+                                        <form method="post" action="{{ path('app_collab_update_app_status', {id: app.id, action: 'reject'}) }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('status' ~ app.id) }}">
-                                            <button type="submit" class="btn btn-danger" title="Refuser"
-                                                    onclick="return confirm('Refuser la candidature de {{ app.fullName }} ?');">
-                                                <i class="bi bi-x-lg"></i> Refuser
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                                    onclick="return confirm('Refuser {{ app.fullName }} ?');">
+                                                Refuser
                                             </button>
                                         </form>
                                     </div>
                                 {% else %}
                                     <span class="text-muted">—</span>
                                 {% endif %}
+                            </td>
+                        <tr class="table-sm">
+                            <td colspan="6" class="p-0 border-0">
+                                <div class="px-4 py-3 bg-light border-top border-bottom">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-6">
+                                            <div class="p-3 rounded-2 bg-white shadow-sm h-100">
+                                                <h6 class="fw-bold mb-2 small text-muted text-uppercase"><i class="bi bi-chat-left-quote me-2"></i>Motivation du candidat :</h6>
+                                                <p class="mb-0 small fst-italic">"{{ app.motivation }}"</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            {% if aiAnalyses[app.id] is defined %}
+                                                <div class="p-3 rounded-2 shadow-sm h-100" style="background: #e0f2fe; border-left: 4px solid #0284c7;">
+                                                    <h6 class="fw-bold mb-2 small text-info text-uppercase"><i class="bi bi-robot me-2"></i>Analyse de Fit IA :</h6>
+                                                    <p class="mb-0 small text-dark">{{ aiAnalyses[app.id] }}</p>
+                                                </div>
+                                            {% else %}
+                                                <div class="p-3 rounded-2 bg-white shadow-sm h-100 d-flex align-items-center justify-content-center">
+                                                    <span class="text-muted small italic">IA Analyse non disponible</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

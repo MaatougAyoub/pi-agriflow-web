@@ -62,7 +62,7 @@
 
 {% for type, messages in app.flashes %}
     {% if type == 'login_status' %}
-        <div class="position-fixed bottom-0 start-50 translate-middle-x p-3 agf-login-status-zone">
+        <div class="position-fixed bottom-0 start-50 translate-middle-x p-3 agf-login-status-zone flash-message">
             {% for message in messages %}
                 <div class="agf-login-status-pill" role="status" aria-live="polite">
                     <i class="bi bi-person-check-fill" aria-hidden="true"></i>
@@ -73,10 +73,31 @@
     {% else %}
         <div class="position-fixed top-0 end-0 p-3 agf-toast-zone">
             {% for message in messages %}
-                <div class="alert alert-{{ type }} shadow-sm mb-2" role="alert">
+                <div class="alert alert-{{ type }} shadow-sm mb-2 flash-message" role="alert">
                     {{ message }}
                 </div>
             {% endfor %}
         </div>
     {% endif %}
 {% endfor %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner tous les messages flash
+    const flashMessages = document.querySelectorAll('.flash-message');
+    
+    flashMessages.forEach(function(msg) {
+        // Disparition automatique après 5 secondes
+        setTimeout(function() {
+            msg.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            msg.style.opacity = '0';
+            msg.style.transform = 'translateY(-20px)';
+            
+            // Supprimer l'élément du DOM après la fin de la transition
+            setTimeout(function() {
+                msg.remove();
+            }, 600);
+        }, 5000); // 5000ms = 5 secondes
+    });
+});
+</script>

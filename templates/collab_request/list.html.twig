@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des demandes de collaboration{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Liste des demandes de collaboration</h2>
+            
+            <!-- Filtres de recherche -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="search" class="form-label">Recherche</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search }}" placeholder="Rechercher par titre ou description...">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Statut</label>
+                            <select class="form-select" id="status" name="status">
+                                {% for statut in statuses %}
+                                    <option value="{{ statut }}" {% if status == statut %}selected{% endif %}>
+                                        {{ statut }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Rechercher</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Résultats -->
+            <div class="mb-3">
+                <span class="badge bg-info">{{ resultsCount }} demande(s) affichée(s)</span>
+            </div>
+
+            <!-- Tableau des demandes -->
+            <div class="card">
+                <div class="card-body">
+                    {% if requests|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Localisation</th>
+                                        <th>Date début</th>
+                                        <th>Date fin</th>
+                                        <th>Personnes</th>
+                                        <th>Salaire/jour</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in requests %}
+                                        <tr>
+                                            <td>{{ request.title }}</td>
+                                            <td>{{ request.location }}</td>
+                                            <td>{{ request.startDate ? request.startDate|date('d/m/Y') : '-' }}</td>
+                                            <td>{{ request.endDate ? request.endDate|date('d/m/Y') : '-' }}</td>
+                                            <td>{{ request.neededPeople }}</td>
+                                            <td>{{ request.salaryPerDay|number_format(2, ',', ' ') }} DT</td>
+                                            <td>
+                                                {% if request.status == 'PENDING' %}
+                                                    <span class="badge bg-warning">En attente</span>
+                                                {% elseif request.status == 'APPROVED' %}
+                                                    <span class="badge bg-success">Approuvée</span>
+                                                {% elseif request.status == 'REJECTED' %}
+                                                    <span class="badge bg-danger">Refusée</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ request.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('collab_request_details', {'id': request.id}) }}" 
+                                                       class="btn btn-sm btn-outline-primary">Détails</a>
+                                                    
+                                                    {% if request.status == 'PENDING' %}
+                                                        <form method="post" action="{{ path('collab_request_approve', {'id': request.id}) }}" 
+                                                              style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('approve_' ~ request.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                                    onclick="return confirm('Valider cette demande ?')">Approuver</button>
+                                                        </form>
+                                                        <form method="post" action="{{ path('collab_request_reject', {'id': request.id}) }}" 
+                                                              style="display: inline;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('reject_' ~ request.id) }}">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                    onclick="return confirm('Rejeter cette demande ?')">Rejeter</button>
+                                                        </form>
+                                                    {% endif %}
+                                                    
+                                                    <form method="post" action="{{ path('collab_request_delete', {'id': request.id}) }}" 
+                                                          style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_' ~ request.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                onclick="return confirm('Supprimer cette demande ? Cette action est irréversible.')">Supprimer</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Aucune demande trouvée.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

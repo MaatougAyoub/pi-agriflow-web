@@ -71,7 +71,7 @@ final class AnnonceAiAssistantService
     private function requestGemini(string $prompt): string
     {
         if ('' === trim($this->geminiApiKey)) {
-            throw new \DomainException('Assistant indisponible: la cle Gemini est absente.');
+            throw new \DomainException('Assistant indisponible : la clé Gemini est absente.');
         }
 
         try {
@@ -98,7 +98,7 @@ final class AnnonceAiAssistantService
             $parts = $payload['candidates'][0]['content']['parts'] ?? null;
 
             if (!is_array($parts)) {
-                throw new \RuntimeException('Reponse Gemini vide.');
+                throw new \RuntimeException('Réponse Gemini vide.');
             }
 
             $texts = [];
@@ -112,7 +112,7 @@ final class AnnonceAiAssistantService
             $text = trim(implode("\n", $texts));
 
             if ('' === $text) {
-                throw new \RuntimeException('Gemini n a retourne aucun texte.');
+                throw new \RuntimeException('Gemini n\'a retourné aucun texte.');
             }
 
             return $text;
@@ -127,7 +127,7 @@ final class AnnonceAiAssistantService
     private function requestOpenAi(string $prompt): string
     {
         if ('' === trim($this->openAiApiKey)) {
-            throw new \DomainException('Assistant indisponible: la cle OpenAI est absente.');
+            throw new \DomainException('Assistant indisponible : la clé OpenAI est absente.');
         }
 
         try {
@@ -147,7 +147,7 @@ final class AnnonceAiAssistantService
             $text = $this->extractTextFromOpenAi($payload);
 
             if ('' === $text) {
-                throw new \RuntimeException('OpenAI n a retourne aucun texte.');
+                throw new \RuntimeException('OpenAI n\'a retourné aucun texte.');
             }
 
             return $text;

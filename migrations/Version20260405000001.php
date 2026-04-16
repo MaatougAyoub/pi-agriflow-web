@@ -16,7 +16,7 @@ final class Version20260405000001 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE collab_requests (
+        $this->addSql('CREATE TABLE IF NOT EXISTS collab_requests (
             id             INT AUTO_INCREMENT NOT NULL,
             requester_id   INT NOT NULL,
             title          VARCHAR(150) NOT NULL,
@@ -39,7 +39,7 @@ final class Version20260405000001 extends AbstractMigration
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
 
-        $this->addSql('CREATE TABLE collab_applications (
+        $this->addSql('CREATE TABLE IF NOT EXISTS collab_applications (
             id                    INT AUTO_INCREMENT NOT NULL,
             request_id            INT NOT NULL,
             candidate_id          INT NOT NULL,

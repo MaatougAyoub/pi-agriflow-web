@@ -81,9 +81,9 @@
                         </div>
 
                         {# Actions #}
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2 flex-wrap mb-4">
                             {% if app.user %}
-                                {% if app.user != request.requester %}
+                                {% if app.user.id != request.requester.id %}
                                     {% if hasApplied %}
                                         <button class="btn btn-secondary btn-lg" disabled>
                                             <i class="bi bi-check-circle me-1"></i>Déjà postulé
@@ -100,6 +100,9 @@
                                     <a href="{{ path('app_collab_view_applications', {id: request.id}) }}" class="btn btn-outline-primary">
                                         <i class="bi bi-people me-1"></i>Voir les candidatures ({{ applicationCount }})
                                     </a>
+                                    <a href="{{ path('app_collab_export_pdf', {id: request.id}) }}" class="btn btn-outline-info">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>Rapport PDF
+                                    </a>
                                 {% endif %}
                             {% else %}
                                 <a href="{{ path('app_login') }}" class="btn btn-success btn-lg">
@@ -107,6 +110,61 @@
                                 </a>
                             {% endif %}
                         </div>
+
+                        {# Risques Météo #}
+                        {% if weatherRisks is not empty %}
+                            <div class="mt-4 p-3 rounded-3 border-start border-4 border-danger bg-danger bg-opacity-10">
+                                <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Alertes de Risque Météo</h6>
+                                <ul class="mb-0 small ps-3">
+                                    {% for risk in weatherRisks %}
+                                        <li class="mb-1">{{ risk }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Météo Section #}
+                    <div class="card-footer bg-white border-top-0 p-4">
+                        <h5 class="mb-4 text-primary">
+                            <i class="bi bi-cloud-sun me-2"></i>Prévisions Météo des Travaux
+                        </h5>
+                        
+                        {% if forecasts is not empty %}
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                {% for day in forecasts %}
+                                    <div class="col">
+                                        <div class="card h-100 border-0 shadow-sm bg-light">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <span class="fw-bold text-dark">{{ day.date|date('d M') }}</span>
+                                                    <span class="fs-4">{{ day.weatherIcon }}</span>
+                                                </div>
+                                                <div class="small text-muted mb-2 text-capitalize">{{ day.weatherDescription }}</div>
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="text-primary fw-bold">{{ day.tempMax|round }}°C</span>
+                                                    <span class="text-info">{{ day.tempMin|round }}°C</span>
+                                                </div>
+                                                {% if day.precipitationMm > 0 %}
+                                                    <div class="mt-2 text-info small">
+                                                        <i class="bi bi-droplet-fill me-1"></i>{{ day.precipitationMm }} mm
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-light border-0 py-3 px-4 shadow-sm">
+                                <i class="bi bi-geo-alt me-2 text-warning"></i>
+                                {% if request.latitude is empty %}
+                                    Localisation précise non renseignée. Prévisions indisponibles.
+                                {% else %}
+                                    Aucune prévision disponible pour cette période.
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

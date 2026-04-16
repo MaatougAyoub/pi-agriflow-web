@@ -8,8 +8,15 @@ use App\Form\CollabApplicationType;
 use App\Form\CollabRequestType;
 use App\Repository\CollabApplicationRepository;
 use App\Repository\CollabRequestRepository;
+use App\Service\WeatherService;
+use App\Service\CandidateMatchingService;
+use App\Service\GeminiAIService;
+use App\Model\MatchScore;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Nucleos\DompdfBundle\Wrapper\DompdfWrapperInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +35,7 @@ class CollaborationController extends AbstractController
      * Liste des demandes de collaboration approuvées (publiques)
      */
     #[Route('', name: 'app_collab_index', methods: ['GET'])]
-    public function index(Request $request, CollabRequestRepository $repo): Response
+    public function index(Request $request, CollabRequestRepository $repo, PaginatorInterface $paginator): Response
     {
         $search = trim((string) $request->query->get('q', ''));
         $listSort = $request->query->get('sort', 'date_desc');
@@ -40,13 +47,19 @@ class CollaborationController extends AbstractController
         $locationFilter = $location !== '' ? $location : null;
 
         if ($search !== '') {
-            $requests = $repo->searchFiltered($search, $locationFilter, $listSort);
+            $query = $repo->searchFilteredQuery($search, $locationFilter, $listSort);
         } else {
-            $requests = $repo->findApprovedFiltered($locationFilter, $listSort);
+            $query = $repo->findApprovedFilteredQuery($locationFilter, $listSort);
         }
 
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            6 // 6 items per page
+        );
+
         return $this->render('collaborations/index.html.twig', [
-            'requests' => $requests,
+            'pagination' => $pagination,
             'search' => $search,
             'list_sort' => $listSort,
             'filter_location' => $location,
@@ -57,9 +70,10 @@ class CollaborationController extends AbstractController
      * Créer une nouvelle demande de collaboration
      */
     #[Route('/new', name: 'app_collab_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    public function new(Request $request, EntityManagerInterface $em, GeminiAIService $gemini): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user) {
             $this->addFlash('warning', 'Vous devez être connecté pour créer une demande.');
             return $this->redirectToRoute('app_login');
@@ -69,22 +83,55 @@ class CollaborationController extends AbstractController
         $form = $this->createForm(CollabRequestType::class, $collabRequest);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $collabRequest->setRequester($user);
-            $collabRequest->setPublisher($user->getPrenom() . ' ' . $user->getNom());
-            $collabRequest->setStatus('PENDING');
-            $collabRequest->setCreatedAt(new \DateTime());
-            $collabRequest->setUpdatedAt(new \DateTime());
+        // Debug: Vérifier si le formulaire est soumis
+        if ($form->isSubmitted()) {
+            $localReason = $this->detectBlockedContentReason(
+                (string) $collabRequest->getTitle(),
+                (string) $collabRequest->getDescription()
+            );
+            if ($localReason !== null) {
+                $moderationError = '🤖 IA Modération : Votre annonce a été rejetée. Motif : '.$localReason;
+                $form->addError(new FormError($moderationError));
+                $this->addFlash('danger', $moderationError);
 
-            $em->persist($collabRequest);
-            $em->flush();
+                return $this->render('collaborations/new.html.twig', [
+                    'form' => $form->createView(),
+                    'moderation_error' => $moderationError,
+                ]);
+            }
 
-            $this->addFlash('success', '✅ Votre demande de collaboration a été créée avec succès ! Elle est en attente de validation par l\'administrateur.');
-            return $this->redirectToRoute('app_collab_index');
-        }
+            if ($form->isValid()) {
+                try {
+                    $collabRequest->setRequester($user);
+                    $collabRequest->setPublisher($user->getPrenom() . ' ' . $user->getNom());
+                    $collabRequest->setStatus('PENDING');
+                    $collabRequest->setCreatedAt(new \DateTime());
+                    $collabRequest->setUpdatedAt(new \DateTime());
 
-        if ($form->isSubmitted() && !$form->isValid()) {
-            $this->addCollabFormErrorFlash($form);
+                    // IA : Modération de contenu (Métier 3)
+                    $rejectionReason = $gemini->moderateContent($collabRequest->getTitle(), $collabRequest->getDescription());
+                    if ($rejectionReason) {
+                        $moderationError = '🤖 IA Modération : Votre annonce a été rejetée. Motif : '.$rejectionReason;
+                        $form->addError(new FormError($moderationError));
+                        $this->addFlash('danger', $moderationError);
+
+                        return $this->render('collaborations/new.html.twig', [
+                            'form' => $form->createView(),
+                            'moderation_error' => $moderationError,
+                        ]);
+                    }
+
+                    $em->persist($collabRequest);
+                    $em->flush();
+
+                    $this->addFlash('success', '✅ Votre demande a été créée ! Elle est en attente de validation par l\'administrateur.');
+                    return $this->redirectToRoute('app_collab_index');
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', '❌ Erreur lors de l\'enregistrement : ' . $e->getMessage());
+                }
+            } else {
+                $this->addCollabFormErrorFlash($form);
+            }
         }
 
         return $this->render('collaborations/new.html.twig', [
@@ -96,7 +143,7 @@ class CollaborationController extends AbstractController
      * Mes demandes de collaboration
      */
     #[Route('/mes-demandes', name: 'app_collab_my_requests', methods: ['GET'])]
-    public function myRequests(Request $request, CollabRequestRepository $requestRepo, CollabApplicationRepository $appRepo): Response
+    public function myRequests(Request $request, CollabRequestRepository $requestRepo, CollabApplicationRepository $appRepo, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -109,16 +156,22 @@ class CollaborationController extends AbstractController
             $listSort = 'date_desc';
         }
 
-        $requests = $requestRepo->findByRequesterFiltered($user, $status, $listSort);
+        $query = $requestRepo->findByRequesterFilteredQuery($user, $status, $listSort);
+        
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            8
+        );
 
-        // Compter les candidatures pour chaque demande
+        // Compter les candidatures pour chaque demande (en optimisant si possible, ici on garde simple)
         $applicationCounts = [];
-        foreach ($requests as $req) {
+        foreach ($pagination->getItems() as $req) {
             $applicationCounts[$req->getId()] = $appRepo->countByRequest($req);
         }
 
         return $this->render('collaborations/my_requests.html.twig', [
-            'requests' => $requests,
+            'pagination' => $pagination,
             'applicationCounts' => $applicationCounts,
             'filter_status' => $status,
             'list_sort' => $listSort,
@@ -129,7 +182,7 @@ class CollaborationController extends AbstractController
      * Mes candidatures envoyées
      */
     #[Route('/mes-candidatures', name: 'app_collab_my_applications', methods: ['GET'])]
-    public function myApplications(Request $request, CollabApplicationRepository $repo): Response
+    public function myApplications(Request $request, CollabApplicationRepository $repo, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
         if (!$user) {
@@ -142,10 +195,16 @@ class CollaborationController extends AbstractController
             $listSort = 'date_desc';
         }
 
-        $applications = $repo->findByCandidateFiltered($user, $status, $listSort);
+        $query = $repo->findByCandidateFilteredQuery($user, $status, $listSort);
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('collaborations/my_applications.html.twig', [
-            'applications' => $applications,
+            'pagination' => $pagination,
             'filter_status' => $status,
             'list_sort' => $listSort,
         ]);
@@ -155,7 +214,7 @@ class CollaborationController extends AbstractController
      * Voir les détails d'une demande
      */
     #[Route('/{id}', name: 'app_collab_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(CollabRequest $collabRequest, CollabApplicationRepository $appRepo): Response
+    public function show(CollabRequest $collabRequest, CollabApplicationRepository $appRepo, WeatherService $weatherService): Response
     {
         $user = $this->getUser();
         $hasApplied = false;
@@ -165,10 +224,23 @@ class CollaborationController extends AbstractController
 
         $applicationCount = $appRepo->countByRequest($collabRequest);
 
+        // API : Météo (API 1)
+        $forecasts = $weatherService->getForecast(
+            $collabRequest->getLatitude(),
+            $collabRequest->getLongitude(),
+            $collabRequest->getStartDate(),
+            $collabRequest->getEndDate()
+        );
+
+        // Métier 4 : Évaluation des risques météo
+        $weatherRisks = $weatherService->getRiskAssessment($forecasts);
+
         return $this->render('collaborations/show.html.twig', [
             'request' => $collabRequest,
             'hasApplied' => $hasApplied,
             'applicationCount' => $applicationCount,
+            'forecasts' => $forecasts,
+            'weatherRisks' => $weatherRisks,
         ]);
     }
 
@@ -176,10 +248,11 @@ class CollaborationController extends AbstractController
      * Modifier une demande
      */
     #[Route('/{id}/edit', name: 'app_collab_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em): Response
+    public function edit(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, GeminiAIService $gemini): Response
     {
         $user = $this->getUser();
-        if (!$user || $collabRequest->getRequester() !== $user) {
+        /** @var ?\App\Entity\Utilisateur $user */
+        if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Vous ne pouvez modifier que vos propres demandes.');
             return $this->redirectToRoute('app_collab_index');
         }
@@ -187,7 +260,38 @@ class CollaborationController extends AbstractController
         $form = $this->createForm(CollabRequestType::class, $collabRequest);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
+            $localReason = $this->detectBlockedContentReason(
+                (string) $collabRequest->getTitle(),
+                (string) $collabRequest->getDescription()
+            );
+            if ($localReason !== null) {
+                $moderationError = '🤖 IA Modération : Votre annonce a été rejetée. Motif : '.$localReason;
+                $form->addError(new FormError($moderationError));
+                $this->addFlash('danger', $moderationError);
+
+                return $this->render('collaborations/edit.html.twig', [
+                    'form' => $form->createView(),
+                    'request' => $collabRequest,
+                    'moderation_error' => $moderationError,
+                ]);
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            $rejectionReason = $gemini->moderateContent($collabRequest->getTitle(), $collabRequest->getDescription());
+            if ($rejectionReason) {
+                $moderationError = '🤖 IA Modération : Votre annonce a été rejetée. Motif : '.$rejectionReason;
+                $form->addError(new FormError($moderationError));
+                $this->addFlash('danger', $moderationError);
+
+                return $this->render('collaborations/edit.html.twig', [
+                    'form' => $form->createView(),
+                    'request' => $collabRequest,
+                    'moderation_error' => $moderationError,
+                ]);
+            }
+
             $collabRequest->setUpdatedAt(new \DateTime());
             $em->flush();
 
@@ -212,7 +316,8 @@ class CollaborationController extends AbstractController
     public function delete(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, CollabApplicationRepository $appRepo): Response
     {
         $user = $this->getUser();
-        if (!$user || $collabRequest->getRequester() !== $user) {
+        /** @var ?\App\Entity\Utilisateur $user */
+        if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Vous ne pouvez supprimer que vos propres demandes.');
             return $this->redirectToRoute('app_collab_index');
         }
@@ -239,13 +344,14 @@ class CollaborationController extends AbstractController
     public function apply(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, CollabApplicationRepository $appRepo): Response
     {
         $user = $this->getUser();
+        /** @var ?\App\Entity\Utilisateur $user */
         if (!$user) {
             $this->addFlash('warning', 'Vous devez être connecté pour postuler.');
             return $this->redirectToRoute('app_login');
         }
 
         // Vérifier qu'on ne postule pas à sa propre demande
-        if ($collabRequest->getRequester() === $user) {
+        if ($collabRequest->getRequester()?->getId() === $user->getId()) {
             $this->addFlash('warning', 'Vous ne pouvez pas postuler à votre propre demande.');
             return $this->redirectToRoute('app_collab_show', ['id' => $collabRequest->getId()]);
         }
@@ -265,23 +371,32 @@ class CollaborationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $application->setRequest($collabRequest);
-            $application->setCandidate($user);
-            $application->setStatus('PENDING');
-            $application->setAppliedAt(new \DateTime());
-            $application->setUpdatedAt(new \DateTime());
-            $application->setYearsOfExperience((int) $application->getYearsOfExperience());
-            $salary = $application->getExpectedSalary();
-            $application->setExpectedSalary(number_format((float) ($salary ?? 0), 2, '.', ''));
+            try {
+                $application->setRequest($collabRequest);
+                $application->setCandidate($user);
+                $application->setStatus('PENDING');
+                $application->setAppliedAt(new \DateTime());
+                $application->setUpdatedAt(new \DateTime());
+                
+                // Assurer des valeurs numériques valides
+                $exp = $form->get('yearsOfExperience')->getData();
+                $application->setYearsOfExperience((int) ($exp ?? 0));
+                
+                $salary = $form->get('expectedSalary')->getData();
+                $application->setExpectedSalary((float) ($salary ?? 0));
 
-            $em->persist($application);
-            $em->flush();
+                $em->persist($application);
+                $em->flush();
 
-            $this->addFlash('success', 'Votre candidature a bien été enregistrée. Vous pouvez la suivre dans « Mes candidatures ».');
-            return $this->redirectToRoute('app_collab_index');
+                $this->addFlash('success', '✅ Félicitations ! Votre candidature pour "' . $collabRequest->getTitle() . '" a été envoyée avec succès.');
+                return $this->redirectToRoute('app_collab_index');
+            } catch (\Exception $e) {
+                $this->addFlash('danger', '❌ Une erreur technique est survenue : ' . $e->getMessage());
+            }
         }
 
         if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash('warning', '⚠️ Le formulaire contient des erreurs. Veuillez vérifier les champs en rouge.');
             $this->addCollabFormErrorFlash($form);
         }
 
@@ -295,19 +410,63 @@ class CollaborationController extends AbstractController
      * Voir les candidatures reçues pour une de mes demandes
      */
     #[Route('/{id}/candidatures', name: 'app_collab_view_applications', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function viewApplications(CollabRequest $collabRequest, CollabApplicationRepository $appRepo): Response
+    public function viewApplications(
+        CollabRequest $collabRequest,
+        CollabApplicationRepository $appRepo,
+        CandidateMatchingService $matchingService,
+        GeminiAIService $gemini,
+        Request $request
+    ): Response
     {
         $user = $this->getUser();
-        if (!$user || $collabRequest->getRequester() !== $user) {
+        /** @var ?\App\Entity\Utilisateur $user */
+        if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Accès refusé.');
             return $this->redirectToRoute('app_collab_index');
         }
 
         $applications = $appRepo->findByRequest($collabRequest);
+        
+        // Métier 2 : Ranking intelligent
+        $rankedScores = $matchingService->rankApplications($applications, $collabRequest);
+
+        // IA : Analyse de fit pour le meilleur candidat (IA 2)
+        $aiAnalyses = [];
+        // Important : Gemini a un quota. Au lieu d'appeler l'IA pour potentiellement plusieurs candidats,
+        // on analyse uniquement le "meilleur candidat" (1 requête Gemini par page).
+        if (!empty($rankedScores)) {
+            $best = $rankedScores[0];
+            $bestApp = $best->getApplication();
+            $cacheKey = sprintf(
+                'ai_fit_cache:%d:%d',
+                $collabRequest->getId(),
+                $bestApp->getId()
+            );
+
+            $session = $request->getSession();
+            $cached = $session->get($cacheKey);
+
+            if (is_string($cached) && $cached !== '') {
+                $aiAnalyses[$bestApp->getId()] = $cached;
+            } else {
+                $analysis = $gemini->analyzeCandidateFit(
+                    $collabRequest->getDescription(),
+                    $bestApp->getMotivation()
+                );
+
+                // On évite de "verrouiller" un échec (quota, clé invalide...) dans le cache.
+                if (!str_starts_with($analysis, 'Analyse indisponible')) {
+                    $session->set($cacheKey, $analysis);
+                }
+
+                $aiAnalyses[$bestApp->getId()] = $analysis;
+            }
+        }
 
         return $this->render('collaborations/view_applications.html.twig', [
             'request' => $collabRequest,
-            'applications' => $applications,
+            'rankedScores' => $rankedScores,
+            'aiAnalyses' => $aiAnalyses,
         ]);
     }
 
@@ -319,7 +478,8 @@ class CollaborationController extends AbstractController
         CollabApplication $application,
         string $action,
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        CollabApplicationRepository $appRepo
     ): Response {
         $user = $this->getUser();
         $collabRequest = $application->getRequest();
@@ -331,6 +491,13 @@ class CollaborationController extends AbstractController
 
         if ($this->isCsrfTokenValid('status' . $application->getId(), $request->request->get('_token'))) {
             if ($action === 'approve') {
+                // Métier 1 : Gestion des conflits (Ne pas dépasser le nombre de personnes nécessaires)
+                $approvedCount = $appRepo->countApprovedByRequest($collabRequest);
+                if ($approvedCount >= $collabRequest->getNeededPeople()) {
+                    $this->addFlash('warning', '⚠️ Le nombre maximum de collaborateurs a déjà été atteint pour cette demande.');
+                    return $this->redirectToRoute('app_collab_view_applications', ['id' => $collabRequest->getId()]);
+                }
+
                 $application->setStatus('APPROVED');
                 $this->addFlash('success', 'Candidature acceptée !');
             } else {
@@ -342,6 +509,58 @@ class CollaborationController extends AbstractController
         }
 
         return $this->redirectToRoute('app_collab_view_applications', ['id' => $collabRequest->getId()]);
+    }
+
+    /**
+     * Métier 5 & Bundle 2 : Export PDF d'une demande (Dompdf)
+     */
+    #[Route('/{id}/export-pdf', name: 'app_collab_export_pdf', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function exportPdf(CollabRequest $collabRequest, DompdfWrapperInterface $dompdf): Response
+    {
+        $user = $this->getUser();
+        if (!$user) return $this->redirectToRoute('app_login');
+
+        $html = $this->renderView('collaborations/pdf_report.html.twig', [
+            'request' => $collabRequest,
+            'exportDate' => new \DateTime(),
+        ]);
+
+        $pdfContent = $dompdf->getPdf($html, [
+            'paper' => 'A4',
+            'orientation' => 'portrait',
+        ]);
+
+        return new Response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="rapport-collaboration-'.$collabRequest->getId().'.pdf"',
+        ]);
+    }
+
+    /**
+     * Améliorer la description via IA (AJAX) - IA 1
+     */
+    #[Route('/ai/improve-description', name: 'app_collab_ai_improve', methods: ['POST'])]
+    public function aiImproveDescription(Request $request, GeminiAIService $gemini): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $title = $data['title'] ?? '';
+        $description = $data['description'] ?? '';
+
+        if (empty($title) || empty($description)) {
+            return $this->json(['error' => 'Titre et description requis'], 400);
+        }
+
+        try {
+            $improved = $gemini->improveDescription($title, $description);
+            // Si Gemini échoue (clé invalide/403/quota/etc.), GeminiAIService renvoie une chaîne vide.
+            if (trim($improved) === '') {
+                return $this->json(['error' => 'IA indisponible : erreur Gemini (clé/configuration ou quota).'], 503);
+            }
+
+            return $this->json(['improved' => $improved]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'IA indisponible pour le moment'], 500);
+        }
     }
 
     private function addCollabFormErrorFlash(FormInterface $form): void
@@ -357,5 +576,47 @@ class CollaborationController extends AbstractController
                 ? implode(' ', $messages)
                 : 'Le formulaire contient des erreurs. Vérifiez les champs affichés ci-dessous.'
         );
+    }
+
+    private function getFormErrors(FormInterface $form): array
+    {
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = [
+                'message' => $error->getMessage(),
+                'field' => $error->getOrigin()?->getName() ?? 'unknown',
+            ];
+        }
+        return $errors;
+    }
+
+    private function detectBlockedContentReason(string $title, string $description): ?string
+    {
+        $text = mb_strtolower(trim($title.' '.$description));
+        if ($text === '') {
+            return null;
+        }
+
+        $offTopicPatterns = [
+            'crypto', 'cryptomonnaie', 'cryptomonnaies', 'bitcoin', 'ethereum',
+            'iphone', 'samsung', 'playstation', 'casino', 'forex',
+        ];
+        foreach ($offTopicPatterns as $pattern) {
+            if (str_contains($text, $pattern)) {
+                return sprintf('Hors sujet pour AgriFlow : contenu détecté "%s".', $pattern);
+            }
+        }
+
+        $spamPatterns = [
+            'arnaque', 'escroquerie', 'fraude', 'spam',
+            'gagnez', 'argent facile', 'revenu rapide',
+        ];
+        foreach ($spamPatterns as $pattern) {
+            if (str_contains($text, $pattern)) {
+                return sprintf('Contenu suspect ou inapproprié détecté : "%s".', $pattern);
+            }
+        }
+
+        return null;
     }
 }

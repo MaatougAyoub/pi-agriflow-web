@@ -14,6 +14,11 @@
                     <div class="card-body p-4">
                         {% form_theme form 'bootstrap_5_layout.html.twig' %}
                         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        {% if moderation_error is defined and moderation_error %}
+                            <div class="alert alert-danger mb-4" role="alert">
+                                {{ moderation_error }}
+                            </div>
+                        {% endif %}
                         {% if not form.vars.valid %}
                             <div class="alert alert-danger mb-4">
                                 {{ form_errors(form) }}
@@ -26,10 +31,20 @@
 
                         <div class="mb-3">
                             {{ form_row(form.description) }}
+                            <div class="text-end mt-1">
+                                <button type="button" id="btn-ai-improve" class="btn btn-sm btn-outline-info rounded-pill">
+                                    <i class="bi bi-robot me-1"></i>Améliorer avec l'IA
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mb-3">
                             {{ form_row(form.location) }}
+                        </div>
+
+                        {# Map Picker #}
+                        <div class="mb-4">
+                            {% include 'collaborations/_map_picker.html.twig' %}
                         </div>
 
                         <div class="row">
@@ -60,6 +75,9 @@
                                 <i class="bi bi-check-circle me-1"></i>Publier la demande
                             </button>
                         </div>
+
+                        {{ form_row(form.latitude) }}
+                        {{ form_row(form.longitude) }}
 
                         {{ form_end(form) }}
                     </div>

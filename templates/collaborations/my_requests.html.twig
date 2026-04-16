@@ -46,7 +46,7 @@
             </div>
         </form>
 
-        {% if requests|length == 0 %}
+        {% if pagination.totalItemCount == 0 %}
             <div class="text-center py-5">
                 <i class="bi bi-clipboard-x" style="font-size: 4rem; color: #ccc;"></i>
                 <h3 class="text-muted mt-3">Aucune demande ne correspond à ces critères</h3>
@@ -72,7 +72,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for req in requests %}
+                        {% for req in pagination %}
                         <tr>
                             <td>
                                 <a href="{{ path('app_collab_show', {id: req.id}) }}" class="text-decoration-none fw-bold text-dark">
@@ -114,6 +114,9 @@
                                     <a href="{{ path('app_collab_view_applications', {id: req.id}) }}" class="btn btn-outline-primary" title="Candidatures">
                                         <i class="bi bi-people"></i>
                                     </a>
+                                    <a href="{{ path('app_collab_export_pdf', {id: req.id}) }}" class="btn btn-outline-info" title="Exporter PDF">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
                                     <form method="post" action="{{ path('app_collab_delete', {id: req.id}) }}" style="display:inline;"
                                           onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette demande ?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ req.id) }}">
@@ -127,6 +130,10 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="d-flex justify-content-center mt-4">
+                {{ knp_pagination_render(pagination) }}
             </div>
         {% endif %}
     </div>

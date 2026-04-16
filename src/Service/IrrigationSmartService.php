@@ -27,7 +27,7 @@ class IrrigationSmartService
         'default'    => ['besoin_mm' => 5.0,  'kc' => 1.0,  'sensibilite_chaleur' => 0.2],
     ];
 
-    public function __construct(private WeatherService $weatherService) {}
+    public function __construct(private WeatherService2 $weatherService) {}
 
     /**
      * Récupère les paramètres de besoin en eau pour une culture donnée

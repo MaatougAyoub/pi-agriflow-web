@@ -98,6 +98,47 @@ class CollabRequestRepository extends ServiceEntityRepository
 
     public function findByRequesterFiltered($requester, ?string $status, string $sortKey): array
     {
+        return $this->findByRequesterFilteredQuery($requester, $status, $sortKey)->getResult();
+    }
+
+    public function findApprovedFilteredQuery(?string $location, string $sortKey): \Doctrine\ORM\Query
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->where('r.status = :status')
+            ->setParameter('status', 'APPROVED');
+
+        if ($location !== null && $location !== '') {
+            $qb->andWhere('r.location LIKE :loc')
+                ->setParameter('loc', '%' . $location . '%');
+        }
+
+        [$field, $dir] = self::SORT_INDEX[$sortKey] ?? self::SORT_INDEX['date_desc'];
+        $qb->orderBy($field, $dir);
+
+        return $qb->getQuery();
+    }
+
+    public function searchFilteredQuery(string $keyword, ?string $location, string $sortKey): \Doctrine\ORM\Query
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->where('r.title LIKE :kw OR r.description LIKE :kw OR r.location LIKE :kw')
+            ->andWhere('r.status = :status')
+            ->setParameter('kw', '%' . $keyword . '%')
+            ->setParameter('status', 'APPROVED');
+
+        if ($location !== null && $location !== '') {
+            $qb->andWhere('r.location LIKE :loc')
+                ->setParameter('loc', '%' . $location . '%');
+        }
+
+        [$field, $dir] = self::SORT_INDEX[$sortKey] ?? self::SORT_INDEX['date_desc'];
+        $qb->orderBy($field, $dir);
+
+        return $qb->getQuery();
+    }
+
+    public function findByRequesterFilteredQuery($requester, ?string $status, string $sortKey): \Doctrine\ORM\Query
+    {
         $qb = $this->createQueryBuilder('r')
             ->where('r.requester = :requester')
             ->setParameter('requester', $requester);
@@ -110,7 +151,7 @@ class CollabRequestRepository extends ServiceEntityRepository
         [$field, $dir] = self::SORT_MY_REQUESTS[$sortKey] ?? self::SORT_MY_REQUESTS['date_desc'];
         $qb->orderBy($field, $dir);
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
     }
 
     public function save(CollabRequest $entity, bool $flush = false): void

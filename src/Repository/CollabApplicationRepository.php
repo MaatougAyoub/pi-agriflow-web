@@ -27,6 +27,11 @@ class CollabApplicationRepository extends ServiceEntityRepository
 
     public function findByCandidateFiltered($candidate, ?string $status, string $sortKey): array
     {
+        return $this->findByCandidateFilteredQuery($candidate, $status, $sortKey)->getResult();
+    }
+
+    public function findByCandidateFilteredQuery($candidate, ?string $status, string $sortKey): \Doctrine\ORM\Query
+    {
         $qb = $this->createQueryBuilder('a')
             ->where('a.candidate = :candidate')
             ->setParameter('candidate', $candidate);
@@ -39,7 +44,19 @@ class CollabApplicationRepository extends ServiceEntityRepository
         [$field, $dir] = self::SORT_MY_APPLICATIONS[$sortKey] ?? self::SORT_MY_APPLICATIONS['date_desc'];
         $qb->orderBy($field, $dir);
 
-        return $qb->getQuery()->getResult();
+        return $qb->getQuery();
+    }
+
+    public function countApprovedByRequest($request): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.request = :request')
+            ->andWhere('a.status = :status')
+            ->setParameter('request', $request)
+            ->setParameter('status', 'APPROVED')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     public function findByRequest($request): array
