@@ -800,7 +800,7 @@ final class CultureController extends AbstractController
         return $this->getAuthenticatedUser()->getId();
     }
 
-    private function buildPdfSignatureSource(?string $signaturePath): ?string
+    /* private function buildPdfSignatureSource(?string $signaturePath): ?string
     {
         if (null === $signaturePath || '' === trim($signaturePath)) {
             return null;
@@ -815,6 +815,37 @@ final class CultureController extends AbstractController
         }
 
         return 'file:///'.str_replace(DIRECTORY_SEPARATOR, '/', $absolutePath);
+    } */
+
+    private function buildPdfSignatureSource(?string $signaturePath): ?string
+    {
+        $signaturePath = trim((string) $signaturePath);
+
+        if ('' === $signaturePath) {
+            return null;
+        }
+
+        $normalizedPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $signaturePath);
+
+        if ($this->isAbsoluteFilesystemPath($signaturePath) && is_file($normalizedPath)) {
+            return 'file:///'.str_replace(DIRECTORY_SEPARATOR, '/', $normalizedPath);
+        }
+
+        $publicPath = rtrim((string) $this->getParameter('kernel.project_dir'), '\\/').DIRECTORY_SEPARATOR.'public';
+        $relativePath = ltrim($signaturePath, '\\/');
+        $absolutePath = $publicPath.DIRECTORY_SEPARATOR.str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
+
+        if (!is_file($absolutePath)) {
+            return null;
+        }
+
+        return 'file:///'.str_replace(DIRECTORY_SEPARATOR, '/', $absolutePath);
+    }
+
+    private function isAbsoluteFilesystemPath(string $path): bool
+    {
+        return 1 === preg_match('/^[A-Za-z]:[\\\\\\/]/', $path)
+            || str_starts_with($path, '\\\\');
     }
 
     /**

@@ -64,6 +64,19 @@
     <button class="btn btn-success">{{ submit_label|default('Enregistrer') }}</button>
     <a href="{{ path('app_culture_index') }}" class="btn btn-outline-secondary">Retour a la liste</a>
   </div>
+
+  {% set parcelle_name_map = {} %}
+  {% for parcelle in parcelles %}
+    {% set parcelle_name_map = parcelle_name_map|merge({ (parcelle.id): (parcelle.nom ?: 'Parcelle #' ~ parcelle.id) }) %}
+  {% endfor %}
+
+  <div
+    id="culture-form-data"
+    data-surface-map="{{ available_surface_map|default({})|json_encode|e('html_attr') }}"
+    data-yield-coefficients="{{ yield_coefficients|default({})|json_encode|e('html_attr') }}"
+    data-parcelle-names="{{ parcelle_name_map|json_encode|e('html_attr') }}"
+    hidden
+  ></div>
 {{ form_end(form) }}
 
 <script>
@@ -73,13 +86,29 @@
     const superficieInput = document.getElementById('{{ form.superficie.vars.id }}');
     const recolteEstimeInput = document.getElementById('{{ form.recolteEstime.vars.id }}');
     const surfaceAlert = document.getElementById('culture-surface-alert');
-    const surfaceMap = {{ available_surface_map|json_encode|raw }};
-    const yieldCoefficients = {{ yield_coefficients|json_encode|raw }};
-    const parcelleNames = {
-      {% for parcelle in parcelles %}
-        '{{ parcelle.id }}': '{{ (parcelle.nom ?: 'Parcelle #' ~ parcelle.id)|e('js') }}'{% if not loop.last %},{% endif %}
-      {% endfor %}
+    const formDataNode = document.getElementById('culture-form-data');
+
+    const parseJsonDataset = function (value, fallback) {
+      if (!value) {
+        return fallback;
+      }
+
+      try {
+        const parsedValue = JSON.parse(value);
+
+        if (parsedValue && typeof parsedValue === 'object') {
+          return parsedValue;
+        }
+      } catch (error) {
+        // Fallback to a safe default when data attributes cannot be parsed.
+      }
+
+      return fallback;
     };
+
+    const surfaceMap = parseJsonDataset(formDataNode ? formDataNode.dataset.surfaceMap : '', {});
+    const yieldCoefficients = parseJsonDataset(formDataNode ? formDataNode.dataset.yieldCoefficients : '', {});
+    const parcelleNames = parseJsonDataset(formDataNode ? formDataNode.dataset.parcelleNames : '', {});
 
     const updateAvailableSurface = function () {
       if (!parcelleSelect || !surfaceAlert) {
@@ -97,7 +126,9 @@
       surfaceAlert.className = 'alert alert-info';
       surfaceAlert.innerHTML = 'Surface disponible pour <strong id="selected-parcelle-name"></strong>: <span id="selected-available-surface"></span> m&sup2;';
       document.getElementById('selected-parcelle-name').textContent = parcelleNames[parcelleId] || ('Parcelle #' + parcelleId);
-      document.getElementById('selected-available-surface').textContent = Number(surfaceMap[parcelleId]).toFixed(0);
+      document.getElementById('selected-available-surface').textContent = new Intl.NumberFormat('fr-FR', {
+        maximumFractionDigits: 0,
+      }).format(Number(surfaceMap[parcelleId]) || 0);
     };
 
     if (parcelleSelect && surfaceAlert) {
@@ -111,7 +142,7 @@
       }
 
       const typeCulture = String(typeCultureInput.value || '').trim().toUpperCase();
-      const superficie = parseFloat(superficieInput.value);
+      const superficie = parseFloat(String(superficieInput.value || '').replace(',', '.'));
 
       if (!typeCulture || Number.isNaN(superficie) || superficie <= 0) {
         recolteEstimeInput.value = '';
