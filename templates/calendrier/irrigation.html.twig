@@ -1,0 +1,325 @@
+{% extends 'base.html.twig' %}
+
+{% block page_title %}Calendrier d'irrigation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-green: #2d6a4f;
+            --light-green: #d8f3dc;
+            --accent-blue: #0ea5e9;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .calendrier-container {
+            max-width: 1300px;
+            margin: 40px auto;
+            padding: 0 25px 80px 25px;
+        }
+
+        .calendrier-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .calendrier-header h1 {
+            color: #1b4332;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        /* Légende flottante moderne */
+        .calendrier-legende {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .legende-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .legende-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        /* FullCalendar Customization */
+        .calendrier-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.3);
+            min-height: 750px;
+        }
+
+        .fc { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        .fc .fc-toolbar-title {
+            color: #1b4332;
+            font-weight: 800 !important;
+            font-size: 1.6rem !important;
+        }
+
+        .fc .fc-button-primary {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #1b4332 !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .fc .fc-button-primary:hover {
+            background: #f8fafc !important;
+            transform: translateY(-1px);
+        }
+
+        .fc .fc-button-active {
+            background: #2d6a4f !important;
+            color: white !important;
+            border-color: #2d6a4f !important;
+        }
+
+        .fc .fc-daygrid-day { transition: background 0.2s; }
+        .fc .fc-daygrid-day:hover { background: #f1f5f9; }
+
+        .fc .fc-event {
+            border: none !important;
+            padding: 5px 10px !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 8px !important;
+            margin-top: 2px !important;
+        }
+
+        /* Modal Design Luxe */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: white;
+            border-radius: 24px;
+            padding: 35px;
+            max-width: 480px;
+            width: 95%;
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, #2d6a4f, #52b788);
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+
+        .modal-info-row:hover { background: #f1f5f9; }
+
+        .info-label {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .modal-btn {
+            width: 100%;
+            text-align: center;
+            margin-top: 25px;
+            padding: 15px;
+            background: #1b4332;
+            color: white !important;
+            border-radius: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-btn:hover {
+            background: #2d6a4f;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(45,106,79,0.3);
+        }
+
+        .statut-badge {
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .statut-en_attente { background: #fff7ed; color: #c2410c; }
+        .statut-rempli { background: #f0f9ff; color: #0369a1; }
+        .statut-approuve { background: #f0fdf4; color: #15803d; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+
+    <section class="calendrier-container">
+        <div class="calendrier-header">
+            <span class="badge rounded-pill mb-3" style="background:#e8f5e9; color:#2d6a4f; padding: 10px 20px;">Planning AgriFlow</span>
+            <h1>📅 Calendrier Intelligent</h1>
+            <p>Pilotez vos besoins en eau avec précision et clarté</p>
+        </div>
+
+        <div class="calendrier-legende">
+            <div class="legende-item"><span class="legende-dot" style="background:#f59e0b;"></span> En attente</div>
+            <div class="legende-item"><span class="legende-dot" style="background:#3b82f6;"></span> Rempli</div>
+            <div class="legende-item"><span class="legende-dot" style="background:#10b981;"></span> Approuvé</div>
+            <div class="legende-item"><span class="legende-dot" style="background:#0ea5e9;"></span> Irrigation</div>
+        </div>
+
+        <div class="calendrier-wrapper">
+            <div id="calendrier"></div>
+        </div>
+    </section>
+
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="fermerModal()" style="position: absolute; top: 15px; right: 20px; background:none; border:none; font-size: 28px; color:#cbd5e1;">&times;</button>
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div id="modalIcon" style="font-size: 2.5rem;"></div>
+                <div>
+                    <h3 id="modalTitle" style="margin:0; font-weight:800; color:#1e293b;">Détail</h3>
+                    <small id="modalSubtitle" class="text-muted">Information de planification</small>
+                </div>
+            </div>
+            <div class="modal-info" id="modalBody"></div>
+            <a href="#" class="modal-btn" id="modalLink">
+                <i class="bi bi-eye-fill"></i> Consulter les détails
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendrier');
+        if (!calendarEl) return;
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'fr',
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek'
+            },
+            buttonText: { today: "Aujourd'hui", month: 'Mois', week: 'Semaine', list: 'Liste' },
+            navLinks: true,
+            dayMaxEvents: 3,
+            events: {
+                url: '{{ path("calendrier_irrigation_events") }}',
+                method: 'GET'
+            },
+            eventClick: function(info) {
+                info.jsEvent.preventDefault();
+                var props = info.event.extendedProps;
+                
+                document.getElementById('modalTitle').textContent = info.event.title;
+                document.getElementById('modalIcon').innerHTML = props.type === 'plan' ? '📅' : '💧';
+                
+                let body = '';
+                if (props.type === 'plan') {
+                    body = `
+                        ${row('bi-flower1', 'Culture', props.nomCulture || '-')}
+                        ${row('bi-droplet-half', 'Volume Total', (props.volumeEau || 0) + ' L')}
+                        ${row('bi-check-circle', 'État', `<span class="statut-badge statut-${props.statut}">${props.statut || 'En attente'}</span>`)}
+                    `;
+                } else {
+                    body = `
+                        ${row('bi-droplet', 'Eau requise', (props.eauMm || 0) + ' mm')}
+                        ${row('bi-clock', 'Durée estimée', (props.tempsMin || 0) + ' min')}
+                        ${row('bi-thermometer-half', 'Température', (props.tempC || 0) + ' °C')}
+                        ${row('bi-moisture', 'Humidité', (props.humidite || 0) + ' %')}
+                    `;
+                }
+
+                document.getElementById('modalBody').innerHTML = body;
+                
+                var planId = props.planId || '';
+                var basePath = "{{ is_granted('ROLE_EXPERT') ? '/expert/irrigation/' : '/agriculteur/irrigation/' }}";
+                document.getElementById('modalLink').href = basePath + planId;
+
+                document.getElementById('eventModal').classList.add('active');
+            }
+        });
+
+        calendar.render();
+
+        function row(icon, label, value) {
+            return `
+                <div class="modal-info-row">
+                    <span class="info-label"><i class="bi ${icon}"></i> ${label}</span>
+                    <span class="info-value">${value}</span>
+                </div>`;
+        }
+    });
+
+    function fermerModal() {
+        document.getElementById('eventModal').classList.remove('active');
+    }
+    </script>
+{% endblock %}

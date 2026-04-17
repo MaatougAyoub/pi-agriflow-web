@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use Dompdf\Dompdf;
-use App\Service\NotificationService;
 use Dompdf\Options;
 use App\Entity\Diagnosti;
 use App\Entity\PlansIrrigation;
@@ -40,7 +39,6 @@ class AgriculteurController extends AbstractController
         EntityManagerInterface $em,
         SluggerInterface $slugger,
         CultureRepository $cultureRepo,
-        NotificationService $notificationService  // ← AJOUTÉ
     ): Response {
         $user     = $this->getUser();
         $cultures = $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
@@ -78,13 +76,7 @@ class AgriculteurController extends AbstractController
             $em->persist($diagnostic);
             $em->flush();
 
-            // ✅ NOTIFICATION MERCURE : Notifier les experts du nouveau diagnostic
-            try {
-                $notificationService->notifyNewDiagnostic($diagnostic);
-            } catch (\Exception $e) {
-                // Log l'erreur mais ne bloque pas le flux
-            }
-
+            
             $this->addFlash('success', 'Diagnostic envoyé avec succès.');
             return $this->redirectToRoute('agriculteur_diagnostics');
         }
@@ -197,7 +189,6 @@ class AgriculteurController extends AbstractController
         EntityManagerInterface $em,
         CultureRepository $cultureRepo,
         PlansIrrigationRepository $planRepo,
-        NotificationService $notificationService  // ← AJOUTÉ
     ): Response {
         $user     = $this->getUser();
         $cultures = $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
@@ -226,13 +217,7 @@ class AgriculteurController extends AbstractController
             $em->persist($plan);
             $em->flush();
 
-            // ✅ NOTIFICATION MERCURE : Notifier les experts du nouveau plan
-            try {
-                $notificationService->notifyNewIrrigationPlan($plan);
-            } catch (\Exception $e) {
-                // Log l'erreur mais ne bloque pas le flux
-            }
-
+            
             $this->addFlash('success', 'Plan créé avec succès.');
             return $this->redirectToRoute('agriculteur_irrigation');
         }
