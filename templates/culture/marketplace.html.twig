@@ -78,7 +78,7 @@
                 <div class="col-6">
                   <div class="marketplace-stat">
                     <div class="text-muted small mb-1">Proprietaire</div>
-                    <div class="fw-semibold">{{ is_owner ? 'Vous' : 'Autre agriculteur' }}</div>
+                    <div class="fw-semibold">{{ is_owner ? 'Vous' : (owner_names_by_id[culture.proprietaireId] ?? 'Agriculteur') }}</div>
                   </div>
                 </div>
                 <div class="col-6">
@@ -95,13 +95,11 @@
                 </div>
               </div>
 
-              <div class="small text-muted mb-4">
-                {% if is_owner %}
+              {% if is_owner %}
+                <div class="small text-muted mb-4">
                   Cette culture est deja visible dans la marketplace et reste consultable depuis votre espace.
-                {% else %}
-                  Cette culture est actuellement disponible a l achat selon les regles metier en place.
-                {% endif %}
-              </div>
+                </div>
+              {% endif %}
 
               <div class="mt-auto d-flex gap-2 flex-wrap">
                 <a href="{{ path('app_culture_show', {id: culture.id}) }}" class="btn {{ is_owner ? 'btn-success' : 'btn-outline-success' }}">

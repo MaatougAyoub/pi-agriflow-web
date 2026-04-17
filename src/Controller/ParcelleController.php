@@ -8,9 +8,12 @@ use App\Entity\Parcelle;
 use App\Form\ParcelleType;
 use App\Repository\CultureRepository;
 use App\Repository\ParcelleRepository;
+use App\Service\ParcelRecommendationService;
 use App\Service\ParcelleCultureSurfaceService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -120,6 +123,60 @@ final class ParcelleController extends AbstractController
             'cultures' => $cultures,
             'available_surface' => $surfaceService->getAvailableSurfaceForParcelle($parcelle),
         ]);
+    }
+
+    #[Route('/{id}/recommendations', name: 'recommendations', methods: ['GET', 'POST'])]
+    public function recommendations(
+        int $id,
+        Request $request,
+        ParcelleRepository $parcelleRepository,
+        ParcelRecommendationService $parcelRecommendationService,
+        LoggerInterface $logger,
+    ): JsonResponse {
+        if ($accessResponse = $this->redirectUnlessAgriculteur()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => self::AGRICULTEUR_ONLY_MESSAGE,
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $parcelle = $this->findOwnedParcelle($id, $this->getAuthenticatedUserId(), $parcelleRepository);
+
+        if (!$this->isCsrfTokenValid('parcel_recommendations_'.$parcelle->getId(), (string) $request->request->get('_token'))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Jeton CSRF invalide.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $recommendations = $parcelRecommendationService->getRecommendations(
+                (string) ($parcelle->getTypeTerre() ?? ''),
+                (float) ($parcelle->getSuperficie() ?? 0),
+                (string) ($parcelle->getLocalisation() ?? '')
+            );
+
+            return new JsonResponse([
+                'success' => true,
+                'recommendations' => $recommendations,
+            ]);
+        } catch (\Throwable $exception) {
+            $logger->error('Parcel recommendations request failed.', [
+                'exception' => $exception,
+                'message' => $exception->getMessage(),
+            ]);
+
+            $payload = [
+                'success' => false,
+                'error' => 'Generation des recommandations impossible.',
+            ];
+
+            if ((bool) $this->getParameter('kernel.debug')) {
+                $payload['details'] = $exception->getMessage();
+            }
+
+            return new JsonResponse($payload, Response::HTTP_BAD_REQUEST);
+        }
     }
 
     #[Route('/{id}/modifier', name: 'edit', methods: ['GET', 'POST'])]

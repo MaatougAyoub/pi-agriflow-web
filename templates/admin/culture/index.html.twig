@@ -77,35 +77,43 @@
             <tr>
               <th>ID</th>
               <th>Nom</th>
-              <th>Parcelle ID</th>
-              <th>Proprietaire ID</th>
+              <th>Parcelle</th>
+              <th>Proprietaire</th>
+              <th>Acheteur</th>
               <th>Type culture</th>
               <th>Superficie</th>
               <th>Etat</th>
-              <th>Recolte estimee</th>
-              <th>Date de creation</th>
+              <th>Prix de vente</th>
+              <th>Date de recolte</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for culture in cultures %}
+              {% set parcelle = parcelles_by_id[culture.parcelleId] ?? null %}
               <tr>
                 <td>{{ culture.id }}</td>
                 <td>{{ culture.nom ?: 'Sans nom' }}</td>
                 <td>
-                  {% set parcelle = parcelles_by_id[culture.parcelleId] ?? null %}
                   {% if parcelle %}
-                    <a href="{{ path('app_admin_parcelle_show', {id: parcelle.id}) }}" class="text-decoration-none">{{ parcelle.id }}</a>
+                    <a href="{{ path('app_admin_parcelle_show', {id: parcelle.id}) }}" class="text-decoration-none">
+                      {{ parcelle.nom ?: 'Parcelle #' ~ parcelle.id }}
+                    </a>
                   {% else %}
                     {{ culture.parcelleId ?: '-' }}
                   {% endif %}
                 </td>
-                <td>{{ culture.proprietaireId ?: '-' }}</td>
+                <td>{{ owner_names_by_id[culture.proprietaireId] ?? ('Utilisateur #' ~ (culture.proprietaireId ?: '-')) }}</td>
+                <td>{{ culture.acheteurId ? (buyer_names_by_id[culture.acheteurId] ?? ('Utilisateur #' ~ culture.acheteurId)) : '-' }}</td>
                 <td>{{ culture.typeCulture ?: '-' }}</td>
                 <td>{{ culture.superficie|default(0)|number_format(0, '.', ' ') }} m&sup2;</td>
-                <td>{{ culture.etat ?: '-' }}</td>
-                <td>{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : '-' }}</td>
-                <td>{{ culture.dateCreation ? culture.dateCreation|date('d/m/Y H:i') : '-' }}</td>
+                <td>
+                  <span class="badge {% if culture.etat == 'RECOLTEE' %}text-bg-secondary{% elseif culture.etat == 'VENDUE' %}text-bg-primary{% elseif culture.etat == 'EN_VENTE' %}text-bg-warning{% else %}text-bg-light{% endif %}">
+                    {{ culture.etat ?: '-' }}
+                  </span>
+                </td>
+                <td>{{ culture.prixVente is not null ? culture.prixVente|number_format(2, '.', ' ') ~ ' TND' : '-' }}</td>
+                <td>{{ culture.dateRecolte ? culture.dateRecolte|date('d/m/Y') : '-' }}</td>
                 <td class="admin-actions">
                   <a href="{{ path('app_admin_culture_show', {id: culture.id}) }}" class="btn btn-outline-secondary btn-sm">Voir</a>
                   {% include 'admin/culture/_delete_form.html.twig' with {culture: culture} %}

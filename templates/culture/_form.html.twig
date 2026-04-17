@@ -39,11 +39,6 @@
         <div class="col-md-6">
           {{ form_row(form.recolteEstime) }}
         </div>
-        <div class="col-md-6 d-flex align-items-center">
-          <div class="alert alert-light border w-100 mb-3">
-            L etat de la culture est gere automatiquement selon les actions disponibles.
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -74,19 +69,23 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const parcelleSelect = document.getElementById('{{ form.parcelleId.vars.id }}');
+    const typeCultureInput = document.getElementById('{{ form.typeCulture.vars.id }}');
+    const superficieInput = document.getElementById('{{ form.superficie.vars.id }}');
+    const recolteEstimeInput = document.getElementById('{{ form.recolteEstime.vars.id }}');
     const surfaceAlert = document.getElementById('culture-surface-alert');
     const surfaceMap = {{ available_surface_map|json_encode|raw }};
+    const yieldCoefficients = {{ yield_coefficients|json_encode|raw }};
     const parcelleNames = {
       {% for parcelle in parcelles %}
         '{{ parcelle.id }}': '{{ (parcelle.nom ?: 'Parcelle #' ~ parcelle.id)|e('js') }}'{% if not loop.last %},{% endif %}
       {% endfor %}
     };
 
-    if (!parcelleSelect || !surfaceAlert) {
-      return;
-    }
-
     const updateAvailableSurface = function () {
+      if (!parcelleSelect || !surfaceAlert) {
+        return;
+      }
+
       const parcelleId = parcelleSelect.value;
 
       if (!parcelleId || typeof surfaceMap[parcelleId] === 'undefined') {
@@ -101,7 +100,36 @@
       document.getElementById('selected-available-surface').textContent = Number(surfaceMap[parcelleId]).toFixed(0);
     };
 
-    parcelleSelect.addEventListener('change', updateAvailableSurface);
-    updateAvailableSurface();
+    if (parcelleSelect && surfaceAlert) {
+      parcelleSelect.addEventListener('change', updateAvailableSurface);
+      updateAvailableSurface();
+    }
+
+    const updateEstimatedYieldPreview = function () {
+      if (!typeCultureInput || !superficieInput || !recolteEstimeInput) {
+        return;
+      }
+
+      const typeCulture = String(typeCultureInput.value || '').trim().toUpperCase();
+      const superficie = parseFloat(superficieInput.value);
+
+      if (!typeCulture || Number.isNaN(superficie) || superficie <= 0) {
+        recolteEstimeInput.value = '';
+        return;
+      }
+
+      const coefficient = typeof yieldCoefficients[typeCulture] !== 'undefined'
+        ? Number(yieldCoefficients[typeCulture])
+        : Number(yieldCoefficients.AUTRE || 1);
+      const estimate = Math.round(coefficient * superficie * 100) / 100;
+
+      recolteEstimeInput.value = estimate.toFixed(2);
+    };
+
+    if (typeCultureInput && superficieInput && recolteEstimeInput) {
+      typeCultureInput.addEventListener('change', updateEstimatedYieldPreview);
+      superficieInput.addEventListener('input', updateEstimatedYieldPreview);
+      updateEstimatedYieldPreview();
+    }
   });
 </script>

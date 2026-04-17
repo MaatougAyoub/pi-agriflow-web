@@ -13,9 +13,37 @@ Suivi et informations detaillees de cette culture
 {% block hero_size %}pc-hero-medium{% endblock %}
 
 {% block module_body %}
-  <div class="row g-4">
+  <style>
+    .pc-module-shell {
+      padding-bottom: 22rem !important;
+      overflow: visible;
+    }
+
+    .culture-show-shell {
+      margin-bottom: 10rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .culture-history-card {
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (max-width: 991px) {
+      .pc-module-shell {
+        padding-bottom: 16rem !important;
+      }
+
+      .culture-show-shell {
+        margin-bottom: 7rem;
+      }
+    }
+  </style>
+
+  <div class="row g-4 culture-show-shell">
     <div class="col-lg-8">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
           <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
             <div>
@@ -98,21 +126,31 @@ Suivi et informations detaillees de cette culture
             <div class="col-md-6">
               <div class="border rounded p-3 h-100">
                 <div class="text-muted small mb-1">Recolte estimee</div>
-                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' Kg' : 'Non renseignee' }}</div>
+                <div class="fw-semibold">{{ culture.recolteEstime is not null ? culture.recolteEstime|number_format(0, '.', ' ') ~ ' kg' : 'Non renseignee' }}</div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <div class="text-muted small mb-1">Date de publication</div>
-                <div class="fw-semibold">{{ culture.datePublication ? culture.datePublication|date('d/m/Y') : 'Non renseignee' }}</div>
+            {% if culture.etat in ['EN_VENTE', 'VENDUE'] %}
+              <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                  <div class="text-muted small mb-1">Prix de vente</div>
+                  <div class="fw-semibold">
+                    {{ culture.prixVente is not null ? culture.prixVente|number_format(2, '.', ' ') ~ ' TND' : 'Non renseigne' }}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="col-md-6">
-              <div class="border rounded p-3 h-100">
-                <div class="text-muted small mb-1">Date de vente</div>
-                <div class="fw-semibold">{{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Non renseignee' }}</div>
+              <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                  <div class="text-muted small mb-1">Date de publication</div>
+                  <div class="fw-semibold">{{ culture.datePublication ? culture.datePublication|date('d/m/Y') : 'Non renseignee' }}</div>
+                </div>
               </div>
-            </div>
+              <div class="col-md-6">
+                <div class="border rounded p-3 h-100">
+                  <div class="text-muted small mb-1">Date de vente</div>
+                  <div class="fw-semibold">{{ culture.dateVente ? culture.dateVente|date('d/m/Y') : 'Pas encore vendue' }}</div>
+                </div>
+              </div>
+            {% endif %}
           </div>
 
           <div class="d-flex gap-2 mt-4 flex-wrap">
@@ -125,8 +163,9 @@ Suivi et informations detaillees de cette culture
             {% endif %}
 
             {% if can_publish %}
-              <form method="post" action="{{ path('app_culture_publish', {id: culture.id}) }}">
+              <form method="post" action="{{ path('app_culture_publish', {id: culture.id}) }}" onsubmit="return promptPublishPrice(this);">
                 <input type="hidden" name="_token" value="{{ csrf_token('publish_culture_' ~ culture.id) }}">
+                <input type="hidden" name="prix_vente" value="{{ culture.prixVente is not null ? culture.prixVente : '' }}">
                 <button class="btn btn-success">Publier</button>
               </form>
             {% endif %}
@@ -155,9 +194,76 @@ Suivi et informations detaillees de cette culture
             {% if can_view_parcelle %}
               <a href="{{ path('app_parcelle_show', {id: parcelle.id}) }}" class="btn btn-success">Voir la parcelle</a>
             {% endif %}
+
+            {% if can_generate_contract %}
+              <a href="{{ path('app_culture_sale_contract_pdf', {id: culture.id}) }}" target="_blank" rel="noopener" class="btn btn-outline-dark">
+                Generer le contrat de vente
+              </a>
+            {% endif %}
           </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mt-4 culture-history-card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-4">
+            <h2 class="h4 mb-0">Historique</h2>
+            {% if can_undo_harvest %}
+              <form method="post" action="{{ path('app_culture_undo_harvest', {id: culture.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('undo_harvest_culture_' ~ culture.id) }}">
+                <button class="btn btn-outline-warning btn-sm">Annuler la recolte</button>
+              </form>
+            {% endif %}
+          </div>
+
+          {% if history_entries is empty %}
+            <p class="text-muted mb-0">Aucun evenement n a encore ete enregistre pour cette culture.</p>
+          {% else %}
+            <div class="list-group list-group-flush">
+              {% for entry in history_entries %}
+                <div class="list-group-item px-0">
+                  <div class="fw-semibold">
+                    {{ entry.performedAt ? entry.performedAt|date('d/m/Y H:i') : '-' }}
+                    -
+                    {{ entry.actionLabel }}
+                  </div>
+                  {% if entry.utilisateurDisplayName %}
+                    <div class="small text-muted mt-1">Par {{ entry.utilisateurDisplayName }}</div>
+                  {% endif %}
+                  {% if entry.details %}
+                    <div class="small text-muted mt-1">{{ entry.details }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
+
+  <script>
+    function promptPublishPrice(formElement) {
+      const hiddenInput = formElement.querySelector('input[name="prix_vente"]');
+      const currentValue = hiddenInput ? hiddenInput.value : '';
+      const answer = window.prompt('Saisissez le prix de vente de cette culture (TND) :', currentValue || '');
+
+      if (answer === null) {
+        return false;
+      }
+
+      const price = parseFloat(String(answer).replace(',', '.'));
+
+      if (Number.isNaN(price) || price <= 0) {
+        window.alert('Veuillez saisir un prix de vente valide superieur a 0.');
+        return false;
+      }
+
+      if (hiddenInput) {
+        hiddenInput.value = price.toFixed(2);
+      }
+
+      return true;
+    }
+  </script>
 {% endblock %}

@@ -2,6 +2,7 @@
 
 return [
     Symfony\Bundle\FrameworkBundle\FrameworkBundle::class => ['all' => true],
+    Knp\Bundle\SnappyBundle\KnpSnappyBundle::class => ['all' => true],
     Doctrine\Bundle\DoctrineBundle\DoctrineBundle::class => ['all' => true],
     Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle::class => ['all' => true],
     Symfony\Bundle\DebugBundle\DebugBundle::class => ['dev' => true],
@@ -15,6 +16,7 @@ return [
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
     Nucleos\DompdfBundle\NucleosDompdfBundle::class => ['all' => true],
+    Symfony\UX\Chartjs\ChartjsBundle::class => ['all' => true],
     KnpU\OAuth2ClientBundle\KnpUOAuth2ClientBundle::class => ['all' => true],
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
 

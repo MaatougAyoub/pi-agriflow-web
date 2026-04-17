@@ -87,9 +87,13 @@ class CultureType extends AbstractType
                 ],
             ])
             ->add('recolteEstime', NumberType::class, [
-                'label' => 'Recolte estimee',
+                'label' => 'Recolte estimee (kg)',
                 'scale' => 2,
                 'required' => false,
+                'attr' => [
+                    'readonly' => 'readonly',
+                ],
+                'help' => 'La recolte estimee est calculee automatiquement selon le type de culture et la superficie.',
                 'constraints' => [
                     new GreaterThanOrEqual([
                         'value' => 0,

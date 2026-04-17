@@ -1,0 +1,59 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block admin_title %}Statistiques parcelles et cultures{% endblock %}
+{% block admin_subtitle %}Visualisation simple des donnees Parcelles & Cultures{% endblock %}
+
+{% block admin_actions %}
+    <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary">Retour au dashboard</a>
+{% endblock %}
+
+{% block admin_body %}
+    <style>
+        .admin-chart-card {
+            min-height: 420px;
+        }
+
+        .admin-chart-shell {
+            position: relative;
+            height: 320px;
+        }
+    </style>
+
+    <div class="row g-4">
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm admin-chart-card">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-1">Cultures par etat</h2>
+                    <p class="text-muted small mb-4">Vue globale des cultures selon leur cycle actuel.</p>
+                    <div class="admin-chart-shell">
+                        {{ render_chart(culture_etat_chart) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm admin-chart-card">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-1">Cultures par type</h2>
+                    <p class="text-muted small mb-4">Repartition des cultures enregistrees par type de production.</p>
+                    <div class="admin-chart-shell">
+                        {{ render_chart(culture_type_chart) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm admin-chart-card">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-1">Parcelles par type de terre</h2>
+                    <p class="text-muted small mb-4">Lecture rapide des types de terre presents dans la base.</p>
+                    <div class="admin-chart-shell">
+                        {{ render_chart(parcelle_type_chart) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
