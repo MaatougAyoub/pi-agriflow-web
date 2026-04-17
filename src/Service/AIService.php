@@ -23,7 +23,7 @@ class AIService
      */
     public function analyserImage(string $base64Image, string $mimeType = 'image/jpeg'): string
     {
-        $apiKey = $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY');
+        $apiKey = $_ENV['GROQ_API_KEY1'] ?? getenv('GROQ_API_KEY1');
 
         if (!$apiKey) {
             throw new \RuntimeException('Clé API GROQ manquante dans .env. Ajoutez GROQ_API_KEY=gsk_votre_clé');
