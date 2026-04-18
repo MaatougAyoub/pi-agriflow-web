@@ -1,223 +1,187 @@
-{# templates/partials/_mercure_notifications.html.twig #}
-
-{# Container de notifications toast #}
-<div id="notification-container" style="
+{#
+    Fichier : templates/partials/_mercure_notifications.html.twig
+    Inclus dans base.html.twig pour tous les utilisateurs connectés
+#}
+{% if app.user %}
+<div id="notif-container" style="
     position: fixed;
-    top: 20px;
+    top: 80px;
     right: 20px;
     z-index: 9999;
-    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 360px;
+    pointer-events: none;
 "></div>
 
 <style>
-    .notif-toast {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        padding: 16px 20px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        animation: slideIn 0.4s ease-out;
-        border-left: 4px solid #2d6a4f;
-        cursor: pointer;
-        transition: transform 0.2s, opacity 0.3s;
-    }
-    .notif-toast:hover {
-        transform: translateX(-5px);
-    }
-    .notif-toast.fade-out {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    .notif-toast .notif-icon {
-        font-size: 28px;
-        flex-shrink: 0;
-    }
-    .notif-toast .notif-body {
-        flex: 1;
-    }
-    .notif-toast .notif-title {
-        font-weight: 700;
-        color: #1b4332;
-        font-size: 14px;
-        margin-bottom: 4px;
-    }
-    .notif-toast .notif-message {
-        color: #555;
-        font-size: 13px;
-        line-height: 1.4;
-    }
-    .notif-toast .notif-time {
-        color: #aaa;
-        font-size: 11px;
-        margin-top: 4px;
-    }
-    .notif-toast .notif-close {
-        background: none;
-        border: none;
-        color: #aaa;
-        font-size: 18px;
-        cursor: pointer;
-        padding: 0;
-        line-height: 1;
-    }
-    .notif-toast .notif-close:hover {
-        color: #333;
-    }
-    .notif-toast.type-irrigation {
-        border-left-color: #0077b6;
-    }
-    .notif-toast.type-irrigation .notif-title {
-        color: #023e8a;
-    }
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    .notif-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: #e63946;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        font-size: 11px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
+.notif-toast {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    pointer-events: all;
+    animation: slideIn 0.3s ease;
+    max-width: 360px;
+    font-family: 'Segoe UI', sans-serif;
+}
+.notif-toast.success { border-left: 4px solid #2d6a4f; }
+.notif-toast.info    { border-left: 4px solid #0077b6; }
+.notif-toast.warning { border-left: 4px solid #ca8a04; }
+.notif-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.notif-body { flex: 1; }
+.notif-title { font-weight: 600; font-size: 14px; color: #1a1a1a; margin: 0 0 3px; }
+.notif-msg   { font-size: 13px; color: #555; margin: 0; line-height: 1.4; }
+.notif-date  { font-size: 11px; color: #999; margin-top: 4px; display: block; }
+.notif-close {
+    background: none; border: none; cursor: pointer;
+    color: #aaa; font-size: 18px; line-height: 1;
+    padding: 0; flex-shrink: 0; align-self: flex-start;
+}
+.notif-close:hover { color: #333; }
+@keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+}
+@keyframes slideOut {
+    from { transform: translateX(0);   opacity: 1; }
+    to   { transform: translateX(120%); opacity: 0; }
+}
+
+/* Compteur de notifications dans la navbar (optionnel) */
+#notif-badge {
+    display: none;
+    position: absolute;
+    top: -6px; right: -6px;
+    background: #dc3545;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 18px; height: 18px;
+    align-items: center;
+    justify-content: center;
+}
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mercureUrl = '{{ mercure_public_url | default("http://localhost:3000/.well-known/mercure") }}';
-    const container = document.getElementById('notification-container');
+(function() {
+    const userId  = {{ app.user.id }};
+    const isExpert = {{ is_granted('ROLE_EXPERT') ? 'true' : 'false' }};
+    const mercureUrl = '{{ mercure_url is defined ? mercure_url : "http://localhost:3000/.well-known/mercure" }}';
+
     let notifCount = 0;
 
-    const topics = [];
+    function showToast(data) {
+        const container = document.getElementById('notif-container');
+        if (!container) return;
 
-    {% if is_granted('ROLE_EXPERT') %}
-        topics.push('diagnostics/nouveau');
-        topics.push('irrigation/nouveau');
-    {% endif %}
+        const icons = {
+            'nouveau_diagnostic' : '📋',
+            'diagnostic_traite'  : '✅',
+            'nouveau_plan'       : '💧',
+            'plan_mis_a_jour'    : '📊',
+        };
+        const types = {
+            'nouveau_diagnostic' : 'info',
+            'diagnostic_traite'  : 'success',
+            'nouveau_plan'       : 'info',
+            'plan_mis_a_jour'    : 'success',
+        };
+        const titles = {
+            'nouveau_diagnostic' : 'Nouveau diagnostic',
+            'diagnostic_traite'  : 'Diagnostic traité',
+            'nouveau_plan'       : 'Nouveau plan irrigation',
+            'plan_mis_a_jour'    : 'Plan mis à jour',
+        };
 
-    {% if is_granted('ROLE_USER') and not is_granted('ROLE_EXPERT') %}
-        topics.push('agriculteur/{{ app.user.id }}/diagnostics');
-        topics.push('agriculteur/{{ app.user.id }}/irrigation');
-    {% endif %}
-
-    if (topics.length === 0) return;
-
-    const url = new URL(mercureUrl);
-    topics.forEach(topic => url.searchParams.append('topic', topic));
-
-    const eventSource = new EventSource(url);
-
-    eventSource.onmessage = function(event) {
-        try {
-            const data = JSON.parse(event.data);
-            showNotification(data);
-            updateBadge(++notifCount);
-            playNotifSound();
-        } catch (e) {
-            console.error('Erreur parsing notification:', e);
-        }
-    };
-
-    eventSource.onerror = function() {
-        console.warn('Mercure: connexion perdue, tentative de reconnexion...');
-    };
-
-    function showNotification(data) {
-        let icon = '🔔', cssClass = '', title = 'Notification';
-
-        switch(data.type) {
-            case 'nouveau_diagnostic':
-                icon = '🌿'; title = 'Nouveau Diagnostic'; break;
-            case 'diagnostic_traite':
-                icon = '✅'; title = 'Diagnostic Traité'; break;
-            case 'nouveau_plan':
-                icon = '💧'; title = "Nouveau Plan d'Irrigation"; cssClass = 'type-irrigation'; break;
-            case 'plan_mis_a_jour':
-                icon = '📊'; title = "Plan Mis à Jour"; cssClass = 'type-irrigation'; break;
-        }
+        const icon  = icons[data.type]  || '🔔';
+        const type  = types[data.type]  || 'info';
+        const title = titles[data.type] || 'Notification';
 
         const toast = document.createElement('div');
-        toast.className = 'notif-toast ' + cssClass;
-        toast.innerHTML =
-            '<span class="notif-icon">' + icon + '</span>' +
-            '<div class="notif-body">' +
-                '<div class="notif-title">' + title + '</div>' +
-                '<div class="notif-message">' + (data.message || 'Nouvelle notification') + '</div>' +
-                '<div class="notif-time">' + (data.date || "À l'instant") + '</div>' +
-            '</div>' +
-            '<button class="notif-close" onclick="this.parentElement.remove()">×</button>';
+        toast.className = `notif-toast ${type}`;
+        toast.innerHTML = `
+            <span class="notif-icon">${icon}</span>
+            <div class="notif-body">
+                <p class="notif-title">${title}</p>
+                <p class="notif-msg">${data.message || ''}</p>
+                <span class="notif-date">${data.date || ''}</span>
+            </div>
+            <button class="notif-close" onclick="this.closest('.notif-toast').remove()">×</button>
+        `;
 
-        toast.addEventListener('click', function(e) {
-            if (e.target.classList.contains('notif-close')) return;
-            if (data.type === 'nouveau_diagnostic' || data.type === 'diagnostic_traite') {
-                {% if is_granted('ROLE_EXPERT') %}
-                    window.location.href = '/expert/diagnostics/' + data.id;
-                {% else %}
-                    window.location.href = '/agriculteur/diagnostics/' + data.id;
-                {% endif %}
-            } else if (data.type === 'nouveau_plan' || data.type === 'plan_mis_a_jour') {
-                {% if is_granted('ROLE_EXPERT') %}
-                    window.location.href = '/expert/irrigation/' + data.id;
-                {% else %}
-                    window.location.href = '/agriculteur/irrigation/' + data.id;
-                {% endif %}
-            }
-        });
+        container.appendChild(toast);
+        notifCount++;
 
-        container.prepend(toast);
-        setTimeout(function() {
-            toast.classList.add('fade-out');
-            setTimeout(function() { toast.remove(); }, 400);
-        }, 8000);
-    }
-
-    function updateBadge(count) {
-        var badge = document.getElementById('notif-count-badge');
-        if (!badge) {
-            var navNotif = document.querySelector('.nav-notification-icon');
-            if (navNotif) {
-                badge = document.createElement('span');
-                badge.id = 'notif-count-badge';
-                badge.className = 'notif-badge';
-                navNotif.style.position = 'relative';
-                navNotif.appendChild(badge);
-            }
-        }
-        if (badge) {
-            badge.textContent = count > 99 ? '99+' : count;
-            badge.style.display = count > 0 ? 'flex' : 'none';
-        }
-    }
-
-    function playNotifSound() {
+        // Sonner si possible
         try {
-            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            var osc = audioCtx.createOscillator();
-            var gain = audioCtx.createGain();
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.value = 800;
-            osc.type = 'sine';
-            gain.gain.value = 0.1;
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 520;
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.4);
         } catch(e) {}
+
+        // Auto-fermer après 6 secondes
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 6000);
     }
-});
+
+    function subscribe(topic) {
+        const url = new URL(mercureUrl);
+        url.searchParams.append('topic', topic);
+
+        const es = new EventSource(url.toString(), { withCredentials: false });
+
+        es.onopen = function() {
+            console.log('[Mercure] Connecté au topic:', topic);
+        };
+
+        es.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('[Mercure] Message reçu:', data);
+                showToast(data);
+            } catch(e) {
+                console.error('[Mercure] Erreur parsing:', e);
+            }
+        };
+
+        es.onerror = function(err) {
+            console.warn('[Mercure] Erreur EventSource:', err);
+            // Reconnexion automatique gérée par le navigateur
+        };
+
+        return es;
+    }
+
+    // Attendre que le DOM soit prêt
+    document.addEventListener('DOMContentLoaded', function() {
+        if (isExpert) {
+            // Les experts reçoivent les nouveaux diagnostics et plans
+            subscribe('diagnostics/nouveau');
+            subscribe('irrigation/nouveau');
+            console.log('[Mercure] Expert abonné aux topics globaux');
+        } else {
+            // Les agriculteurs reçoivent leurs notifications personnelles
+            subscribe(`agriculteur/${userId}/diagnostics`);
+            subscribe(`agriculteur/${userId}/irrigation`);
+            console.log(`[Mercure] Agriculteur ${userId} abonné à ses topics`);
+        }
+    });
+})();
 </script>
+{% endif %}

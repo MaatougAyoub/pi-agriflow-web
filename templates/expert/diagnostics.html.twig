@@ -1,40 +1,115 @@
 {% extends 'layouts/front.html.twig' %}
-{% block page_title %}Diagnostics Expert{% endblock %}
+
+{% block page_title %}Espace Expert - Diagnostics{% endblock %}
+
 {% block front_body %}
-<section style="padding:40px 0;background:#F0F2F5;min-height:80vh">
-<div class="container">
-    <h2 style="color:#2D5A27;font-weight:800">📝 Diagnostics à traiter</h2>
-    <div class="card shadow-sm border-0 rounded-4 p-4 mt-4">
-        <table class="table">
-            <thead><tr><th>Culture</th><th>Description</th><th>Statut</th><th>Date</th><th>Réponse</th></tr></thead>
-            <tbody>
-            {% for d in diagnostics %}
-            <tr>
-                <td>{{ d.nomCulture }}</td>
-                <td>
-                    <a href="{{ path('expert_diagnostic_detail', {id: d.idDiagnostic}) }}"
-                    style="color:#2D5A27;font-weight:600;text-decoration:none">
-                        Traiter →
-                    </a>
-                </td>                <td><span class="badge rounded-pill" style="background:{% if d.statut == 'traite' %}#2D5A27{% else %}#E65100{% endif %}">{{ d.statut }}</span></td>
-                <td>{{ d.dateEnvoi ? d.dateEnvoi|date('d/m/Y') : '-' }}</td>
-                <td>
-                    {% if d.statut == 'en_attente' or d.statut is null %}
-                    <form method="post" action="{{ path('expert_diagnostic_repondre', {id: d.idDiagnostic}) }}" class="d-flex gap-2">
-                        <input type="text" name="reponse" placeholder="Votre réponse..." class="form-control form-control-sm">
-                        <button type="submit" class="btn btn-sm" style="background:#2D5A27;color:white;white-space:nowrap">Envoyer</button>
-                    </form>
-                    {% else %}
-                        {{ d.reponseExpert }}
-                    {% endif %}
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5" class="text-center text-muted">Aucun diagnostic.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+<section style="background: linear-gradient(135deg, #f8faf9 0%, #e8f5e9 100%); min-height: 90vh; padding: 50px 0;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 style="color: #1b4332; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 5px;">
+                    <i class="bi bi-clipboard2-pulse me-2"></i>Diagnostics à traiter
+                </h2>
+                <p class="text-muted">Gérez les demandes de diagnostic et apportez votre expertise aux agriculteurs.</p>
+            </div>
+            <div class="stats-badge" style="background: white; padding: 10px 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <span style="font-weight: 600; color: #2d6a4f;">{{ diagnostics|length }}</span> <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Demandes au total</small>
+            </div>
+        </div>
+
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="background: white;">
+                    <thead style="background: #f1f8f5; border-bottom: 2px solid #e8f5e9;">
+                        <tr>
+                            <th class="ps-4 py-3 text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700;">Culture</th>
+                            <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700;">Date d'envoi</th>
+                            <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 700;">Statut</th>
+                            <th class="py-3 text-uppercase text-muted text-center" style="font-size: 0.75rem; font-weight: 700;">Action / Réponse</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in diagnostics %}
+                        <tr style="transition: all 0.3s ease;">
+                            <td class="ps-4 py-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-shape me-3" style="width: 45px; height: 45px; background: #d8f3dc; color: #2d6a4f; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                        🌿
+                                    </div>
+                                    <div>
+                                        <span class="d-block fw-bold text-dark" style="font-size: 1rem;">{{ d.nomCulture }}</span>
+                                        <small class="text-muted">ID: #{{ d.idDiagnostic }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-muted" style="font-size: 0.9rem;">
+                                <i class="bi bi-calendar3 me-1"></i> {{ d.dateEnvoi ? d.dateEnvoi|date('d M Y') : '-' }}
+                            </td>
+                            <td>
+                                {% if d.statut == 'traite' %}
+                                    <span class="badge" style="background: #d8f3dc; color: #2d6a4f; padding: 8px 12px; border-radius: 8px;">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Traité
+                                    </span>
+                                {% else %}
+                                    <span class="badge" style="background: #fff4e5; color: #e65100; padding: 8px 12px; border-radius: 8px;">
+                                        <i class="bi bi-clock-history me-1"></i> En attente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="pe-4">
+                                {% if d.statut == 'en_attente' or d.statut is null %}
+                                    <form method="post" action="{{ path('expert_diagnostic_repondre', {id: d.idDiagnostic}) }}" class="input-group input-group-sm">
+                                        <input type="text" name="reponse" placeholder="Écrire un conseil..." class="form-control border-end-0 bg-light" style="border-radius: 10px 0 0 10px; border: 1px solid #e0e0e0;">
+                                        <button type="submit" class="btn btn-primary px-3" style="background: #2d6a4f; border: none; border-radius: 0 10px 10px 0;">
+                                            <i class="bi bi-send-fill"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-success" style="font-size: 0.85rem; max-width: 300px;">
+                                        <i class="bi bi-chat-left-dots text-success me-2"></i>{{ d.reponseExpert is not empty ? (d.reponseExpert|length > 80 ? d.reponseExpert|slice(0, 80) ~ '...' : d.reponseExpert) : '-' }}
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2 text-center">
+                                    <a href="{{ path('expert_diagnostic_detail', {id: d.idDiagnostic}) }}" class="text-decoration-none" style="color: #2d6a4f; font-weight: 600; font-size: 0.8rem;">
+                                        Voir les détails <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="py-5 text-center">
+                                <div class="empty-state">
+                                    <div style="font-size: 3rem; margin-bottom: 15px;">🍃</div>
+                                    <h5 class="text-muted">Aucun diagnostic en attente</h5>
+                                    <p class="small text-muted">Tout est à jour pour le moment.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 </section>
+
+<style>
+    /* Effet au survol des lignes */
+    tbody tr:hover {
+        background-color: #f8faf9 !important;
+        transform: scale(1.002);
+        box-shadow: inset 4px 0 0 #2d6a4f;
+    }
+
+    /* Style des inputs au focus */
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #2d6a4f !important;
+        background-color: white !important;
+    }
+
+    /* Icônes Bootstrap */
+    @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
+</style>
 {% endblock %}

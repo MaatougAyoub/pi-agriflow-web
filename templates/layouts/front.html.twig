@@ -51,6 +51,7 @@
                                     💧 Plans d'irrigation
                                 </a>
                             </li>
+                            <li><a href="{{ path('calendrier_irrigation') }}">📅 Calendrier irrigation</a></li>
                             {% if is_granted('ROLE_EXPERT') %}
                                 <li><a href="{{ path('expert_diagnostics') }}">📝 Diagnostics</a></li>
                                 <li><a href="{{ path('expert_produits') }}">💊 Produits phyto</a></li>

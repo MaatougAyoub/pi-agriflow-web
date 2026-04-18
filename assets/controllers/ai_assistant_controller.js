@@ -44,7 +44,14 @@ export default class extends Controller {
                 }),
             });
 
-            const payload = await response.json();
+            const rawBody = await response.text();
+            let payload = null;
+
+            try {
+                payload = JSON.parse(rawBody);
+            } catch (parseError) {
+                throw new Error(this.extractServerErrorMessage(rawBody));
+            }
 
             if (!response.ok || !payload.success) {
                 throw new Error(payload.message || 'Assistant indisponible pour le moment.');
@@ -79,6 +86,27 @@ export default class extends Controller {
         field.value = value.trim();
         field.dispatchEvent(new Event('input', { bubbles: true }));
         field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    extractServerErrorMessage(rawBody) {
+        const text = String(rawBody || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (text === '') {
+            return 'Assistant indisponible pour le moment.';
+        }
+
+        if (text.includes('Environment variable not found')) {
+            return 'Configuration serveur incomplete: variable d environnement manquante.';
+        }
+
+        if (text.includes('No route found')) {
+            return 'Route IA introuvable. Verifiez la configuration de la page.';
+        }
+
+        return text.length > 180 ? `${text.slice(0, 180)}...` : text;
     }
 
     updateStatus(message, state, hasAnalysis = false) {

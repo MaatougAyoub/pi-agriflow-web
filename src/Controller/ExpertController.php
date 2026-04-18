@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Service\NotificationService;
 use App\Entity\PlansIrrigationJour;
 use App\Entity\ProduitsPhytosanitaire;
 use App\Repository\DiagnostiRepository;
@@ -112,7 +111,6 @@ class ExpertController extends AbstractController
         Request $request,
         DiagnostiRepository $repo,
         EntityManagerInterface $em,
-        NotificationService $notificationService  // ← AJOUTÉ
     ): Response {
         $diagnostic = $repo->find($id);
         if ($diagnostic) {
@@ -126,20 +124,7 @@ class ExpertController extends AbstractController
             $diagnostic->setDateReponse(new \DateTime());
             $em->flush();
 
-            // ✅ NOTIFICATION MERCURE : Notifier l'agriculteur en temps réel
-            try {
-                $notificationService->notifyDiagnosticResponse($diagnostic);
-            } catch (\Exception $e) {
-                // Log silencieux
-            }
-
-            // ✅ EMAIL : Envoyer un email à l'agriculteur
-            try {
-                $notificationService->sendDiagnosticResponseEmail($diagnostic);
-            } catch (\Exception $e) {
-                // Log silencieux — ne pas bloquer le flux
-            }
-
+            
             $this->addFlash('success', 'Réponse envoyée avec succès.');
         }
         return $this->redirectToRoute('expert_diagnostics');
@@ -209,7 +194,6 @@ class ExpertController extends AbstractController
         PlansIrrigationRepository $planRepo,
         PlansIrrigationJourRepository $jourRepo,
         EntityManagerInterface $em,
-        NotificationService $notificationService  // ← AJOUTÉ
     ): Response {
         $plan = $planRepo->find($id);
         if (!$plan) {
@@ -238,16 +222,7 @@ class ExpertController extends AbstractController
         $plan->setStatut('rempli');
         $em->flush();
 
-        // ✅ NOTIFICATION MERCURE : Notifier l'agriculteur
-        try {
-            $notificationService->notifyIrrigationPlanFilled($plan);
-        } catch (\Exception $e) {}
-
-        // ✅ EMAIL : Envoyer un email à l'agriculteur
-        try {
-            $notificationService->sendIrrigationPlanEmail($plan);
-        } catch (\Exception $e) {}
-
+        
         $this->addFlash('success', 'Plan enregistré avec succès !');
         return $this->redirectToRoute('expert_irrigation_detail', ['id' => $id]);
     }
