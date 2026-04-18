@@ -3,151 +3,490 @@
 {% block page_title %}{{ request.title }} - Collaborations{% endblock %}
 
 {% block front_body %}
-<section class="section">
+<style>
+    /* ── Page Layout ── */
+    .agf-show-page { padding: 40px 0 60px; }
+
+    /* ── Back Button ── */
+    .agf-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: .9rem;
+        padding: 8px 16px;
+        border-radius: 10px;
+        transition: all .2s;
+        border: 1.5px solid #e2e8f0;
+        background: #fff;
+    }
+    .agf-back-btn:hover {
+        background: #f8fafc;
+        border-color: #16a34a;
+        color: #16a34a;
+    }
+
+    /* ── Main Card ── */
+    .agf-show-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0,0,0,.06);
+        background: #fff;
+    }
+
+    /* ── Header ── */
+    .agf-show-header {
+        background: linear-gradient(135deg, #16a34a 0%, #059669 50%, #0d9488 100%);
+        padding: 30px 32px;
+        position: relative;
+        overflow: hidden;
+    }
+    .agf-show-header::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.07);
+    }
+    .agf-show-header::after {
+        content: '';
+        position: absolute;
+        bottom: -70px; left: 20%;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.04);
+    }
+    .agf-show-header h3 {
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: #fff;
+        margin: 0 0 8px;
+        position: relative;
+        z-index: 1;
+    }
+    .agf-show-header .meta {
+        color: rgba(255,255,255,.7);
+        font-size: .88rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── Status Badge ── */
+    .agf-show-status {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: .8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        position: relative;
+        z-index: 1;
+    }
+    .agf-show-status.approved { background: rgba(255,255,255,.2); color: #fff; backdrop-filter: blur(4px); }
+    .agf-show-status.pending { background: #fef3c7; color: #92400e; }
+    .agf-show-status.rejected { background: #fee2e2; color: #991b1b; }
+
+    /* ── Info Tiles ── */
+    .agf-tile {
+        padding: 20px 16px;
+        border-radius: 14px;
+        text-align: center;
+        transition: transform .2s;
+        border: 1px solid transparent;
+    }
+    .agf-tile:hover {
+        transform: translateY(-2px);
+    }
+    .agf-tile-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-size: 1.2rem;
+    }
+    .agf-tile-value {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+    .agf-tile-label {
+        font-size: .78rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        font-weight: 600;
+    }
+    .agf-tile.green  { background: #f0fdf4; }
+    .agf-tile.green .agf-tile-icon { background: #dcfce7; color: #16a34a; }
+    .agf-tile.blue   { background: #eff6ff; }
+    .agf-tile.blue .agf-tile-icon  { background: #dbeafe; color: #2563eb; }
+    .agf-tile.amber  { background: #fffbeb; }
+    .agf-tile.amber .agf-tile-icon { background: #fef3c7; color: #d97706; }
+    .agf-tile.purple { background: #faf5ff; }
+    .agf-tile.purple .agf-tile-icon { background: #f3e8ff; color: #7c3aed; }
+
+    /* ── Dates Row ── */
+    .agf-dates-row {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        border: 1px solid #f1f5f9;
+    }
+    .agf-dates-row .date-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .agf-dates-row .date-icon {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .95rem;
+    }
+    .agf-dates-row .date-icon.start { background: #dcfce7; color: #16a34a; }
+    .agf-dates-row .date-icon.end   { background: #fee2e2; color: #ef4444; }
+    .agf-dates-row .date-label { font-size: .75rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+    .agf-dates-row .date-value { font-weight: 700; font-size: .95rem; color: #1e293b; }
+    .agf-dates-row .arrow { color: #cbd5e1; font-size: 1.2rem; }
+
+    /* ── Description Section ── */
+    .agf-desc-section h5 {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .agf-desc-section h5 i {
+        color: #16a34a;
+    }
+    .agf-desc-box {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 20px 24px;
+        border: 1px solid #f1f5f9;
+        line-height: 1.7;
+        color: #334155;
+        font-size: .93rem;
+        white-space: pre-line;
+    }
+
+    /* ── Action Buttons ── */
+    .agf-action-btn {
+        padding: 10px 22px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: .9rem;
+        transition: all .25s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .agf-action-btn.primary {
+        background: linear-gradient(135deg, #16a34a, #059669);
+        color: #fff;
+        border: none;
+        box-shadow: 0 4px 14px rgba(22,163,74,.3);
+    }
+    .agf-action-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(22,163,74,.4);
+        color: #fff;
+    }
+    .agf-action-btn.primary:disabled, .agf-action-btn.disabled {
+        background: #94a3b8;
+        box-shadow: none;
+        cursor: not-allowed;
+        color: #fff;
+    }
+    .agf-action-btn.outline {
+        background: #fff;
+        border: 1.5px solid #e2e8f0;
+        color: #334155;
+    }
+    .agf-action-btn.outline:hover {
+        border-color: #16a34a;
+        color: #16a34a;
+        background: #f0fdf4;
+    }
+    .agf-action-btn.outline.warning:hover { border-color: #f59e0b; color: #d97706; background: #fffbeb; }
+    .agf-action-btn.outline.info:hover    { border-color: #06b6d4; color: #0891b2; background: #ecfeff; }
+    .agf-action-btn.outline.blue:hover    { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+
+    /* ── Weather Section ── */
+    .agf-weather-section {
+        border-top: 1px solid #f1f5f9;
+        padding: 28px 32px;
+    }
+    .agf-weather-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .agf-weather-title i { color: #3b82f6; font-size: 1.2rem; }
+
+    .agf-weather-card {
+        border: none;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        transition: transform .2s, box-shadow .2s;
+        height: 100%;
+    }
+    .agf-weather-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+    .agf-weather-card .card-body {
+        padding: 16px;
+    }
+    .agf-weather-date {
+        font-weight: 700;
+        font-size: .88rem;
+        color: #334155;
+    }
+    .agf-weather-icon {
+        font-size: 1.8rem;
+    }
+    .agf-weather-desc {
+        font-size: .8rem;
+        color: #64748b;
+        text-transform: capitalize;
+    }
+    .agf-weather-temps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+    }
+    .agf-temp-high { font-weight: 700; color: #ef4444; font-size: .95rem; }
+    .agf-temp-low  { font-weight: 600; color: #3b82f6; font-size: .85rem; }
+    .agf-precip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: .78rem;
+        color: #0891b2;
+        background: #ecfeff;
+        padding: 3px 10px;
+        border-radius: 8px;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    /* ── Weather Risk Alert ── */
+    .agf-risk-alert {
+        background: linear-gradient(135deg, #fef2f2, #fff1f2);
+        border: 1px solid #fecaca;
+        border-left: 4px solid #ef4444;
+        border-radius: 14px;
+        padding: 18px 22px;
+    }
+    .agf-risk-alert h6 {
+        font-weight: 700;
+        color: #dc2626;
+        margin-bottom: 10px;
+    }
+    .agf-risk-alert ul { padding-left: 18px; margin: 0; }
+    .agf-risk-alert li {
+        color: #7f1d1d;
+        font-size: .88rem;
+        margin-bottom: 4px;
+    }
+
+    /* ── No weather alert ── */
+    .agf-no-weather {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 14px;
+        padding: 18px 22px;
+        color: #64748b;
+        font-size: .9rem;
+    }
+</style>
+
+<section class="agf-show-page">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                {# Bouton retour #}
-                <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary mb-3">
-                    <i class="bi bi-arrow-left me-1"></i>Retour aux collaborations
+            <div class="col-lg-9 col-xl-8">
+
+                {# ── Back ── #}
+                <a href="{{ path('app_collab_index') }}" class="agf-back-btn mb-4">
+                    <i class="bi bi-arrow-left"></i>Retour aux collaborations
                 </a>
 
-                <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
-                    {# Header #}
-                    <div class="card-header bg-success text-white py-4 px-4">
-                        <div class="d-flex justify-content-between align-items-start">
+                <div class="agf-show-card">
+                    {# ── Header ── #}
+                    <div class="agf-show-header">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                             <div>
-                                <h3 class="mb-1">{{ request.title }}</h3>
-                                <p class="mb-0 opacity-75">
-                                    <i class="bi bi-person me-1"></i>Publié par {{ request.publisher ?? 'Anonyme' }}
-                                    — <i class="bi bi-calendar3 me-1"></i>{{ request.createdAt|date('d/m/Y') }}
-                                </p>
+                                <h3>{{ request.title }}</h3>
+                                <div class="meta">
+                                    <i class="bi bi-person-circle me-1"></i>{{ request.publisher ?? 'Anonyme' }}
+                                    <span class="mx-2">•</span>
+                                    <i class="bi bi-calendar3 me-1"></i>{{ request.createdAt|date('d/m/Y') }}
+                                </div>
                             </div>
-                            <span class="badge bg-{{ request.status == 'APPROVED' ? 'light text-success' : (request.status == 'PENDING' ? 'warning text-dark' : 'danger') }} fs-6">
-                                {{ request.status == 'APPROVED' ? '✓ Approuvée' : (request.status == 'PENDING' ? '⏳ En attente' : '✗ Refusée') }}
+                            <span class="agf-show-status {{ request.status == 'APPROVED' ? 'approved' : (request.status == 'PENDING' ? 'pending' : 'rejected') }}">
+                                {% if request.status == 'APPROVED' %}
+                                    <i class="bi bi-check-circle me-1"></i>Approuvée
+                                {% elseif request.status == 'PENDING' %}
+                                    <i class="bi bi-hourglass-split me-1"></i>En attente
+                                {% else %}
+                                    <i class="bi bi-x-circle me-1"></i>Refusée
+                                {% endif %}
                             </span>
                         </div>
                     </div>
 
-                    <div class="card-body p-4">
-                        {# Infos principales #}
+                    {# ── Body ── #}
+                    <div class="p-4 px-lg-5">
+
+                        {# ── Info Tiles ── #}
                         <div class="row g-3 mb-4">
                             <div class="col-md-3 col-6">
-                                <div class="p-3 rounded-3 text-center" style="background: #f0fdf4;">
-                                    <i class="bi bi-geo-alt fs-4 text-success"></i>
-                                    <p class="mb-0 fw-bold mt-1">{{ request.location }}</p>
-                                    <small class="text-muted">Localisation</small>
+                                <div class="agf-tile green">
+                                    <div class="agf-tile-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                                    <div class="agf-tile-value">{{ request.location }}</div>
+                                    <div class="agf-tile-label">Localisation</div>
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
-                                <div class="p-3 rounded-3 text-center" style="background: #eff6ff;">
-                                    <i class="bi bi-people fs-4 text-primary"></i>
-                                    <p class="mb-0 fw-bold mt-1">{{ request.neededPeople }}</p>
-                                    <small class="text-muted">Personnes</small>
+                                <div class="agf-tile blue">
+                                    <div class="agf-tile-icon"><i class="bi bi-people-fill"></i></div>
+                                    <div class="agf-tile-value">{{ request.neededPeople }}</div>
+                                    <div class="agf-tile-label">Personnes</div>
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
-                                <div class="p-3 rounded-3 text-center" style="background: #fefce8;">
-                                    <i class="bi bi-cash fs-4 text-warning"></i>
-                                    <p class="mb-0 fw-bold mt-1">{{ request.salary }} DT</p>
-                                    <small class="text-muted">Salaire/jour</small>
+                                <div class="agf-tile amber">
+                                    <div class="agf-tile-icon"><i class="bi bi-cash-stack"></i></div>
+                                    <div class="agf-tile-value">{{ request.salary }} DT</div>
+                                    <div class="agf-tile-label">Salaire/jour</div>
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
-                                <div class="p-3 rounded-3 text-center" style="background: #faf5ff;">
-                                    <i class="bi bi-send-check fs-4 text-info"></i>
-                                    <p class="mb-0 fw-bold mt-1">{{ applicationCount }}</p>
-                                    <small class="text-muted">Candidature(s)</small>
+                                <div class="agf-tile purple">
+                                    <div class="agf-tile-icon"><i class="bi bi-send-check-fill"></i></div>
+                                    <div class="agf-tile-value">{{ applicationCount }}</div>
+                                    <div class="agf-tile-label">Candidature(s)</div>
                                 </div>
                             </div>
                         </div>
 
-                        {# Dates #}
-                        <div class="d-flex gap-4 mb-4 p-3 rounded-3" style="background: #f9fafb;">
-                            <div>
-                                <small class="text-muted d-block">Date de début</small>
-                                <span class="fw-bold text-success"><i class="bi bi-calendar-check me-1"></i>{{ request.startDate|date('d/m/Y') }}</span>
+                        {# ── Dates ── #}
+                        <div class="agf-dates-row mb-4">
+                            <div class="date-block">
+                                <div class="date-icon start"><i class="bi bi-calendar-check"></i></div>
+                                <div>
+                                    <div class="date-label">Début</div>
+                                    <div class="date-value">{{ request.startDate|date('d/m/Y') }}</div>
+                                </div>
                             </div>
-                            <div class="border-start ps-4">
-                                <small class="text-muted d-block">Date de fin</small>
-                                <span class="fw-bold text-danger"><i class="bi bi-calendar-x me-1"></i>{{ request.endDate|date('d/m/Y') }}</span>
+                            <div class="arrow">→</div>
+                            <div class="date-block">
+                                <div class="date-icon end"><i class="bi bi-calendar-x"></i></div>
+                                <div>
+                                    <div class="date-label">Fin</div>
+                                    <div class="date-value">{{ request.endDate|date('d/m/Y') }}</div>
+                                </div>
                             </div>
                         </div>
 
-                        {# Description #}
-                        <h5 class="fw-bold mb-3"><i class="bi bi-text-left me-2"></i>Description</h5>
-                        <div class="p-3 rounded-3 mb-4" style="background: #f9fafb;">
-                            <p class="mb-0" style="white-space: pre-line;">{{ request.description }}</p>
+                        {# ── Description ── #}
+                        <div class="agf-desc-section mb-4">
+                            <h5><i class="bi bi-text-paragraph"></i>Description</h5>
+                            <div class="agf-desc-box">{{ request.description }}</div>
                         </div>
 
-                        {# Actions #}
-                        <div class="d-flex gap-2 flex-wrap mb-4">
+                        {# ── Actions ── #}
+                        <div class="d-flex gap-3 flex-wrap mb-4">
                             {% if app.user %}
                                 {% if app.user.id != request.requester.id %}
                                     {% if hasApplied %}
-                                        <button class="btn btn-secondary btn-lg" disabled>
-                                            <i class="bi bi-check-circle me-1"></i>Déjà postulé
-                                        </button>
+                                        <span class="agf-action-btn disabled">
+                                            <i class="bi bi-check-circle"></i>Déjà postulé
+                                        </span>
                                     {% elseif request.status == 'APPROVED' %}
-                                        <a href="{{ path('app_collab_apply', {id: request.id}) }}" class="btn btn-success btn-lg">
-                                            <i class="bi bi-send me-1"></i>Postuler maintenant
+                                        <a href="{{ path('app_collab_apply', {id: request.id}) }}" class="agf-action-btn primary">
+                                            <i class="bi bi-send-fill"></i>Postuler maintenant
                                         </a>
                                     {% endif %}
                                 {% else %}
-                                    <a href="{{ path('app_collab_edit', {id: request.id}) }}" class="btn btn-outline-warning">
-                                        <i class="bi bi-pencil me-1"></i>Modifier
+                                    <a href="{{ path('app_collab_edit', {id: request.id}) }}" class="agf-action-btn outline warning">
+                                        <i class="bi bi-pencil-square"></i>Modifier
                                     </a>
-                                    <a href="{{ path('app_collab_view_applications', {id: request.id}) }}" class="btn btn-outline-primary">
-                                        <i class="bi bi-people me-1"></i>Voir les candidatures ({{ applicationCount }})
+                                    <a href="{{ path('app_collab_view_applications', {id: request.id}) }}" class="agf-action-btn outline blue">
+                                        <i class="bi bi-people"></i>Candidatures ({{ applicationCount }})
                                     </a>
-                                    <a href="{{ path('app_collab_export_pdf', {id: request.id}) }}" class="btn btn-outline-info">
-                                        <i class="bi bi-file-earmark-pdf me-1"></i>Rapport PDF
+                                    <a href="{{ path('app_collab_export_pdf', {id: request.id}) }}" class="agf-action-btn outline info">
+                                        <i class="bi bi-file-earmark-pdf"></i>Rapport PDF
                                     </a>
                                 {% endif %}
                             {% else %}
-                                <a href="{{ path('app_login') }}" class="btn btn-success btn-lg">
-                                    <i class="bi bi-box-arrow-in-right me-1"></i>Connectez-vous pour postuler
+                                <a href="{{ path('app_login') }}" class="agf-action-btn primary">
+                                    <i class="bi bi-box-arrow-in-right"></i>Connectez-vous pour postuler
                                 </a>
                             {% endif %}
                         </div>
 
-                        {# Risques Météo #}
+                        {# ── Weather Risk Alerts ── #}
                         {% if weatherRisks is not empty %}
-                            <div class="mt-4 p-3 rounded-3 border-start border-4 border-danger bg-danger bg-opacity-10">
-                                <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Alertes de Risque Météo</h6>
-                                <ul class="mb-0 small ps-3">
+                            <div class="agf-risk-alert mb-4">
+                                <h6><i class="bi bi-exclamation-triangle-fill me-2"></i>Alertes de Risque Météo</h6>
+                                <ul>
                                     {% for risk in weatherRisks %}
-                                        <li class="mb-1">{{ risk }}</li>
+                                        <li>{{ risk }}</li>
                                     {% endfor %}
                                 </ul>
                             </div>
                         {% endif %}
                     </div>
 
-                    {# Météo Section #}
-                    <div class="card-footer bg-white border-top-0 p-4">
-                        <h5 class="mb-4 text-primary">
-                            <i class="bi bi-cloud-sun me-2"></i>Prévisions Météo des Travaux
-                        </h5>
-                        
+                    {# ── Weather Forecasts ── #}
+                    <div class="agf-weather-section">
+                        <div class="agf-weather-title">
+                            <i class="bi bi-cloud-sun-fill"></i>Prévisions Météo des Travaux
+                        </div>
+
                         {% if forecasts is not empty %}
-                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
                                 {% for day in forecasts %}
                                     <div class="col">
-                                        <div class="card h-100 border-0 shadow-sm bg-light">
-                                            <div class="card-body p-3">
+                                        <div class="agf-weather-card">
+                                            <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                                    <span class="fw-bold text-dark">{{ day.date|date('d M') }}</span>
-                                                    <span class="fs-4">{{ day.weatherIcon }}</span>
+                                                    <span class="agf-weather-date">{{ day.date|date('d M') }}</span>
+                                                    <span class="agf-weather-icon">{{ day.weatherIcon }}</span>
                                                 </div>
-                                                <div class="small text-muted mb-2 text-capitalize">{{ day.weatherDescription }}</div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span class="text-primary fw-bold">{{ day.tempMax|round }}°C</span>
-                                                    <span class="text-info">{{ day.tempMin|round }}°C</span>
+                                                <div class="agf-weather-desc">{{ day.weatherDescription }}</div>
+                                                <div class="agf-weather-temps">
+                                                    <span class="agf-temp-high">{{ day.tempMax|round }}°C</span>
+                                                    <span class="agf-temp-low">{{ day.tempMin|round }}°C</span>
                                                 </div>
                                                 {% if day.precipitationMm > 0 %}
-                                                    <div class="mt-2 text-info small">
-                                                        <i class="bi bi-droplet-fill me-1"></i>{{ day.precipitationMm }} mm
+                                                    <div class="agf-precip">
+                                                        <i class="bi bi-droplet-fill"></i>{{ day.precipitationMm }} mm
                                                     </div>
                                                 {% endif %}
                                             </div>
@@ -156,8 +495,8 @@
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <div class="alert alert-light border-0 py-3 px-4 shadow-sm">
-                                <i class="bi bi-geo-alt me-2 text-warning"></i>
+                            <div class="agf-no-weather">
+                                <i class="bi bi-geo-alt me-2"></i>
                                 {% if request.latitude is empty %}
                                     Localisation précise non renseignée. Prévisions indisponibles.
                                 {% else %}
@@ -167,6 +506,7 @@
                         {% endif %}
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
