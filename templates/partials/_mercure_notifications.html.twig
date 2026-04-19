@@ -72,10 +72,15 @@
 <script>
 (function() {
     const userId  = {{ app.user.id }};
+    const isAdmin = {{ is_granted('ROLE_ADMIN') ? 'true' : 'false' }};
     const isExpert = {{ is_granted('ROLE_EXPERT') ? 'true' : 'false' }};
     const mercureUrl = '{{ mercure_url is defined ? mercure_url : "http://localhost:3000/.well-known/mercure" }}';
+    const pendingSummaryEndpoint = isAdmin ? '{{ path('app_reclamation_admin_pending_summary') }}' : '';
 
     let notifCount = 0;
+    let lastKnownPendingCount = null;
+    let lastKnownPendingId = null;
+    let fallbackPollingStarted = false;
 
     function showToast(data) {
         const container = document.getElementById('notif-container');
@@ -86,18 +91,21 @@
             'diagnostic_traite'  : '✅',
             'nouveau_plan'       : '💧',
             'plan_mis_a_jour'    : '📊',
+            'nouvelle_reclamation': '⚠️',
         };
         const types = {
             'nouveau_diagnostic' : 'info',
             'diagnostic_traite'  : 'success',
             'nouveau_plan'       : 'info',
             'plan_mis_a_jour'    : 'success',
+            'nouvelle_reclamation': 'warning',
         };
         const titles = {
             'nouveau_diagnostic' : 'Nouveau diagnostic',
             'diagnostic_traite'  : 'Diagnostic traité',
             'nouveau_plan'       : 'Nouveau plan irrigation',
             'plan_mis_a_jour'    : 'Plan mis à jour',
+            'nouvelle_reclamation': 'Nouvelle reclamation',
         };
 
         const icon  = icons[data.type]  || '🔔';
@@ -138,6 +146,98 @@
             toast.style.animation = 'slideOut 0.3s ease forwards';
             setTimeout(() => toast.remove(), 300);
         }, 6000);
+
+        if (data.type === 'nouvelle_reclamation') {
+            if (typeof data.id !== 'undefined' && data.id !== null) {
+                lastKnownPendingId = Number.parseInt(String(data.id), 10);
+            }
+
+            updateReclamationsCounter();
+        }
+    }
+
+    function updateReclamationsCounter(nextValue = null) {
+        const links = document.querySelectorAll('[data-reclamations-link="1"]');
+
+        links.forEach(function (link) {
+            const current = Number.parseInt(link.getAttribute('data-pending-count') || '0', 10);
+            let nextCount = Number.parseInt(String(nextValue), 10);
+
+            if (Number.isNaN(nextCount)) {
+                nextCount = Number.isNaN(current) ? 1 : current + 1;
+            }
+
+            link.setAttribute('data-pending-count', String(nextCount));
+            link.textContent = `Reclamations(${nextCount})`;
+        });
+
+        if (!Number.isNaN(Number.parseInt(String(nextValue), 10))) {
+            lastKnownPendingCount = Number.parseInt(String(nextValue), 10);
+        }
+    }
+
+    function startAdminFallbackPolling() {
+        if (!isAdmin || fallbackPollingStarted || pendingSummaryEndpoint === '') {
+            return;
+        }
+
+        fallbackPollingStarted = true;
+
+        const syncPendingState = async function () {
+            try {
+                const response = await fetch(pendingSummaryEndpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const payload = await response.json();
+                const count = Number.parseInt(String(payload.count ?? 0), 10);
+                const latestId = Number.parseInt(String(payload.latest_id ?? 0), 10);
+
+                if (lastKnownPendingCount === null) {
+                    lastKnownPendingCount = Number.isNaN(count) ? 0 : count;
+                    lastKnownPendingId = Number.isNaN(latestId) ? null : latestId;
+                    updateReclamationsCounter(lastKnownPendingCount);
+
+                    return;
+                }
+
+                const normalizedCount = Number.isNaN(count) ? lastKnownPendingCount : count;
+                const normalizedLatestId = Number.isNaN(latestId) ? null : latestId;
+
+                const hasNewPending = normalizedCount > lastKnownPendingCount
+                    && normalizedLatestId !== null
+                    && normalizedLatestId !== lastKnownPendingId;
+
+                if (hasNewPending) {
+                    showToast({
+                        type: 'nouvelle_reclamation',
+                        id: normalizedLatestId,
+                        message: `Nouvelle reclamation EN_ATTENTE de ${payload.latest_auteur || 'un utilisateur'}: ${payload.latest_titre || ''}`,
+                        date: payload.latest_date || ''
+                    });
+                }
+
+                lastKnownPendingCount = normalizedCount;
+                lastKnownPendingId = normalizedLatestId;
+                updateReclamationsCounter(lastKnownPendingCount);
+            } catch (e) {
+                // polling fallback: ignorer silencieusement les erreurs reseau ponctuelles
+            }
+        };
+
+        void syncPendingState();
+        window.setInterval(function () {
+            void syncPendingState();
+        }, 8000);
     }
 
     function subscribe(topic) {
@@ -170,7 +270,11 @@
 
     // Attendre que le DOM soit prêt
     document.addEventListener('DOMContentLoaded', function() {
-        if (isExpert) {
+        if (isAdmin) {
+            startAdminFallbackPolling();
+            subscribe('admin/reclamations');
+            console.log('[Mercure] Admin abonne aux notifications reclamations');
+        } else if (isExpert) {
             // Les experts reçoivent les nouveaux diagnostics et plans
             subscribe('diagnostics/nouveau');
             subscribe('irrigation/nouveau');

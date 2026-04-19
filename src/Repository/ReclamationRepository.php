@@ -54,4 +54,50 @@ class ReclamationRepository extends ServiceEntityRepository
 
         return $qb;
     }
+
+    public function countPending(): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->andWhere('UPPER(r.statut) = :status')
+            ->setParameter('status', 'EN_ATTENTE')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findLatestPending(): ?Reclamation
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.utilisateur', 'u')
+            ->addSelect('u')
+            ->andWhere('UPPER(r.statut) = :status')
+            ->setParameter('status', 'EN_ATTENTE')
+            ->orderBy('r.dateCreation', 'DESC')
+            ->addOrderBy('r.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @return list<Reclamation>
+     */
+    public function findNotificationHistoryForAdmin(int $limit = 50): array
+    {
+        $limit = max(1, min($limit, 200));
+
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.utilisateur', 'u')
+            ->addSelect('u')
+            ->andWhere('UPPER(COALESCE(u.role, :emptyRole)) != :adminRole')
+            ->andWhere('UPPER(COALESCE(u.role, :emptyRole)) != :adminRolePrefixed')
+            ->setParameter('emptyRole', '')
+            ->setParameter('adminRole', 'ADMIN')
+            ->setParameter('adminRolePrefixed', 'ROLE_ADMIN')
+            ->orderBy('r.dateCreation', 'DESC')
+            ->addOrderBy('r.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

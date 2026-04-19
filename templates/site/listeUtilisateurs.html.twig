@@ -283,12 +283,12 @@
                                 <td>{{ rowRole == 'AGRICULTEUR' ? (u.adresse ?: '-') : '-' }}</td>
                                 <td class="text-center actions-cell">
                                     <div class="btn-group btn-group-sm" role="group" aria-label="Actions utilisateur">
-                                        <button class="btn btn-outline-success" type="button" title="Approuver" disabled>
+<!--                                         <button class="btn btn-outline-success" type="button" title="Approuver" disabled>
                                             <i class="bi bi-check2"></i>
                                         </button>
                                         <button class="btn btn-outline-warning" type="button" title="Rejeter" disabled>
                                             <i class="bi bi-x-lg"></i>
-                                        </button>
+                                        </button> -->
                                         <form method="post" action="{{ path('app_admin_user_delete', {id: u.id, from: app.request.query.get('from')}) }}" class="d-inline-block" onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
                                             <button class="btn btn-outline-danger" type="submit" title="Supprimer" {% if app.user and app.user.id == u.id %}disabled{% endif %}>

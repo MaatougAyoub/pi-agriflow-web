@@ -1,8 +1,17 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Profil Utilisateur | AgriFlow{% endblock %}
+{% block body_class %}agf-front{% endblock %}
 
 {% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+<link href="{{ asset('template/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+<link href="{{ asset('template/assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+<link href="{{ asset('template/assets/vendor/aos/aos.css') }}" rel="stylesheet">
+<link href="{{ asset('template/assets/css/main.css') }}" rel="stylesheet">
+
 <style data-turbo-temporary>
 :root {
     --green-900:#1b5e20;
@@ -24,6 +33,10 @@ body {
     background:
         radial-gradient(1200px 600px at 90% -20%, rgba(255,213,79,0.2), transparent),
         linear-gradient(135deg, var(--green-900), var(--green-800), var(--green-700));
+    padding:0;
+}
+
+.profile-page {
     padding:24px;
 }
 
@@ -184,7 +197,10 @@ body {
 {% set roleRaw = (user.role ?? '')|upper %}
 {% set role = roleRaw starts with 'ROLE_' ? roleRaw|replace({'ROLE_': ''}) : roleRaw %}
 
-<main class="profile-shell">
+{% include 'partials/_front_header.html.twig' %}
+
+<main class="profile-page">
+    <section class="profile-shell">
     <div class="profile-topbar">
         <h1 class="brand">AgriFlow - Profil Utilisateur</h1>
         <div class="top-actions">
@@ -278,5 +294,10 @@ body {
             </section>
         {% endif %}
     </div>
+    </section>
 </main>
+
+<script src="{{ asset('template/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('template/assets/vendor/aos/aos.js') }}"></script>
+<script src="{{ asset('template/assets/js/main.js') }}"></script>
 {% endblock %}

@@ -16,6 +16,24 @@ class UtilisateurRepository extends ServiceEntityRepository
         parent::__construct($registry, Utilisateur::class);
     }
 
+    /**
+     * @return list<Utilisateur>
+     */
+    public function findLatestRegistrationsForAdminNotifications(int $limit = 50): array
+    {
+        $limit = max(1, min($limit, 200));
+
+        return $this->createQueryBuilder('u')
+            ->andWhere('UPPER(COALESCE(u.role, :emptyRole)) IN (:roles)')
+            ->setParameter('emptyRole', '')
+            ->setParameter('roles', ['AGRICULTEUR', 'ROLE_AGRICULTEUR', 'EXPERT', 'ROLE_EXPERT'])
+            ->orderBy('u.dateCreation', 'DESC')
+            ->addOrderBy('u.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Utilisateur[] Returns an array of Utilisateur objects
 //     */

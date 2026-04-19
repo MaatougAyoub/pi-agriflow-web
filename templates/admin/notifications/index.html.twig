@@ -1,0 +1,55 @@
+{% extends 'layouts/front.html.twig' %}
+
+{% block page_title %}Notifications admin{% endblock %}
+
+{% block front_hero %}
+<section class="py-4 border-bottom bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="h3 mb-1">Historique des notifications</h1>
+                <p class="text-muted mb-0">Notifications basees sur les nouvelles reclamations soumises.</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge text-bg-warning">EN_ATTENTE: {{ pending_count }}</span>
+                <a href="{{ path('app_reclamation_index', {tab: 'liste'}) }}" class="btn btn-outline-success btn-sm">Voir les reclamations</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block front_body %}
+<section class="py-4 bg-white">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <p class="text-muted mb-0">Dernieres {{ history_limit }} notifications maximum.</p>
+        </div>
+
+        {% if notifications_history is empty %}
+            <div class="alert alert-info mb-0">Aucune notification disponible pour le moment.</div>
+        {% else %}
+            <div class="list-group shadow-sm">
+                {% for notification in notifications_history %}
+                    {% set statut = (notification.status|default('NOUVEAU'))|upper %}
+                    {% set eventType = notification.type|default('reclamation') %}
+                    <article class="list-group-item py-3">
+                        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
+                            <h2 class="h6 mb-0">
+                                {{ eventType == 'inscription' ? 'Nouvelle inscription' : 'Nouvelle reclamation' }}: {{ notification.title|default('Notification') }}
+                            </h2>
+                            <span class="badge {{ statut == 'EN_ATTENTE' ? 'text-bg-warning' : (eventType == 'inscription' ? 'text-bg-primary' : 'text-bg-success') }}">{{ statut }}</span>
+                        </div>
+                        <p class="mb-1 text-muted small">Par {{ notification.author|default('Utilisateur inconnu') }}</p>
+                        <p class="mb-2">{{ notification.content|default('')|slice(0, 190) }}{% if (notification.content|default(''))|length > 190 %}...{% endif %}</p>
+                        <div class="small text-muted d-flex gap-3 flex-wrap">
+                            <span>Categorie: {{ notification.category|default('-') }}</span>
+                            <span>Date: {{ notification.date ? notification.date|date('d/m/Y H:i') : '-' }}</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

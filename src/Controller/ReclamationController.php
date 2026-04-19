@@ -8,6 +8,7 @@ use App\Entity\Reclamation;
 use App\Entity\Utilisateur;
 use App\Form\ReclamationType;
 use App\Repository\ReclamationRepository;
+use App\Service\NotificationService;
 use App\Service\ReclamationAiAssistantService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -25,7 +26,13 @@ final class ReclamationController extends AbstractController
 
     #[Route('', name: 'index', methods: ['GET', 'POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function index(Request $request, ReclamationRepository $reclamationRepository, EntityManagerInterface $entityManager, PaginatorInterface $paginator): Response
+    public function index(
+        Request $request,
+        ReclamationRepository $reclamationRepository,
+        EntityManagerInterface $entityManager,
+        PaginatorInterface $paginator,
+        NotificationService $notificationService
+    ): Response
     {
         $user = $this->getAuthenticatedUser();
 
@@ -52,6 +59,10 @@ final class ReclamationController extends AbstractController
 
             $entityManager->persist($newReclamation);
             $entityManager->flush();
+
+            if ($this->isGranted('ROLE_AGRICULTEUR') || $this->isGranted('ROLE_EXPERT')) {
+                $notificationService->notifyNewReclamation($newReclamation);
+            }
 
             $this->addFlash('success', 'Reclamation ajoutee avec succes.');
 
@@ -109,6 +120,23 @@ final class ReclamationController extends AbstractController
     public function add(): Response
     {
         return $this->redirectToRoute('app_reclamation_index', ['tab' => 'ajouter']);
+    }
+
+    #[Route('/admin/pending-summary', name: 'admin_pending_summary', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function adminPendingSummary(ReclamationRepository $reclamationRepository): JsonResponse
+    {
+        $count = $reclamationRepository->countPending();
+        $latest = $reclamationRepository->findLatestPending();
+        $author = $latest?->getUtilisateur();
+
+        return new JsonResponse([
+            'count' => $count,
+            'latest_id' => $latest?->getId(),
+            'latest_titre' => $latest?->getTitre(),
+            'latest_date' => $latest?->getDateCreation()?->format('d/m/Y H:i'),
+            'latest_auteur' => trim((string) (($author?->getNom() ?? '').' '.($author?->getPrenom() ?? ''))),
+        ]);
     }
 
     #[Route('/generer-description', name: 'generate_description', methods: ['POST'])]

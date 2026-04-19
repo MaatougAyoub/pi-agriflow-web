@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Diagnosti;
 use App\Entity\PlansIrrigation;
+use App\Entity\Reclamation;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -144,6 +145,40 @@ class NotificationService
         }
     }
 
+    public function notifyNewReclamation(Reclamation $reclamation): void
+    {
+        $author = $reclamation->getUtilisateur();
+        $authorIdentity = trim((string) (($author?->getNom() ?? '') . ' ' . ($author?->getPrenom() ?? '')));
+        if ($authorIdentity === '') {
+            $authorIdentity = $author?->getEmail() ?? 'Utilisateur inconnu';
+        }
+
+        try {
+            $update = new Update(
+                'admin/reclamations',
+                json_encode([
+                    'type' => 'nouvelle_reclamation',
+                    'id' => $reclamation->getId(),
+                    'statut' => $reclamation->getStatut(),
+                    'categorie' => $reclamation->getCategorie(),
+                    'titre' => $reclamation->getTitre(),
+                    'auteur' => $authorIdentity,
+                    'date' => (new \DateTime())->format('d/m/Y H:i'),
+                    'message' => sprintf(
+                        'Nouvelle reclamation EN_ATTENTE de %s: %s',
+                        $authorIdentity,
+                        (string) $reclamation->getTitre()
+                    ),
+                ])
+            );
+
+            $this->hub->publish($update);
+            $this->logger->info('[MERCURE OK] notifyNewReclamation envoye');
+        } catch (\Exception $e) {
+            $this->logger->error('[MERCURE ERREUR] notifyNewReclamation: '.$e->getMessage());
+        }
+    }
+
     // =============================================
     // MAILER : Envoi d'emails
     // =============================================
@@ -224,9 +259,7 @@ class NotificationService
         if (method_exists($plan, 'getIdCulture')) {
             return $plan->getIdCulture();
         }
-        if (method_exists($plan, 'getId')) {
-            return $plan->getId();
-        }
+
         return 0;
     }
 }
