@@ -26,7 +26,7 @@ class AIService
         $apiKey = $_ENV['GROQ_API_KEY1'] ?? getenv('GROQ_API_KEY1');
 
         if (!$apiKey) {
-            throw new \RuntimeException('Clé API GROQ manquante dans .env. Ajoutez GROQ_API_KEY1=gsk_votre_clé');
+            throw new \RuntimeException('Clé API GROQ manquante dans .env. Ajoutez GROQ_API_KEY1=votre_cle_groq');
         }
 
         $dataUrl = "data:{$mimeType};base64,{$base64Image}";

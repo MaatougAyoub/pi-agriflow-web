@@ -52,7 +52,7 @@ final class AnnonceGeocodingService
             ]);
 
             $payload = $response->toArray(false);
-            $result = is_array($payload) && isset($payload[0]) && is_array($payload[0]) ? $payload[0] : null;
+            $result = isset($payload[0]) && is_array($payload[0]) ? $payload[0] : null;
 
             if (null === $result || !isset($result['lat'], $result['lon'])) {
                 // fallback: ken ma l9ach point precis, annonce tab9a tet7fedh bel localisation mte3 user

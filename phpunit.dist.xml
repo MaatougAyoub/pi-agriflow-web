@@ -21,6 +21,16 @@
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
         </testsuite>
+        <testsuite name="Marketplace">
+            <file>tests/Service/AnnonceBusinessDiagnosticServiceTest.php</file>
+            <file>tests/Service/AnnonceEnvironmentInsightServiceTest.php</file>
+            <file>tests/Service/AnnonceAiAssistantServiceTest.php</file>
+            <file>tests/Service/AnnonceGeocodingServiceTest.php</file>
+            <file>tests/Service/ReservationPdfServiceTest.php</file>
+            <file>tests/Service/ReservationPricingServiceTest.php</file>
+            <file>tests/Service/SellerMarketplaceServiceTest.php</file>
+            <directory>tests/Command</directory>
+        </testsuite>
     </testsuites>
 
     <source ignoreSuppressionOfDeprecations="true"

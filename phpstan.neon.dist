@@ -1,0 +1,38 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src/Command/MarketplaceGeocodeAnnoncesCommand.php
+        - src/Controller/MarketplaceController.php
+        - src/Controller/ReservationController.php
+        - src/Controller/Seller/SellerAnnonceController.php
+        - src/Controller/Seller/SellerRequestController.php
+        - src/Controller/Admin/AdminAnnonceController.php
+        - src/Controller/Admin/AdminReservationController.php
+        - src/Entity/Annonce.php
+        - src/Entity/Reservation.php
+        - src/Form/AnnonceFormType.php
+        - src/Form/FrontReservationType.php
+        - src/Repository/AnnonceRepository.php
+        - src/Repository/ReservationRepository.php
+        - src/Service/AnnonceAiAssistantService.php
+        - src/Service/AnnonceBusinessDiagnosticService.php
+        - src/Service/AnnonceEnvironmentInsightService.php
+        - src/Service/AnnonceGeocodingService.php
+        - src/Service/ReservationPdfService.php
+        - src/Service/ReservationPricingService.php
+        - src/Service/SellerMarketplaceService.php
+        - tests/Service/AnnonceBusinessDiagnosticServiceTest.php
+        - tests/Service/AnnonceEnvironmentInsightServiceTest.php
+        - tests/Service/AnnonceAiAssistantServiceTest.php
+        - tests/Service/AnnonceGeocodingServiceTest.php
+        - tests/Service/ReservationPdfServiceTest.php
+        - tests/Service/ReservationPricingServiceTest.php
+        - tests/Service/SellerMarketplaceServiceTest.php
+        - tests/Command/MarketplaceGeocodeAnnoncesCommandTest.php
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    tmpDir: var/phpstan
