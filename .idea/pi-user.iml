@@ -156,6 +156,28 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/stella-maris/clock" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/mercure" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/mercure-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/knplabs/knp-components" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/knplabs/knp-paginator-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/psr/container" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/psr/event-dispatcher" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/config" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/dependency-injection" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/deprecation-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/error-handler" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/event-dispatcher" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/event-dispatcher-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/http-foundation" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/http-kernel" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/polyfill-ctype" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/polyfill-mbstring" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/polyfill-php85" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/routing" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/service-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/var-dumper" />
+      <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/var-exporter" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

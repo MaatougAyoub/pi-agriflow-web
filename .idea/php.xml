@@ -164,6 +164,28 @@
       <path value="$PROJECT_DIR$/vendor/psr/http-factory" />
       <path value="$PROJECT_DIR$/vendor/guzzlehttp/psr7" />
       <path value="$PROJECT_DIR$/vendor/symfony/ux-chartjs" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/psr/event-dispatcher" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/knplabs/knp-components" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/psr/log" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/config" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/knplabs/knp-paginator-bundle" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/dependency-injection" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/event-dispatcher" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/error-handler" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/filesystem" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/event-dispatcher-contracts" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/http-kernel" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/http-foundation" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/routing" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/polyfill-php85" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/var-dumper" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/var-exporter" />
+      <path value="$PROJECT_DIR$/irrigation6/vendor/composer" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1">
