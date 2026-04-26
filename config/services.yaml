@@ -28,8 +28,14 @@ services:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
 
-    # please note that last definitions always *replace* previous ones
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always replace previous ones
     App\Service\GeminiAIService:
       arguments:
-        $geminiApiKey: '%gemini_api_key%'
-        $geminiModel: '%gemini_model%'
+        $aiProvider: '%env(AI_PROVIDER)%'
+        $geminiApiKey: '%env(GEMINI_API_KEY)%'
+        $geminiModel: '%env(GEMINI_MODEL)%'
+        $openaiApiKey: '%env(OPENAI_API_KEY)%'
+        $openaiModel: '%env(OPENAI_MODEL)%'
+        $groqApiKey: '%env(GROQ_API_KEY3)%'
+        $groqModel: '%env(GROQ_MODEL)%'

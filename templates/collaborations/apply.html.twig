@@ -3,77 +3,357 @@
 {% block page_title %}Postuler - {{ request.title }}{% endblock %}
 
 {% block front_body %}
-<section class="section">
+<style>
+    .agf-apply-page { padding: 40px 0 60px; }
+
+    /* ── Summary Card ── */
+    .agf-summary-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,.05);
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #e0f2fe 100%);
+        position: relative;
+    }
+    .agf-summary-card::before {
+        content: '';
+        position: absolute;
+        top: -30px; right: -30px;
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        background: rgba(22,163,74,.06);
+    }
+    .agf-summary-card .card-body { padding: 24px 28px; position: relative; z-index: 1; }
+    .agf-summary-title {
+        font-weight: 700;
+        font-size: 1.15rem;
+        color: #166534;
+        margin-bottom: 12px;
+    }
+    .agf-summary-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .agf-summary-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: .82rem;
+        font-weight: 600;
+        background: rgba(255,255,255,.7);
+        color: #334155;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,.8);
+    }
+    .agf-summary-tag i { color: #16a34a; font-size: .8rem; }
+
+    /* ── Form Card ── */
+    .agf-apply-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 6px 28px rgba(0,0,0,.07);
+        background: #fff;
+    }
+
+    /* Header */
+    .agf-apply-header {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #6366f1 100%);
+        padding: 26px 32px;
+        position: relative;
+        overflow: hidden;
+    }
+    .agf-apply-header::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 150px; height: 150px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.07);
+    }
+    .agf-apply-header h4 {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: #fff;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .agf-apply-header p {
+        color: rgba(255,255,255,.7);
+        font-size: .88rem;
+        margin: 6px 0 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── Steps ── */
+    .agf-apply-step {
+        padding: 22px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .agf-apply-step:last-of-type { border-bottom: none; }
+    .agf-apply-step-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .agf-apply-step-num {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #6366f1);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: .8rem;
+        flex-shrink: 0;
+    }
+    .agf-apply-step-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #1e293b;
+    }
+    .agf-apply-step-sub {
+        font-size: .78rem;
+        color: #94a3b8;
+    }
+
+    /* ── Form Inputs ── */
+    .agf-apply-card .form-control,
+    .agf-apply-card .form-select {
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        padding: 10px 14px;
+        font-size: .93rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .agf-apply-card .form-control:focus,
+    .agf-apply-card .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    }
+    .agf-apply-card textarea.form-control {
+        min-height: 120px;
+    }
+    .agf-apply-card .form-label {
+        font-weight: 600;
+        font-size: .88rem;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    /* ── Field Pair ── */
+    .agf-apply-pair {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #f1f5f9;
+    }
+
+    /* ── Tip Card ── */
+    .agf-apply-tip {
+        background: linear-gradient(135deg, #eff6ff, #eef2ff);
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: .85rem;
+        color: #1e40af;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .agf-apply-tip i { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Submit Area ── */
+    .agf-apply-submit {
+        padding: 24px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    .agf-btn-send {
+        background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+        border: none;
+        color: #fff;
+        padding: 12px 36px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all .25s ease;
+        box-shadow: 0 4px 14px rgba(37,99,235,.3);
+    }
+    .agf-btn-send:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37,99,235,.4);
+        color: #fff;
+    }
+    .agf-btn-back {
+        border: 1.5px solid #e2e8f0;
+        background: #fff;
+        color: #64748b;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all .2s ease;
+        text-decoration: none;
+    }
+    .agf-btn-back:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #334155;
+    }
+
+    /* ── Error Alert ── */
+    .agf-apply-error {
+        border-radius: 12px;
+        border-left: 4px solid #ef4444;
+        animation: agfFadeIn .3s ease;
+    }
+    @keyframes agfFadeIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<section class="agf-apply-page">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                {# Résumé de la demande #}
-                <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #f0fdf4, #ecfdf5);">
-                    <div class="card-body p-4">
-                        <h5 class="text-success fw-bold mb-2"><i class="bi bi-briefcase me-2"></i>{{ request.title }}</h5>
-                        <div class="d-flex flex-wrap gap-3">
-                            <span><i class="bi bi-geo-alt text-muted me-1"></i>{{ request.location }}</span>
-                            <span><i class="bi bi-cash text-muted me-1"></i>{{ request.salary }} DT/jour</span>
-                            <span><i class="bi bi-calendar text-muted me-1"></i>{{ request.startDate|date('d/m/Y') }} → {{ request.endDate|date('d/m/Y') }}</span>
-                            <span><i class="bi bi-people text-muted me-1"></i>{{ request.neededPeople }} personne(s)</span>
+            <div class="col-lg-8 col-xl-7">
+
+                {# ── Summary of the request ── #}
+                <div class="agf-summary-card mb-4">
+                    <div class="card-body">
+                        <div class="agf-summary-title">
+                            <i class="bi bi-briefcase-fill me-2"></i>{{ request.title }}
+                        </div>
+                        <div class="agf-summary-tags">
+                            <span class="agf-summary-tag"><i class="bi bi-geo-alt-fill"></i>{{ request.location }}</span>
+                            <span class="agf-summary-tag"><i class="bi bi-cash-stack"></i>{{ request.salary }} DT/jour</span>
+                            <span class="agf-summary-tag"><i class="bi bi-calendar-event"></i>{{ request.startDate|date('d/m/Y') }} → {{ request.endDate|date('d/m/Y') }}</span>
+                            <span class="agf-summary-tag"><i class="bi bi-people-fill"></i>{{ request.neededPeople }} pers.</span>
                         </div>
                     </div>
                 </div>
 
-                {# Formulaire de candidature #}
-                <div class="card shadow-sm border-0" style="border-radius: 16px;">
-                    <div class="card-header bg-primary text-white py-3" style="border-radius: 16px 16px 0 0;">
-                        <h4 class="mb-0"><i class="bi bi-send me-2"></i>Envoyer ma candidature</h4>
+                {# ── Application Form ── #}
+                <div class="agf-apply-card">
+                    <div class="agf-apply-header">
+                        <h4><i class="bi bi-send-fill me-2"></i>Envoyer ma candidature</h4>
+                        <p>Remplissez le formulaire ci-dessous pour postuler à cette offre</p>
                     </div>
-                    <div class="card-body p-4">
+
+                    <div class="p-4 px-lg-5">
                         {% form_theme form 'bootstrap_5_layout.html.twig' %}
                         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        {# Errors #}
                         {% if form.vars.submitted and not form.vars.valid %}
-                            <div class="alert alert-danger mb-4" role="alert">
-                                <strong>Le formulaire est incomplet.</strong> Corrigez les champs indiqués ci-dessous.
+                            <div class="alert alert-danger agf-apply-error mb-4" role="alert">
+                                <i class="bi bi-exclamation-circle me-2"></i>
+                                <strong>Le formulaire est incomplet.</strong> Corrigez les champs ci-dessous.
                                 {{ form_errors(form) }}
                             </div>
                         {% endif %}
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.fullName) }}
+                        {# ── Step 1: Identité ── #}
+                        <div class="agf-apply-step">
+                            <div class="agf-apply-step-label">
+                                <div class="agf-apply-step-num">1</div>
+                                <div>
+                                    <div class="agf-apply-step-title">Informations personnelles</div>
+                                    <div class="agf-apply-step-sub">Nom, email et téléphone</div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.email) }}
+
+                            <div class="agf-apply-pair">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.fullName, {'attr': {'placeholder': 'Votre nom complet'}}) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.email, {'attr': {'placeholder': 'votre@email.com'}}) }}
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.phone, {'attr': {'placeholder': 'Ex: 12 345 678'}}) }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                {{ form_row(form.phone) }}
+                        {# ── Step 2: Expérience ── #}
+                        <div class="agf-apply-step">
+                            <div class="agf-apply-step-label">
+                                <div class="agf-apply-step-num">2</div>
+                                <div>
+                                    <div class="agf-apply-step-title">Expérience & prétentions</div>
+                                    <div class="agf-apply-step-sub">Années d'expérience et salaire souhaité</div>
+                                </div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                {{ form_row(form.yearsOfExperience) }}
+
+                            <div class="agf-apply-pair">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.yearsOfExperience, {'attr': {'placeholder': 'Ex: 3'}}) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.expectedSalary, {'attr': {'placeholder': 'Ex: 50'}}) }}
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                {{ form_row(form.expectedSalary) }}
+
+                            <div class="agf-apply-tip mt-3">
+                                <i class="bi bi-lightbulb-fill"></i>
+                                <div>
+                                    <strong>Conseil :</strong> L'offre propose <strong>{{ request.salary }} DT/jour</strong>.
+                                    Un salaire attendu proche de cette valeur augmente vos chances d'être sélectionné.
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            {{ form_row(form.motivation) }}
+                        {# ── Step 3: Motivation ── #}
+                        <div class="agf-apply-step">
+                            <div class="agf-apply-step-label">
+                                <div class="agf-apply-step-num">3</div>
+                                <div>
+                                    <div class="agf-apply-step-title">Motivation</div>
+                                    <div class="agf-apply-step-sub">Expliquez pourquoi vous êtes le bon candidat</div>
+                                </div>
+                            </div>
+
+                            {{ form_row(form.motivation, {'attr': {'placeholder': 'Décrivez votre expérience pertinente, vos compétences et votre motivation pour cette mission...', 'rows': 5}}) }}
+
+                            <div class="agf-apply-tip mt-3">
+                                <i class="bi bi-robot"></i>
+                                <div>
+                                    <strong>IA Matching :</strong> Votre motivation sera analysée par notre IA pour évaluer
+                                    votre adéquation avec l'offre. Soyez le plus précis possible !
+                                </div>
+                            </div>
                         </div>
 
-                        <hr class="my-4">
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ path('app_collab_show', {id: request.id}) }}" class="btn btn-outline-secondary">
+                        {# ── Submit ── #}
+                        <div class="agf-apply-submit">
+                            <a href="{{ path('app_collab_show', {id: request.id}) }}" class="agf-btn-back">
                                 <i class="bi bi-arrow-left me-1"></i>Annuler
                             </a>
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
-                                <i class="bi bi-send-check me-1"></i>Envoyer ma candidature
+                            <button type="submit" class="agf-btn-send">
+                                <i class="bi bi-send-check me-2"></i>Envoyer ma candidature
                             </button>
                         </div>
 
                         {{ form_end(form) }}
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
