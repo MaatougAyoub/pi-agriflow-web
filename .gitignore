@@ -25,3 +25,6 @@
 
 # ===== VSCODE =====
 .vscode/
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
