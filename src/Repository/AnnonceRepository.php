@@ -33,10 +33,41 @@ class AnnonceRepository extends ServiceEntityRepository
 
     public function createPublicSearchQueryBuilder(?string $keyword = null, ?AnnonceType $type = null): QueryBuilder
     {
+        return $this->createPublicFilterQueryBuilder($keyword, $type)
+            ->orderBy('a.createdAt', 'DESC');
+    }
+
+    /**
+     * @return array{total: int, vente: int, location: int, zones: int}
+     */
+    public function buildPublicStats(?string $keyword = null, ?AnnonceType $type = null): array
+    {
+        $queryBuilder = $this->createPublicFilterQueryBuilder($keyword, $type)
+            ->select(
+                'COUNT(a.id) AS total',
+                'SUM(CASE WHEN a.type = :vente THEN 1 ELSE 0 END) AS vente',
+                'SUM(CASE WHEN a.type = :location THEN 1 ELSE 0 END) AS location',
+                'COUNT(DISTINCT a.localisation) AS zones'
+            )
+            ->setParameter('vente', AnnonceType::VENTE)
+            ->setParameter('location', AnnonceType::LOCATION);
+
+        /** @var array{total: mixed, vente: mixed, location: mixed, zones: mixed}|null $result */
+        $result = $queryBuilder->getQuery()->getOneOrNullResult();
+
+        return [
+            'total' => (int) ($result['total'] ?? 0),
+            'vente' => (int) ($result['vente'] ?? 0),
+            'location' => (int) ($result['location'] ?? 0),
+            'zones' => (int) ($result['zones'] ?? 0),
+        ];
+    }
+
+    private function createPublicFilterQueryBuilder(?string $keyword = null, ?AnnonceType $type = null): QueryBuilder
+    {
         $queryBuilder = $this->createQueryBuilder('a')
             ->andWhere('a.statut = :statut')
-            ->setParameter('statut', AnnonceStatut::DISPONIBLE)
-            ->orderBy('a.createdAt', 'DESC');
+            ->setParameter('statut', AnnonceStatut::DISPONIBLE);
 
         if (null !== $keyword && '' !== trim($keyword)) {
             $queryBuilder

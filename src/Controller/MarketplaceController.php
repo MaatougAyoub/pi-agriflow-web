@@ -42,28 +42,8 @@ final class MarketplaceController extends AbstractController
             $request->query->getInt('page', 1),
             6
         );
-        // view: searchPublic njiibou beha kol annonces filtrées bech stats yeb9aw exact
-        $statsAnnonces = $annonceRepository->searchPublic($keyword, $type);
-        $stats = [
-            'total' => count($statsAnnonces),
-            'vente' => 0,
-            'location' => 0,
-            'zones' => 0,
-        ];
-        $localisations = [];
-
-        // stats: houni n7sbou chiffres sghar bech nwarri resume 3la catalogue
-        foreach ($statsAnnonces as $annonce) {
-            if ($annonce->isLocation()) {
-                ++$stats['location'];
-            } else {
-                ++$stats['vente'];
-            }
-
-            $localisations[] = $annonce->getLocalisation();
-        }
-
-        $stats['zones'] = count(array_unique($localisations));
+        // stats: requete agregation bech ma nchargiwch kol annonces juste lel compteurs
+        $stats = $annonceRepository->buildPublicStats($keyword, $type);
 
         return $this->render('marketplace/index.html.twig', [
             'annonces' => $annonces,
