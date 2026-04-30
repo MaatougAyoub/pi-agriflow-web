@@ -3,5 +3,5 @@ when@dev:
         analyzers:
             n_plus_one:
                 threshold: 5
-        slow_query:
-            threshold: 100
+            slow_query:
+                threshold: 100
