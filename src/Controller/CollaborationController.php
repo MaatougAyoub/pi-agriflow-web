@@ -430,37 +430,16 @@ class CollaborationController extends AbstractController
         // Métier 2 : Ranking intelligent
         $rankedScores = $matchingService->rankApplications($applications, $collabRequest);
 
-        // IA : Analyse de fit pour le meilleur candidat (IA 2)
+        // IA : Analyse de fit pour tous les candidats (IA 2)
         $aiAnalyses = [];
-        // Important : Gemini a un quota. Au lieu d'appeler l'IA pour potentiellement plusieurs candidats,
-        // on analyse uniquement le "meilleur candidat" (1 requête Gemini par page).
-        if (!empty($rankedScores)) {
-            $best = $rankedScores[0];
-            $bestApp = $best->getApplication();
-            $cacheKey = sprintf(
-                'ai_fit_cache:%d:%d',
-                $collabRequest->getId(),
-                $bestApp->getId()
+        // On parcourt tous les candidats pour générer une analyse pour chacun
+        foreach ($rankedScores as $score) {
+            $application = $score->getApplication();
+            // On appelle l'IA (qui basculera en local automatiquement si besoin)
+            $aiAnalyses[$application->getId()] = $gemini->analyzeCandidateFit(
+                $collabRequest->getDescription(),
+                $application->getMotivation() ?? ''
             );
-
-            $session = $request->getSession();
-            $cached = $session->get($cacheKey);
-
-            if (is_string($cached) && $cached !== '') {
-                $aiAnalyses[$bestApp->getId()] = $cached;
-            } else {
-                $analysis = $gemini->analyzeCandidateFit(
-                    $collabRequest->getDescription(),
-                    $bestApp->getMotivation()
-                );
-
-                // On évite de "verrouiller" un échec (quota, clé invalide...) dans le cache.
-                if (!str_starts_with($analysis, 'Analyse indisponible')) {
-                    $session->set($cacheKey, $analysis);
-                }
-
-                $aiAnalyses[$bestApp->getId()] = $analysis;
-            }
         }
 
         return $this->render('collaborations/view_applications.html.twig', [

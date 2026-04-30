@@ -3,85 +3,350 @@
 {% block page_title %}Nouvelle demande - Collaborations{% endblock %}
 
 {% block front_body %}
-<section class="section">
+<style>
+    /* ── Form Card ── */
+    .agf-form-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,.08);
+        background: #fff;
+    }
+
+    /* ── Gradient Header ── */
+    .agf-form-header {
+        background: linear-gradient(135deg, #16a34a 0%, #059669 50%, #0d9488 100%);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+    }
+    .agf-form-header::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 160px; height: 160px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+    }
+    .agf-form-header::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: 30%;
+        width: 200px; height: 200px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.05);
+    }
+    .agf-form-header h4 {
+        font-weight: 700;
+        font-size: 1.35rem;
+        color: #fff;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+    .agf-form-header p {
+        color: rgba(255,255,255,.8);
+        font-size: .9rem;
+        margin: 6px 0 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── Steps / Sections ── */
+    .agf-step {
+        padding: 24px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .agf-step:last-of-type {
+        border-bottom: none;
+    }
+    .agf-step-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .agf-step-number {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #16a34a, #059669);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: .85rem;
+        flex-shrink: 0;
+    }
+    .agf-step-title {
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: #1e293b;
+    }
+    .agf-step-subtitle {
+        font-size: .8rem;
+        color: #94a3b8;
+        margin-top: 1px;
+    }
+
+    /* ── AI Button ── */
+    .agf-ai-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        color: #fff;
+        padding: 7px 18px;
+        border-radius: 20px;
+        font-size: .82rem;
+        font-weight: 600;
+        transition: all .25s ease;
+        box-shadow: 0 3px 12px rgba(99, 102, 241, .3);
+    }
+    .agf-ai-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 18px rgba(99, 102, 241, .4);
+        color: #fff;
+    }
+    .agf-ai-btn:disabled {
+        opacity: .7;
+        transform: none;
+    }
+
+    /* ── Form Inputs Override ── */
+    .agf-form-card .form-control,
+    .agf-form-card .form-select {
+        border-radius: 10px;
+        border: 1.5px solid #e2e8f0;
+        padding: 10px 14px;
+        font-size: .93rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .agf-form-card .form-control:focus,
+    .agf-form-card .form-select:focus {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+    }
+    .agf-form-card textarea.form-control {
+        min-height: 120px;
+    }
+    .agf-form-card .form-label {
+        font-weight: 600;
+        font-size: .88rem;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    /* ── Info Card ── */
+    .agf-info-card {
+        background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: .85rem;
+        color: #166534;
+    }
+
+    /* ── Submit Area ── */
+    .agf-submit-area {
+        padding: 24px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    .agf-btn-publish {
+        background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+        border: none;
+        color: #fff;
+        padding: 12px 36px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all .25s ease;
+        box-shadow: 0 4px 14px rgba(22,163,74,.3);
+    }
+    .agf-btn-publish:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(22,163,74,.4);
+        color: #fff;
+    }
+    .agf-btn-cancel {
+        border: 1.5px solid #e2e8f0;
+        background: #fff;
+        color: #64748b;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all .2s ease;
+    }
+    .agf-btn-cancel:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #334155;
+    }
+
+    /* ── Row cards for paired fields ── */
+    .agf-field-pair {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #f1f5f9;
+    }
+
+    /* ── Moderation alert custom style ── */
+    #moderation-inline-alert {
+        border-radius: 12px;
+        border-left: 4px solid #ef4444;
+        animation: fadeSlideIn .3s ease;
+    }
+    @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<section class="section py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card shadow-sm border-0" style="border-radius: 16px;">
-                    <div class="card-header bg-success text-white py-3" style="border-radius: 16px 16px 0 0;">
-                        <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Publier une demande de collaboration</h4>
+            <div class="col-lg-8 col-xl-7">
+
+                <div class="agf-form-card">
+                    {# ── Header ── #}
+                    <div class="agf-form-header">
+                        <h4><i class="bi bi-plus-circle me-2"></i>Publier une demande de collaboration</h4>
+                        <p>Décrivez votre besoin et trouvez les meilleurs collaborateurs agricoles</p>
                     </div>
-                    <div class="card-body p-4">
+
+                    {# ── Body ── #}
+                    <div class="p-4 px-lg-5">
+
                         {% form_theme form 'bootstrap_5_layout.html.twig' %}
                         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        {# Moderation error from server #}
                         {% if moderation_error is defined and moderation_error %}
-                            <div class="alert alert-danger mb-4" role="alert">
-                                {{ moderation_error }}
+                            <div class="alert alert-danger mb-4" role="alert" style="border-radius:12px; border-left:4px solid #ef4444;">
+                                <i class="bi bi-shield-exclamation me-2"></i>{{ moderation_error }}
                             </div>
                         {% endif %}
                         {% if not form.vars.valid %}
-                            <div class="alert alert-danger mb-4">
+                            <div class="alert alert-danger mb-4" style="border-radius:12px;">
                                 {{ form_errors(form) }}
                             </div>
                         {% endif %}
 
-                        <div class="mb-3">
-                            {{ form_row(form.title) }}
-                        </div>
+                        {# ── Step 1: Description ── #}
+                        <div class="agf-step">
+                            <div class="agf-step-label">
+                                <div class="agf-step-number">1</div>
+                                <div>
+                                    <div class="agf-step-title">Description de la demande</div>
+                                    <div class="agf-step-subtitle">Titre, détails et amélioration par IA</div>
+                                </div>
+                            </div>
 
-                        <div class="mb-3">
-                            {{ form_row(form.description) }}
-                            <div class="text-end mt-1">
-                                <button type="button" id="btn-ai-improve" class="btn btn-sm btn-outline-info rounded-pill">
-                                    <i class="bi bi-robot me-1"></i>Améliorer avec l'IA
-                                </button>
+                            <div class="mb-3">
+                                {{ form_row(form.title, {'attr': {'placeholder': 'Ex: Récolte des olives – Saison 2026'}}) }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_row(form.description, {'attr': {'placeholder': 'Décrivez les tâches, compétences requises, conditions de travail...', 'rows': 5}}) }}
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <div id="ai-improve-status" class="small text-muted"></div>
+                                    <button type="button" id="btn-ai-improve" class="agf-ai-btn">
+                                        <i class="bi bi-stars me-1"></i>Améliorer avec l'IA
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            {{ form_row(form.location) }}
-                        </div>
-
-                        {# Map Picker #}
-                        <div class="mb-4">
-                            {% include 'collaborations/_map_picker.html.twig' %}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.startDate) }}
+                        {# ── Step 2: Localisation ── #}
+                        <div class="agf-step">
+                            <div class="agf-step-label">
+                                <div class="agf-step-number">2</div>
+                                <div>
+                                    <div class="agf-step-title">Localisation</div>
+                                    <div class="agf-step-subtitle">Ville et emplacement sur la carte</div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.endDate) }}
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.neededPeople) }}
+                            <div class="mb-3">
+                                {{ form_row(form.location, {'attr': {'placeholder': 'Ex: Tunis, Sousse, Sfax...'}}) }}
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form_row(form.salary) }}
+
+                            {# Map Picker #}
+                            <div class="mb-2">
+                                {% include 'collaborations/_map_picker.html.twig' %}
                             </div>
                         </div>
 
-                        <hr class="my-4">
+                        {# ── Step 3: Dates ── #}
+                        <div class="agf-step">
+                            <div class="agf-step-label">
+                                <div class="agf-step-number">3</div>
+                                <div>
+                                    <div class="agf-step-title">Période de travail</div>
+                                    <div class="agf-step-subtitle">Dates de début et de fin</div>
+                                </div>
+                            </div>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ path('app_collab_index') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left me-1"></i>Annuler
-                            </a>
-                            <button type="submit" class="btn btn-success btn-lg px-5">
-                                <i class="bi bi-check-circle me-1"></i>Publier la demande
-                            </button>
+                            <div class="agf-field-pair">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.startDate) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.endDate) }}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        {# ── Step 4: Conditions ── #}
+                        <div class="agf-step">
+                            <div class="agf-step-label">
+                                <div class="agf-step-number">4</div>
+                                <div>
+                                    <div class="agf-step-title">Conditions</div>
+                                    <div class="agf-step-subtitle">Nombre de personnes et rémunération</div>
+                                </div>
+                            </div>
+
+                            <div class="agf-field-pair">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form_row(form.neededPeople) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_row(form.salary) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="agf-info-card mt-3">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                <strong>Conseil :</strong> Un salaire compétitif attire davantage de candidats qualifiés.
+                                Le salaire moyen agricole en Tunisie est d'environ 35–55 DT/jour.
+                            </div>
+                        </div>
+
+                        {# ── Hidden fields ── #}
                         {{ form_row(form.latitude) }}
                         {{ form_row(form.longitude) }}
+
+                        {# ── Submit ── #}
+                        <div class="agf-submit-area">
+                            <a href="{{ path('app_collab_index') }}" class="agf-btn-cancel text-decoration-none">
+                                <i class="bi bi-arrow-left me-1"></i>Annuler
+                            </a>
+                            <button type="submit" class="agf-btn-publish">
+                                <i class="bi bi-check-circle me-2"></i>Publier la demande
+                            </button>
+                        </div>
 
                         {{ form_end(form) }}
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
