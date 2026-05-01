@@ -190,7 +190,7 @@ final class AdminDashboardController extends AbstractController
     }
 
     /**
-     * @param array<int, object> $parcelles
+     * @param \App\Entity\Parcelle[] $parcelles
      * @return array<string, int>
      */
     private function countParcellesByTypeTerre(array $parcelles): array

@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Repository\PlansIrrigationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlansIrrigationRepository::class)]
@@ -13,12 +12,11 @@ use Doctrine\ORM\Mapping as ORM;
 class PlansIrrigation
 {
     #[ORM\Id]
-    // Retrait de GeneratedValue pour éviter l'erreur "No identity value was generated"
     #[ORM\Column(type: 'integer')]
     private ?int $plan_id = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $id_culture = null;
+    private ?int $culture_id = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $nom_culture = null;
@@ -42,18 +40,19 @@ class PlansIrrigation
     private ?string $donnees_meteo_json = null;
 
     #[ORM\ManyToOne(targetEntity: Culture::class)]
-    #[ORM\JoinColumn(name: "id_culture", referencedColumnName: "id")]
+    #[ORM\JoinColumn(name: 'culture_id', referencedColumnName: 'id')]
     private ?Culture $culture = null;
 
-    #[ORM\OneToMany(mappedBy: "plan", targetEntity: PlansIrrigationJour::class)]
+    /**
+     * @var Collection<int, PlansIrrigationJour>
+     */
+    #[ORM\OneToMany(mappedBy: 'plan', targetEntity: PlansIrrigationJour::class)]
     private Collection $jours;
 
     public function __construct()
     {
         $this->jours = new ArrayCollection();
     }
-
-    // ----- Getters / Setters -----
 
     public function getPlanId(): ?int
     {
@@ -63,17 +62,19 @@ class PlansIrrigation
     public function setPlanId(int $plan_id): self
     {
         $this->plan_id = $plan_id;
+
         return $this;
     }
 
     public function getIdCulture(): ?int
     {
-        return $this->id_culture;
+        return $this->culture_id;
     }
 
-    public function setIdCulture(?int $id_culture): self
+    public function setIdCulture(?int $culture_id): self
     {
-        $this->id_culture = $id_culture;
+        $this->culture_id = $culture_id;
+
         return $this;
     }
 
@@ -85,6 +86,7 @@ class PlansIrrigation
     public function setNomCulture(?string $nom_culture): self
     {
         $this->nom_culture = $nom_culture;
+
         return $this;
     }
 
@@ -96,6 +98,7 @@ class PlansIrrigation
     public function setDateDemande(?\DateTimeInterface $date_demande): self
     {
         $this->date_demande = $date_demande;
+
         return $this;
     }
 
@@ -107,6 +110,7 @@ class PlansIrrigation
     public function setStatut(?string $statut): self
     {
         $this->statut = $statut;
+
         return $this;
     }
 
@@ -118,6 +122,7 @@ class PlansIrrigation
     public function setVolumeEauPropose(?float $volume_eau_propose): self
     {
         $this->volume_eau_propose = $volume_eau_propose;
+
         return $this;
     }
 
@@ -129,6 +134,7 @@ class PlansIrrigation
     public function setTempIrrigation(?\DateTimeInterface $temp_irrigation): self
     {
         $this->temp_irrigation = $temp_irrigation;
+
         return $this;
     }
 
@@ -140,6 +146,7 @@ class PlansIrrigation
     public function setTemp(?\DateTimeInterface $temp): self
     {
         $this->temp = $temp;
+
         return $this;
     }
 
@@ -151,6 +158,7 @@ class PlansIrrigation
     public function setDonneesMeteoJson(?string $donnees_meteo_json): self
     {
         $this->donnees_meteo_json = $donnees_meteo_json;
+
         return $this;
     }
 
@@ -162,6 +170,8 @@ class PlansIrrigation
     public function setCulture(?Culture $culture): self
     {
         $this->culture = $culture;
+        $this->culture_id = $culture?->getId();
+
         return $this;
     }
 
@@ -179,6 +189,7 @@ class PlansIrrigation
             $this->jours[] = $jour;
             $jour->setPlan($this);
         }
+
         return $this;
     }
 }

@@ -216,7 +216,7 @@ CREATE TABLE `cultures` (
   `date_recolte` date DEFAULT NULL,
   `recolte_estime` decimal(10,2) DEFAULT NULL,
   `date_creation` datetime DEFAULT current_timestamp(),
-  `id_acheteur` int(11) DEFAULT NULL,
+  `acheteur_id` int(11) DEFAULT NULL,
   `date_vente` date DEFAULT NULL,
   `date_publication` date DEFAULT NULL,
   `prix_vente` double DEFAULT NULL
@@ -226,7 +226,7 @@ CREATE TABLE `cultures` (
 -- Dumping data for table `cultures`
 --
 
-INSERT INTO `cultures` (`id`, `parcelle_id`, `proprietaire_id`, `nom`, `type_culture`, `superficie`, `etat`, `date_recolte`, `recolte_estime`, `date_creation`, `id_acheteur`, `date_vente`, `date_publication`, `prix_vente`) VALUES
+INSERT INTO `cultures` (`id`, `parcelle_id`, `proprietaire_id`, `nom`, `type_culture`, `superficie`, `etat`, `date_recolte`, `recolte_estime`, `date_creation`, `acheteur_id`, `date_vente`, `date_publication`, `prix_vente`) VALUES
 (1, 1, 75, 'fraise', 'FRAISE', 100.00, 'EN_COURS', '2026-03-18', 10.20, '2026-02-28 12:19:09', NULL, NULL, NULL, NULL),
 (2, 2, 78, 'Batata', 'POMME_DE_TERRE', 500.00, 'VENDUE', '2026-03-26', 2000.00, '2026-03-01 15:11:48', 63, '2026-03-01', '2026-03-01', 2600),
 (3, 5, 78, 'Degla', 'AUTRE', 1000.00, 'EN_VENTE', '2026-04-25', 100.00, '2026-03-01 18:20:38', NULL, NULL, '2026-03-01', 30000),
@@ -245,7 +245,7 @@ INSERT INTO `cultures` (`id`, `parcelle_id`, `proprietaire_id`, `nom`, `type_cul
 
 CREATE TABLE `diagnosti` (
   `id_diagnostic` int(11) NOT NULL,
-  `id_agriculteur` int(11) NOT NULL,
+  `agriculteur_id` int(11) NOT NULL,
   `nom_culture` varchar(100) NOT NULL,
   `image_path` varchar(255) DEFAULT NULL,
   `description` text NOT NULL,
@@ -259,7 +259,7 @@ CREATE TABLE `diagnosti` (
 -- Dumping data for table `diagnosti`
 --
 
-INSERT INTO `diagnosti` (`id_diagnostic`, `id_agriculteur`, `nom_culture`, `image_path`, `description`, `reponse_expert`, `statut`, `date_envoi`, `date_reponse`) VALUES
+INSERT INTO `diagnosti` (`id_diagnostic`, `agriculteur_id`, `nom_culture`, `image_path`, `description`, `reponse_expert`, `statut`, `date_envoi`, `date_reponse`) VALUES
 (27, 76, 'Besbes', 'C:\\Users\\Crash\\Desktop\\fenouil.png', 'Objet : Réclamation concernant la qualité des plants de fenouil\n\nÀ l\'attention de l\'expert agricole,\n\nJe vous écris pour signaler un problème concernant mes plants de fenouil. Comme vous pouvez le voir sur la photo ci-jointe, les plants de fenouil présentent des feuilles jaunâtres et des tiges faibles.\n\nMalgré un arrosage régulier et une exposition suffisante à la lumière solaire, les plants ne semblent pas se développer normalement. Les feuilles sont également moins nombreuses et moins denses que celles que l\'on peut trouver sur des plants sains.\n\nJe crains que cela puisse être dû à une maladie ou à une carence nutritionnelle. Je vous serais reconnaissant si vous pouviez m\'aider à identifier la cause de ce problème et à trouver une solution pour y remédier.\n\nJe joins à ce message une photo des plants affectés. Je vous remercie d\'avance pour votre attention à cette affaire et je suis impatient de vous entendre.\n\nCordialement,\n[Votre nom]', '\n--- PRODUIT RECOMMANDÉ ---\nNom : Oidium-Fix\nDosage : 1.8 L / hectare\nFréquence : 2 fois par mois\nNote : Ne pas dépasser la dose recommandée. Bien nettoyer le pulvérisateur après usage.\n---------------------------\n', 'Valide', '2026-03-01 22:26:03', NULL),
 (32, 74, 'fraise', 'C:\\Users\\Crash\\Desktop\\fraise malade.jpg', 'Objet: Réclamation Agricole - Fruits Abîmés\n\nCher Expert Agricole,\n\nJe vous écris pour signaler un problème concernant une récolte de fraises qui présente des défauts importants. En examinant les fruits, j\'ai remarqué que plusieurs d\'entre eux ont des tâches brunes en leur centre, comme si une partie du fruit était morte ou pourrie. Voir la flèche noire.\n\nCes fraises faisaient partie d\'un champ qui a reçu un traitement standard en termes d\'irrigation, de fertilisation et de protection phytosanitaire. Cependant, depuis quelques jours, nous avons observé une augmentation significative de la température et une légère diminution des précipitations, ce qui pourrait avoir affecté la santé des plantes.\n\nLes dégâts observés sur les fraises sont caractérisés par:\n\n- Des tâches brunes au centre des fruits\n- Une texture molle et/ou décolorée dans les zones affectées\n- Aucune moisissure visible à l\'extérieur des fruits\n\nJe joins à ce message une image des fruits affectés. Pouvez-vous expertiser cette situation et me donner une analyse de la cause de ces dégâts ? Est-ce lié à un problème de sécheresse, une maladie ou un parasite ? \n\nJe vous remercie de votre attention à cette affaire et je reste à votre disposition pour tout complément d\'information.\n\nCordialement,\n[Votre Nom] \n Responsable Agricole \n Système AGRIFLOW', '\n--- PRODUIT RECOMMANDÉ ---\nNom : F1-2203\nDosage : 2L/hec\nFréquence : 1 fois /moins\nNote : Ne pas appliquer sur un arbre affaibli. Nettoyer le matériel après usage. Éviter le contact avec la peau.\n---------------------------\n', 'Valide', '2026-03-02 09:40:59', NULL),
 (33, 74, 'fraise', 'C:\\Users\\Crash\\Desktop\\fraise malade.jpg', 'Objet : Réclamation concernant des fraises affectées par une maladie ou un défaut\n\nMadame, Monsieur l\'expert agricole,\n\nJe vous écris pour signaler un problème observé sur une récolte de fraises qui semble être affectée par une maladie ou un défaut quelconque. Les symptômes observés sont des taches sombres et des zones détruites sur la surface des fruits, comme le montre la photo ci-jointe.\n\nLes fraises présentent des taches brunes à noires, circulaires ou irrégulières, qui semblent être enfoncées dans la chair du fruit. Ces taches sont souvent entourées d\'une zone jaune ou brune. Les fruits semblent par ailleurs mûrs et de taille normale.\n\nLes informations relatives aux champs où les fraises ont été cultivées sont les suivantes :\n- Localisation : [Insérer localisation]\n- Type de sol : [Insérer type de sol]\n- Conditions météorologiques récentes : [Insérer conditions météorologiques]\n\nLes pratiques agricoles suivies incluent :\n- Irrigation régulière\n- Utilisation d\'engrais et de pesticides selon les recommandations standard\n\nLa variété de fraise cultivée est [Insérer variété].\n\nL\'objectif de cette réclamation est d\'obtenir une identification précise de la cause de ces symptômes et des recommandations pour un traitement approprié afin de prévenir de futures occurrences.\n\nJe joins à ce message une photo des fraises affectées. Je serais ravi de fournir plus d\'informations ou de discuter de ce problème en détail si nécessaire.\n\nCordialement,\n[Votre nom] \nSystème AGRIFLOW.', NULL, 'En attente', '2026-03-02 09:41:31', NULL),
@@ -325,7 +325,7 @@ INSERT INTO `parcelle` (`id`, `agriculteur_id`, `nom`, `superficie`, `type_terre
 
 CREATE TABLE `plans_irrigation` (
   `plan_id` int(11) NOT NULL,
-  `id_culture` int(11) DEFAULT NULL,
+  `culture_id` int(11) DEFAULT NULL,
   `nom_culture` varchar(100) DEFAULT NULL,
   `date_demande` datetime DEFAULT current_timestamp(),
   `statut` varchar(50) DEFAULT 'en_attente',
@@ -339,7 +339,7 @@ CREATE TABLE `plans_irrigation` (
 -- Dumping data for table `plans_irrigation`
 --
 
-INSERT INTO `plans_irrigation` (`plan_id`, `id_culture`, `nom_culture`, `date_demande`, `statut`, `volume_eau_propose`, `temp_irrigation`, `temp`, `donnees_meteo_json`) VALUES
+INSERT INTO `plans_irrigation` (`plan_id`, `culture_id`, `nom_culture`, `date_demande`, `statut`, `volume_eau_propose`, `temp_irrigation`, `temp`, `donnees_meteo_json`) VALUES
 (4, 1, NULL, '2026-02-15 19:13:35', 'brouillon', 35, '00:00:00', '2026-02-15 19:13:35', NULL),
 (5, 3, NULL, '2026-02-15 19:13:48', 'brouillon', 50, '00:00:00', '2026-02-15 19:13:48', NULL),
 (7, 9, 'pomme de terre', '2026-02-15 22:33:20', 'soumis', 1303.07, NULL, NULL, NULL),
@@ -652,14 +652,14 @@ ALTER TABLE `collab_requests`
 --
 ALTER TABLE `cultures`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_cultures_acheteur` (`id_acheteur`);
+  ADD KEY `fk_cultures_acheteur` (`acheteur_id`);
 
 --
 -- Indexes for table `diagnosti`
 --
 ALTER TABLE `diagnosti`
   ADD PRIMARY KEY (`id_diagnostic`),
-  ADD KEY `diag` (`id_agriculteur`);
+  ADD KEY `diag` (`agriculteur_id`);
 
 --
 -- Indexes for table `messages`
@@ -683,7 +683,7 @@ ALTER TABLE `parcelle`
 --
 ALTER TABLE `plans_irrigation`
   ADD PRIMARY KEY (`plan_id`),
-  ADD KEY `id_culture` (`id_culture`);
+  ADD KEY `id_culture` (`culture_id`);
 
 --
 -- Indexes for table `plans_irrigation_jour`
@@ -819,13 +819,13 @@ ALTER TABLE `utilisateurs`
 -- Constraints for table `cultures`
 --
 ALTER TABLE `cultures`
-  ADD CONSTRAINT `fk_cultures_acheteur` FOREIGN KEY (`id_acheteur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk_cultures_acheteur` FOREIGN KEY (`acheteur_id`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `diagnosti`
 --
 ALTER TABLE `diagnosti`
-  ADD CONSTRAINT `diag` FOREIGN KEY (`id_agriculteur`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `diag` FOREIGN KEY (`agriculteur_id`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

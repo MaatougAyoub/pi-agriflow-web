@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CultureHistoryRepository::class)]
 #[ORM\Table(name: 'culture_history')]
+#[ORM\HasLifecycleCallbacks]
 class CultureHistory
 {
     public const ACTION_CREATED = 'CREATED';
@@ -30,17 +31,17 @@ class CultureHistory
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\ManyToOne(targetEntity: Culture::class)]
     #[ORM\JoinColumn(name: 'culture_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Culture $culture = null;
 
     #[ORM\Column(type: 'string', length: 50)]
-    private ?string $action = null;
+    private string $action = self::ACTION_CREATED;
 
     #[ORM\Column(name: 'performed_at', type: 'datetime')]
-    private ?\DateTimeInterface $performedAt = null;
+    private \DateTimeInterface $performedAt;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
@@ -51,7 +52,14 @@ class CultureHistory
 
     public function getId(): ?int
     {
-        return $this->id;
+        return isset($this->id) ? $this->id : null;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getCulture(): ?Culture
@@ -80,10 +88,10 @@ class CultureHistory
 
     public function getPerformedAt(): ?\DateTimeInterface
     {
-        return $this->performedAt;
+        return isset($this->performedAt) ? $this->performedAt : null;
     }
 
-    public function setPerformedAt(\DateTimeInterface $performedAt): self
+    protected function setPerformedAt(\DateTimeInterface $performedAt): self
     {
         $this->performedAt = $performedAt;
 
@@ -116,7 +124,7 @@ class CultureHistory
 
     public function getActionLabel(): string
     {
-        return self::ACTION_LABELS[$this->action ?? ''] ?? ($this->action ?? 'Action');
+        return self::ACTION_LABELS[$this->action] ?? $this->action;
     }
 
     public function getUtilisateurDisplayName(): ?string
@@ -132,5 +140,13 @@ class CultureHistory
         }
 
         return $this->utilisateur->getEmail();
+    }
+
+    #[ORM\PrePersist]
+    public function initializePerformedAt(): void
+    {
+        if (!isset($this->performedAt)) {
+            $this->performedAt = new \DateTimeImmutable();
+        }
     }
 }

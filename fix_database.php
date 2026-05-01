@@ -95,15 +95,15 @@ if (preg_match('/mysql:\/\/([^:]*):?([^@]*)@([^:]+):(\d+)\/(.+)/', $databaseUrl,
         
         // Clean orphaned cultures
         $sql = "DELETE c FROM cultures c 
-                LEFT JOIN utilisateurs u ON c.id_acheteur = u.id 
-                WHERE c.id_acheteur IS NOT NULL AND u.id IS NULL";
+                LEFT JOIN utilisateurs u ON c.acheteur_id = u.id 
+                WHERE c.acheteur_id IS NOT NULL AND u.id IS NULL";
         $result = $pdo->exec($sql);
         echo "Cleaned $result orphaned culture records\n";
         
         // Clean orphaned diagnosti
         $sql = "DELETE d FROM diagnosti d 
-                LEFT JOIN utilisateurs u ON d.id_agriculteur = u.id 
-                WHERE d.id_agriculteur IS NOT NULL AND u.id IS NULL";
+                LEFT JOIN utilisateurs u ON d.agriculteur_id = u.id 
+                WHERE d.agriculteur_id IS NOT NULL AND u.id IS NULL";
         $result = $pdo->exec($sql);
         echo "Cleaned $result orphaned diagnosti records\n";
         

@@ -29,7 +29,7 @@ class CultureRepository extends ServiceEntityRepository
     public function findByProprietaireId(int $proprietaireId): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.proprietaire_id = :proprietaireId')
+            ->andWhere('IDENTITY(c.proprietaire_id) = :proprietaireId')
             ->setParameter('proprietaireId', $proprietaireId)
             ->orderBy('c.date_creation', 'DESC')
             ->addOrderBy('c.id', 'DESC')
@@ -44,7 +44,7 @@ class CultureRepository extends ServiceEntityRepository
     public function findFilteredForProprietaire(int $proprietaireId, array $criteria): array
     {
         $queryBuilder = $this->createQueryBuilder('c')
-            ->andWhere('c.proprietaire_id = :proprietaireId')
+            ->andWhere('IDENTITY(c.proprietaire_id) = :proprietaireId')
             ->setParameter('proprietaireId', $proprietaireId);
 
         $search = trim((string) ($criteria['search'] ?? ''));
@@ -64,7 +64,7 @@ class CultureRepository extends ServiceEntityRepository
         $parcelleId = trim((string) ($criteria['parcelle_id'] ?? ''));
         if ('' !== $parcelleId && ctype_digit($parcelleId)) {
             $queryBuilder
-                ->andWhere('c.parcelle_id = :parcelleId')
+                ->andWhere('IDENTITY(c.parcelle_id) = :parcelleId')
                 ->setParameter('parcelleId', (int) $parcelleId);
         }
 
@@ -110,7 +110,7 @@ class CultureRepository extends ServiceEntityRepository
     {
         $results = $this->createQueryBuilder('c')
             ->select(sprintf('DISTINCT %s AS %s', $field, $alias))
-            ->andWhere('c.proprietaire_id = :proprietaireId')
+            ->andWhere('IDENTITY(c.proprietaire_id) = :proprietaireId')
             ->andWhere(sprintf('%s IS NOT NULL', $field))
             ->andWhere(sprintf('%s != :emptyValue', $field))
             ->setParameter('proprietaireId', $proprietaireId)
@@ -126,7 +126,7 @@ class CultureRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.id = :id')
-            ->andWhere('c.proprietaire_id = :proprietaireId')
+            ->andWhere('IDENTITY(c.proprietaire_id) = :proprietaireId')
             ->setParameter('id', $id)
             ->setParameter('proprietaireId', $proprietaireId)
             ->getQuery()
@@ -156,7 +156,7 @@ class CultureRepository extends ServiceEntityRepository
     public function findPublishedForMarketplace(int $viewerId): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.proprietaire_id != :viewerId')
+            ->andWhere('IDENTITY(c.proprietaire_id) != :viewerId')
             ->andWhere('c.etat = :etat')
             ->andWhere('c.utilisateur IS NULL')
             ->setParameter('viewerId', $viewerId)
@@ -193,7 +193,7 @@ class CultureRepository extends ServiceEntityRepository
         $parcelleId = trim((string) ($criteria['parcelle_id'] ?? ''));
         if ('' !== $parcelleId && ctype_digit($parcelleId)) {
             $queryBuilder
-                ->andWhere('c.parcelle_id = :parcelleId')
+                ->andWhere('IDENTITY(c.parcelle_id) = :parcelleId')
                 ->setParameter('parcelleId', (int) $parcelleId);
         }
 
@@ -238,8 +238,8 @@ class CultureRepository extends ServiceEntityRepository
     public function findByParcelleIdAndProprietaireId(int $parcelleId, int $proprietaireId): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.parcelle_id = :parcelleId')
-            ->andWhere('c.proprietaire_id = :proprietaireId')
+            ->andWhere('IDENTITY(c.parcelle_id) = :parcelleId')
+            ->andWhere('IDENTITY(c.proprietaire_id) = :proprietaireId')
             ->setParameter('parcelleId', $parcelleId)
             ->setParameter('proprietaireId', $proprietaireId)
             ->orderBy('c.date_creation', 'DESC')
@@ -254,7 +254,7 @@ class CultureRepository extends ServiceEntityRepository
     public function findByParcelleIdForAdmin(int $parcelleId): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.parcelle_id = :parcelleId')
+            ->andWhere('IDENTITY(c.parcelle_id) = :parcelleId')
             ->setParameter('parcelleId', $parcelleId)
             ->orderBy('c.date_creation', 'DESC')
             ->addOrderBy('c.id', 'DESC')
@@ -266,7 +266,7 @@ class CultureRepository extends ServiceEntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c')
             ->select('COALESCE(SUM(c.superficie), 0)')
-            ->andWhere('c.parcelle_id = :parcelleId')
+            ->andWhere('IDENTITY(c.parcelle_id) = :parcelleId')
             ->andWhere('(c.etat IS NULL OR c.etat != :recoltee)')
             ->setParameter('parcelleId', $parcelleId);
         $queryBuilder->setParameter('recoltee', Culture::ETAT_RECOLTEE);
@@ -296,29 +296,4 @@ class CultureRepository extends ServiceEntityRepository
 
         return array_map(static fn (array $row): string => (string) $row[$alias], $results);
     }
-
-    //    /**
-    //     * @return Culture[] Returns an array of Culture objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Culture
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

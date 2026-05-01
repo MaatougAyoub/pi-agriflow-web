@@ -30,7 +30,7 @@ class Diagnosti
     }
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'diagnostis')]
-    #[ORM\JoinColumn(name: 'id_agriculteur', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'agriculteur_id', referencedColumnName: 'id')]
     private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur
@@ -183,24 +183,24 @@ class Diagnosti
         return $this;
     }
 
-    public function getDateEnvoi(): ?\DateTime
+    public function getDateEnvoi(): ?\DateTimeInterface
     {
         return $this->date_envoi;
     }
 
-    public function setDateEnvoi(?\DateTime $date_envoi): static
+    public function setDateEnvoi(?\DateTimeInterface $date_envoi): static
     {
         $this->date_envoi = $date_envoi;
 
         return $this;
     }
 
-    public function getDateReponse(): ?\DateTime
+    public function getDateReponse(): ?\DateTimeInterface
     {
         return $this->date_reponse;
     }
 
-    public function setDateReponse(?\DateTime $date_reponse): static
+    public function setDateReponse(?\DateTimeInterface $date_reponse): static
     {
         $this->date_reponse = $date_reponse;
 

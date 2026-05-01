@@ -17,26 +17,26 @@ class PlansIrrigationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère tous les plans d'irrigation d'un agriculteur (via ses cultures)
+     * @return PlansIrrigation[]
      */
     public function findByAgriculteur(int $userId): array
     {
         return $this->createQueryBuilder('p')
             ->innerJoin('p.culture', 'c')
-            ->where('c.proprietaire_id = :userId')
+            ->where('IDENTITY(c.proprietaire_id) = :userId')
             ->setParameter('userId', $userId)
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Récupère un plan avec ses jours d'irrigation (relation OneToMany)
+     * @return PlansIrrigation[]
      */
     public function findByProprietaire(int $userId): array
     {
         return $this->createQueryBuilder('p')
-            ->join('App\Entity\Culture', 'c', 'WITH', 'c.id = p.id_culture')
-            ->where('c.proprietaire_id = :userId')
+            ->join('App\Entity\Culture', 'c', 'WITH', 'c.id = p.culture_id')
+            ->where('IDENTITY(c.proprietaire_id) = :userId')
             ->setParameter('userId', $userId)
             ->orderBy('p.date_demande', 'DESC')
             ->getQuery()

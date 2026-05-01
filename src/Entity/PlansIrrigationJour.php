@@ -2,16 +2,15 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\PlansIrrigationJourRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlansIrrigationJourRepository::class)]
 #[ORM\Table(name: 'plans_irrigation_jour')]
 class PlansIrrigationJour
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: "IDENTITY")]   // ← Auto-incrément ajouté
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
@@ -39,14 +38,21 @@ class PlansIrrigationJour
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $pluie = null;
 
-    // --- Getters / Setters (versions camelCase utilisées dans le contrôleur) ---
+    #[ORM\ManyToOne(targetEntity: PlansIrrigation::class, inversedBy: 'jours')]
+    #[ORM\JoinColumn(name: 'plan_id', referencedColumnName: 'plan_id', nullable: false)]
+    private ?PlansIrrigation $plan = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    // Pas de setId() car auto-généré
+    public function setId(int $id): static
+    {
+        $this->id = $id;
+
+        return $this;
+    }
 
     public function getPlanId(): ?int
     {
@@ -56,6 +62,20 @@ class PlansIrrigationJour
     public function setPlanId(int $plan_id): static
     {
         $this->plan_id = $plan_id;
+
+        return $this;
+    }
+
+    public function getPlan(): ?PlansIrrigation
+    {
+        return $this->plan;
+    }
+
+    public function setPlan(?PlansIrrigation $plan): static
+    {
+        $this->plan = $plan;
+        $this->plan_id = $plan?->getPlanId();
+
         return $this;
     }
 
@@ -67,6 +87,7 @@ class PlansIrrigationJour
     public function setJour(string $jour): static
     {
         $this->jour = $jour;
+
         return $this;
     }
 
@@ -78,6 +99,7 @@ class PlansIrrigationJour
     public function setEauMm(?float $eau_mm): static
     {
         $this->eau_mm = $eau_mm;
+
         return $this;
     }
 
@@ -89,6 +111,7 @@ class PlansIrrigationJour
     public function setTempsMin(?int $temps_min): static
     {
         $this->temps_min = $temps_min;
+
         return $this;
     }
 
@@ -100,6 +123,7 @@ class PlansIrrigationJour
     public function setTempC(?float $temp_c): static
     {
         $this->temp_c = $temp_c;
+
         return $this;
     }
 
@@ -111,6 +135,7 @@ class PlansIrrigationJour
     public function setSemaineDebut(\DateTimeInterface $semaine_debut): static
     {
         $this->semaine_debut = $semaine_debut;
+
         return $this;
     }
 
@@ -122,6 +147,7 @@ class PlansIrrigationJour
     public function setHumidite(?float $humidite): static
     {
         $this->humidite = $humidite;
+
         return $this;
     }
 
@@ -133,6 +159,7 @@ class PlansIrrigationJour
     public function setPluie(?float $pluie): static
     {
         $this->pluie = $pluie;
+
         return $this;
     }
 }
