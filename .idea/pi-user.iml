@@ -178,6 +178,11 @@
       <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/service-contracts" />
       <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/var-dumper" />
       <excludeFolder url="file://$MODULE_DIR$/irrigation6/vendor/symfony/var-exporter" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/ahmed-bhs/doctrine-doctor" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/knplabs/knp-snappy" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/knplabs/knp-snappy-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpmyadmin/sql-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/phpstan/phpstan" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

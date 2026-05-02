@@ -47,7 +47,7 @@ if (preg_match('/mysql:\/\/([^:]*):?([^@]*)@([^:]+):(\d+)\/(.+)/', $databaseUrl,
             'fk_message_annonce' => 'messages',
             'idx_lu' => 'messages',
             'fk_message_reservation' => 'messages',
-            'id_culture' => 'plans_irrigation',
+            'culture_id' => 'plans_irrigation',
             'unique_plan_jour_date' => 'plans_irrigation_jour',
             'fk_reclamations_utilisateur' => 'reclamations',
             'fk_reservation_annonce' => 'reservations'

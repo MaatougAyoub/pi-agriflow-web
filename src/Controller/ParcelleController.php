@@ -88,7 +88,6 @@ final class ParcelleController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $parcelle->setAgriculteurId($this->getAuthenticatedUserId());
-            $parcelle->setDateCreation($parcelle->getDateCreation() ?? new \DateTime());
 
             $entityManager->persist($parcelle);
             $entityManager->flush();

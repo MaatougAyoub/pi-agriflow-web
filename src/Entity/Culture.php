@@ -7,6 +7,7 @@ use App\Repository\CultureRepository;
 
 #[ORM\Entity(repositoryClass: CultureRepository::class)]
 #[ORM\Table(name: 'cultures')]
+#[ORM\HasLifecycleCallbacks]
 class Culture
 {
     public const ETAT_EN_COURS = 'EN_COURS';
@@ -19,6 +20,48 @@ class Culture
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(targetEntity: Parcelle::class)]
+    #[ORM\JoinColumn(name: 'parcelle_id', referencedColumnName: 'id', nullable: false)]
+    private ?Parcelle $parcelle_id = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'proprietaire_id', referencedColumnName: 'id', nullable: false)]
+    private ?Utilisateur $proprietaire_id = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $nom = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $type_culture = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $superficie = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $etat = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $date_recolte = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $recolte_estime = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $date_creation = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'acheteur_id', referencedColumnName: 'id', nullable: true)]
+    private ?Utilisateur $utilisateur = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $date_vente = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $date_publication = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $prix_vente = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -27,39 +70,29 @@ class Culture
     public function setId(int $id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $parcelle_id = null;
-
     public function getParcelle_id(): ?int
     {
-        return $this->parcelle_id;
+        return $this->getParcelleId();
     }
 
     public function setParcelle_id(int $parcelle_id): self
     {
-        $this->parcelle_id = $parcelle_id;
-        return $this;
+        return $this->setParcelleId($parcelle_id);
     }
-
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $proprietaire_id = null;
 
     public function getProprietaire_id(): ?int
     {
-        return $this->proprietaire_id;
+        return $this->getProprietaireId();
     }
 
     public function setProprietaire_id(int $proprietaire_id): self
     {
-        $this->proprietaire_id = $proprietaire_id;
-        return $this;
+        return $this->setProprietaireId($proprietaire_id);
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $nom = null;
 
     public function getNom(): ?string
     {
@@ -69,11 +102,9 @@ class Culture
     public function setNom(?string $nom): self
     {
         $this->nom = $nom;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $type_culture = null;
 
     public function getType_culture(): ?string
     {
@@ -83,11 +114,9 @@ class Culture
     public function setType_culture(?string $type_culture): self
     {
         $this->type_culture = $type_culture;
+
         return $this;
     }
-
-    #[ORM\Column(type: "float", nullable: true)]
-    private ?float $superficie = null;
 
     public function getSuperficie(): ?float
     {
@@ -97,11 +126,9 @@ class Culture
     public function setSuperficie(?float $superficie): self
     {
         $this->superficie = $superficie;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $etat = null;
 
     public function getEtat(): ?string
     {
@@ -111,11 +138,9 @@ class Culture
     public function setEtat(?string $etat): self
     {
         $this->etat = $etat;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $date_recolte = null;
 
     public function getDate_recolte(): ?\DateTimeInterface
     {
@@ -125,11 +150,9 @@ class Culture
     public function setDate_recolte(?\DateTimeInterface $date_recolte): self
     {
         $this->date_recolte = $date_recolte;
+
         return $this;
     }
-
-    #[ORM\Column(type: "float", nullable: true)]
-    private ?float $recolte_estime = null;
 
     public function getRecolte_estime(): ?float
     {
@@ -139,26 +162,21 @@ class Culture
     public function setRecolte_estime(?float $recolte_estime): self
     {
         $this->recolte_estime = $recolte_estime;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $date_creation = null;
 
     public function getDate_creation(): ?\DateTimeInterface
     {
         return $this->date_creation;
     }
 
-    public function setDate_creation(?\DateTimeInterface $date_creation): self
+    protected function setDate_creation(?\DateTimeInterface $date_creation): self
     {
         $this->date_creation = $date_creation;
+
         return $this;
     }
-
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: 'id_acheteur', referencedColumnName: 'id')]
-    private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur
     {
@@ -168,6 +186,7 @@ class Culture
     public function setUtilisateur(?Utilisateur $utilisateur): self
     {
         $this->utilisateur = $utilisateur;
+
         return $this;
     }
 
@@ -183,9 +202,6 @@ class Culture
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $date_vente = null;
-
     public function getDate_vente(): ?\DateTimeInterface
     {
         return $this->date_vente;
@@ -194,11 +210,9 @@ class Culture
     public function setDate_vente(?\DateTimeInterface $date_vente): self
     {
         $this->date_vente = $date_vente;
+
         return $this;
     }
-
-    #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $date_publication = null;
 
     public function getDate_publication(): ?\DateTimeInterface
     {
@@ -208,11 +222,9 @@ class Culture
     public function setDate_publication(?\DateTimeInterface $date_publication): self
     {
         $this->date_publication = $date_publication;
+
         return $this;
     }
-
-    #[ORM\Column(type: "float", nullable: true)]
-    private ?float $prix_vente = null;
 
     public function getPrix_vente(): ?float
     {
@@ -222,29 +234,58 @@ class Culture
     public function setPrix_vente(?float $prix_vente): self
     {
         $this->prix_vente = $prix_vente;
+
+        return $this;
+    }
+
+    public function getParcelle(): ?Parcelle
+    {
+        return $this->parcelle_id;
+    }
+
+    public function setParcelle(?Parcelle $parcelle): static
+    {
+        $this->parcelle_id = $parcelle;
+
         return $this;
     }
 
     public function getParcelleId(): ?int
     {
-        return $this->parcelle_id;
+        return $this->parcelle_id?->getId();
     }
 
     public function setParcelleId(int $parcelle_id): static
     {
-        $this->parcelle_id = $parcelle_id;
+        $parcelle = new Parcelle();
+        $parcelle->setId($parcelle_id);
+        $this->parcelle_id = $parcelle;
+
+        return $this;
+    }
+
+    public function getProprietaire(): ?Utilisateur
+    {
+        return $this->proprietaire_id;
+    }
+
+    public function setProprietaire(?Utilisateur $proprietaire): self
+    {
+        $this->proprietaire_id = $proprietaire;
 
         return $this;
     }
 
     public function getProprietaireId(): ?int
     {
-        return $this->proprietaire_id;
+        return $this->proprietaire_id?->getId();
     }
 
     public function setProprietaireId(int $proprietaire_id): static
     {
-        $this->proprietaire_id = $proprietaire_id;
+        $proprietaire = new Utilisateur();
+        $proprietaire->setId($proprietaire_id);
+        $this->proprietaire_id = $proprietaire;
 
         return $this;
     }
@@ -261,72 +302,72 @@ class Culture
         return $this;
     }
 
-    public function getDateRecolte(): ?\DateTime
+    public function getDateRecolte(): ?\DateTimeInterface
     {
         return $this->date_recolte;
     }
 
-    public function setDateRecolte(?\DateTime $date_recolte): static
+    public function setDateRecolte(?\DateTimeInterface $date_recolte): static
     {
         $this->date_recolte = $date_recolte;
 
         return $this;
     }
 
-    public function getRecolteEstime(): ?string
+    public function getRecolteEstime(): ?float
     {
         return $this->recolte_estime;
     }
 
-    public function setRecolteEstime(?string $recolte_estime): static
+    public function setRecolteEstime(?float $recolte_estime): static
     {
         $this->recolte_estime = $recolte_estime;
 
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTime
+    public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->date_creation;
     }
 
-    public function setDateCreation(?\DateTime $date_creation): static
+    protected function setDateCreation(?\DateTimeInterface $date_creation): static
     {
         $this->date_creation = $date_creation;
 
         return $this;
     }
 
-    public function getDateVente(): ?\DateTime
+    public function getDateVente(): ?\DateTimeInterface
     {
         return $this->date_vente;
     }
 
-    public function setDateVente(?\DateTime $date_vente): static
+    public function setDateVente(?\DateTimeInterface $date_vente): static
     {
         $this->date_vente = $date_vente;
 
         return $this;
     }
 
-    public function getDatePublication(): ?\DateTime
+    public function getDatePublication(): ?\DateTimeInterface
     {
         return $this->date_publication;
     }
 
-    public function setDatePublication(?\DateTime $date_publication): static
+    public function setDatePublication(?\DateTimeInterface $date_publication): static
     {
         $this->date_publication = $date_publication;
 
         return $this;
     }
 
-    public function getPrixVente(): ?string
+    public function getPrixVente(): ?float
     {
         return $this->prix_vente;
     }
 
-    public function setPrixVente(?string $prix_vente): static
+    public function setPrixVente(?float $prix_vente): static
     {
         $this->prix_vente = $prix_vente;
 
@@ -421,19 +462,11 @@ class Culture
             || $this->canBeBoughtBy($utilisateurId);
     }
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: "proprietaire_id", referencedColumnName: "id")]
-    private ?Utilisateur $proprietaire = null;
-
-    public function getProprietaire(): ?Utilisateur
+    #[ORM\PrePersist]
+    public function initializeDateCreation(): void
     {
-        return $this->proprietaire;
+        if (null === $this->date_creation) {
+            $this->date_creation = new \DateTimeImmutable();
+        }
     }
-
-    public function setProprietaire(?Utilisateur $proprietaire): self
-    {
-        $this->proprietaire = $proprietaire;
-        return $this;
-    }
-
 }

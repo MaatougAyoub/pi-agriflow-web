@@ -28,7 +28,7 @@ class ParcelleRepository extends ServiceEntityRepository
     public function findByAgriculteurId(int $agriculteurId): array
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.agriculteur_id = :agriculteurId')
+            ->andWhere('IDENTITY(p.agriculteur_id) = :agriculteurId')
             ->setParameter('agriculteurId', $agriculteurId)
             ->orderBy('p.date_creation', 'DESC')
             ->addOrderBy('p.id', 'DESC')
@@ -43,7 +43,7 @@ class ParcelleRepository extends ServiceEntityRepository
     public function findFilteredForAgriculteur(int $agriculteurId, array $criteria): array
     {
         $queryBuilder = $this->createQueryBuilder('p')
-            ->andWhere('p.agriculteur_id = :agriculteurId')
+            ->andWhere('IDENTITY(p.agriculteur_id) = :agriculteurId')
             ->setParameter('agriculteurId', $agriculteurId);
 
         $search = trim((string) ($criteria['search'] ?? ''));
@@ -79,7 +79,7 @@ class ParcelleRepository extends ServiceEntityRepository
     {
         $results = $this->createQueryBuilder('p')
             ->select('DISTINCT p.type_terre AS typeTerre')
-            ->andWhere('p.agriculteur_id = :agriculteurId')
+            ->andWhere('IDENTITY(p.agriculteur_id) = :agriculteurId')
             ->andWhere('p.type_terre IS NOT NULL')
             ->andWhere('p.type_terre != :emptyValue')
             ->setParameter('agriculteurId', $agriculteurId)
@@ -95,7 +95,7 @@ class ParcelleRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.id = :id')
-            ->andWhere('p.agriculteur_id = :agriculteurId')
+            ->andWhere('IDENTITY(p.agriculteur_id) = :agriculteurId')
             ->setParameter('id', $id)
             ->setParameter('agriculteurId', $agriculteurId)
             ->getQuery()
@@ -152,29 +152,4 @@ class ParcelleRepository extends ServiceEntityRepository
 
         return array_map(static fn (array $row): string => (string) $row['typeTerre'], $results);
     }
-
-    //    /**
-    //     * @return Parcelle[] Returns an array of Parcelle objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Parcelle
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
