@@ -42,7 +42,7 @@ class PlansIrrigationController extends AbstractController
         if (!$plan) {
             throw $this->createNotFoundException('Plan non trouvé');
         }
-        $jours = $jourRepo->findBy(['plan_id' => $id]);
+        $jours = $jourRepo->findBy(['plan' => $id]);
         $jourData = [];
         foreach ($jours as $j) {
             $jourData[$j->getJour()] = $j;
@@ -58,7 +58,9 @@ class PlansIrrigationController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             $plan = new PlansIrrigation();
-            $plan->setNomCulture($request->request->get('nom_culture'));
+            $nomCulture = $request->request->get('nom_culture');
+            $nomCulture = is_string($nomCulture) ? $nomCulture : null;
+            $plan->setNomCulture($nomCulture);
             $plan->setVolumeEauPropose((float)$request->request->get('volume_eau_propose'));
             $plan->setStatut('en_attente');
             $plan->setDateDemande(new \DateTime());

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\CollabApplication;
 use App\Entity\CollabRequest;
+use App\Entity\Utilisateur;
 use App\Form\CollabApplicationType;
 use App\Form\CollabRequestType;
 use App\Repository\CollabApplicationRepository;
@@ -65,7 +66,12 @@ final class CollabController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $service->publish($collabRequest, $this->getUser());
+                $user = $this->getUser();
+                if (!$user instanceof Utilisateur) {
+                    throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+                }
+
+                $service->publish($collabRequest, $user);
                 $this->addFlash('success', 'Votre demande a été publiée avec succès.');
 
                 return $this->redirectToRoute('collab_show', ['id' => $collabRequest->getId()]);
@@ -84,11 +90,16 @@ final class CollabController extends AbstractController
     public function edit(int $id, Request $request, CollabRequestRepository $repo, CollabRequestService $service): Response
     {
         $collabRequest = $repo->find($id);
-        if ($collabRequest === null) {
+        if (!$collabRequest instanceof CollabRequest) {
             throw $this->createNotFoundException('Demande introuvable.');
         }
 
-        if ($collabRequest->getRequester()?->getId() !== $this->getUser()->getId()) {
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+        }
+
+        if ($collabRequest->getRequester()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres demandes.');
         }
 
@@ -120,12 +131,14 @@ final class CollabController extends AbstractController
         CollabApplicationService $appService,
     ): Response {
         $collabRequest = $reqRepo->find($id);
-        if ($collabRequest === null) {
+        if (!$collabRequest instanceof CollabRequest) {
             throw $this->createNotFoundException('Demande introuvable.');
         }
 
-        /** @var \App\Entity\Utilisateur $me */
         $me = $this->getUser();
+        if (!$me instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+        }
 
         $application = new CollabApplication();
         $application->setFullName($me->getPrenom().' '.$me->getNom());
@@ -157,7 +170,12 @@ final class CollabController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function myRequests(CollabRequestRepository $repo): Response
     {
-        $requests = $repo->findByRequester($this->getUser());
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+        }
+
+        $requests = $repo->findByRequester($user);
 
         return $this->render('collab/my_requests.html.twig', ['requests' => $requests]);
     }
@@ -168,7 +186,12 @@ final class CollabController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function myApplications(CollabApplicationRepository $appRepo): Response
     {
-        $applications = $appRepo->findByCandidate($this->getUser());
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+        }
+
+        $applications = $appRepo->findByCandidate($user);
 
         return $this->render('collab/my_applications.html.twig', ['applications' => $applications]);
     }
@@ -180,15 +203,24 @@ final class CollabController extends AbstractController
     public function delete(int $id, Request $request, CollabRequestRepository $repo, CollabRequestService $service): Response
     {
         $collabRequest = $repo->find($id);
-        if ($collabRequest === null) {
+        if (!$collabRequest instanceof CollabRequest) {
             throw $this->createNotFoundException('Demande introuvable.');
         }
 
-        if ($collabRequest->getRequester()?->getId() !== $this->getUser()->getId()) {
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+        }
+
+        if ($collabRequest->getRequester()?->getId() !== $user->getId()) {
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres demandes.');
         }
 
-        if ($this->isCsrfTokenValid('delete_collab_'.$id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('delete_collab_'.$id, $token)) {
             $service->delete($collabRequest);
             $this->addFlash('success', 'Demande supprimée.');
         }

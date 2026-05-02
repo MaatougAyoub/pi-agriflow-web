@@ -18,6 +18,8 @@ class PlansIrrigationRepository extends ServiceEntityRepository
 
     /**
      * Récupère tous les plans d'irrigation d'un agriculteur (via ses cultures)
+        *
+        * @return list<PlansIrrigation>
      */
     public function findByAgriculteur(int $userId): array
     {
@@ -31,6 +33,8 @@ class PlansIrrigationRepository extends ServiceEntityRepository
 
     /**
      * Récupère un plan avec ses jours d'irrigation (relation OneToMany)
+        *
+        * @return list<PlansIrrigation>
      */
     public function findByProprietaire(int $userId): array
     {

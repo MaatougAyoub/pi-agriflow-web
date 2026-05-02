@@ -16,7 +16,13 @@ class ParcelleCultureSurfaceService
     public function getAvailableSurfaceForParcelle(Parcelle $parcelle, ?int $excludeCultureId = null): float
     {
         $parcelleSurface = (float) ($parcelle->getSuperficie() ?? 0);
-        $usedSurface = $this->cultureRepository->getUsedSurfaceForParcelle($parcelle->getId(), $excludeCultureId);
+        $parcelleId = $parcelle->getId();
+
+        if (null === $parcelleId) {
+            return max(0, round($parcelleSurface, 2));
+        }
+
+        $usedSurface = $this->cultureRepository->getUsedSurfaceForParcelle($parcelleId, $excludeCultureId);
         $availableSurface = $parcelleSurface - $usedSurface;
 
         return max(0, round($availableSurface, 2));

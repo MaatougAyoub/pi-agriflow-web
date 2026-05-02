@@ -5,6 +5,11 @@ doctrine_doctor:
     # Enable Doctrine Doctor (automatically enabled in dev/test environments)
     enabled: '%kernel.debug%'
 
+    analyzers:
+        # Naming convention warnings require DB column renames; keep disabled to avoid false positives
+        naming_convention:
+            enabled: false
+
 #    # Web Profiler integration
 #    profiler:
 #        show_in_toolbar: true

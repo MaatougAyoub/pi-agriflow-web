@@ -31,6 +31,8 @@ class IrrigationSmartService
 
     /**
      * Récupère les paramètres de besoin en eau pour une culture donnée
+        *
+        * @return array{besoin_mm: float, kc: float, sensibilite_chaleur: float}
      */
     private function getParamsCulture(string $nomCulture): array
     {
@@ -49,6 +51,8 @@ class IrrigationSmartService
      * - Le type de culture et ses besoins spécifiques (Kc)
      * - La superficie de la parcelle
      * - Le volume d'eau proposé par l'agriculteur
+     *
+     * @return array<string, array{eau_mm: float, duree: int, temp: float, humidite: float, pluie: float}>
      */
     public function genererPlanIA(
         float $besoinHebdomadaire,
@@ -133,6 +137,8 @@ class IrrigationSmartService
 
     /**
      * Retourne les informations de besoin pour une culture (pour affichage)
+        *
+        * @return array{besoin_quotidien_mm: float, coefficient_cultural: float, sensibilite_chaleur: float, besoin_hebdomadaire_mm: float}
      */
     public function getInfoCulture(string $nomCulture): array
     {

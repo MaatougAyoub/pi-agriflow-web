@@ -19,6 +19,7 @@ class AdminCollaborationControllerSimple extends AbstractController
     {
         try {
             // Récupérer TOUTES les demandes sans filtre
+            /** @var list<CollabRequest> $allRequests */
             $allRequests = $requestRepo->findAll();
             
             // Compter les candidatures pour chaque demande
@@ -52,7 +53,11 @@ class AdminCollaborationControllerSimple extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
-        if ($this->isCsrfTokenValid('approve_' . $collabRequest->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('approve_' . $collabRequest->getId(), $token)) {
             $collabRequest->setStatus('APPROVED');
             $collabRequest->setUpdatedAt(new \DateTime());
             $em->flush();
@@ -68,7 +73,11 @@ class AdminCollaborationControllerSimple extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
-        if ($this->isCsrfTokenValid('reject_' . $collabRequest->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('reject_' . $collabRequest->getId(), $token)) {
             $collabRequest->setStatus('REJECTED');
             $collabRequest->setUpdatedAt(new \DateTime());
             $em->flush();

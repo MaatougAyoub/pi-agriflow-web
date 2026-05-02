@@ -34,7 +34,7 @@ class NotificationService
         try {
             $update = new Update(
                 'diagnostics/nouveau',
-                json_encode([
+                $this->encodePayload([
                     'type'        => 'nouveau_diagnostic',
                     'id'          => $diagnostic->getIdDiagnostic(),
                     'nomCulture'  => $diagnostic->getNomCulture(),
@@ -66,7 +66,7 @@ class NotificationService
         try {
             $update = new Update(
                 sprintf('agriculteur/%d/diagnostics', $userId),
-                json_encode([
+                $this->encodePayload([
                     'type'       => 'diagnostic_traite',
                     'id'         => $diagnostic->getIdDiagnostic(),
                     'nomCulture' => $diagnostic->getNomCulture(),
@@ -91,7 +91,7 @@ class NotificationService
 
             $update = new Update(
                 'irrigation/nouveau',
-                json_encode([
+                $this->encodePayload([
                     'type'       => 'nouveau_plan',
                     'id'         => $planId,
                     'nomCulture' => $plan->getNomCulture(),
@@ -127,7 +127,7 @@ class NotificationService
 
             $update = new Update(
                 sprintf('agriculteur/%d/irrigation', $proprietaireId),
-                json_encode([
+                $this->encodePayload([
                     'type'    => 'plan_mis_a_jour',
                     'id'      => $planId,
                     'nom'     => $plan->getNomCulture(),
@@ -156,7 +156,7 @@ class NotificationService
         try {
             $update = new Update(
                 'admin/reclamations',
-                json_encode([
+                $this->encodePayload([
                     'type' => 'nouvelle_reclamation',
                     'id' => $reclamation->getId(),
                     'statut' => $reclamation->getStatut(),
@@ -250,16 +250,16 @@ class NotificationService
      * Récupère l'identifiant du plan de manière sûre.
      * PlansIrrigation n'a PAS de getId(), on essaie les getters disponibles.
      */
-    private function getPlanIdentifier(PlansIrrigation $plan): mixed
+    private function getPlanIdentifier(PlansIrrigation $plan): int
     {
-        // Essayer dans l'ordre : getPlanId(), getIdCulture(), puis fallback
-        if (method_exists($plan, 'getPlanId')) {
-            return $plan->getPlanId();
-        }
-        if (method_exists($plan, 'getIdCulture')) {
-            return $plan->getIdCulture();
-        }
+        return $plan->getPlanId() ?? $plan->getIdCulture() ?? 0;
+    }
 
-        return 0;
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function encodePayload(array $payload): string
+    {
+        return json_encode($payload, JSON_THROW_ON_ERROR);
     }
 }

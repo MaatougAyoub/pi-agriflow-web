@@ -7,6 +7,9 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<CollabRequest>
+ */
 class CollabRequestRepository extends ServiceEntityRepository
 {
     private const SORT_INDEX = [
@@ -30,11 +33,17 @@ class CollabRequestRepository extends ServiceEntityRepository
         parent::__construct($registry, CollabRequest::class);
     }
 
+    /**
+     * @return list<CollabRequest>
+     */
     public function findApproved(): array
     {
         return $this->findApprovedFiltered(null, 'date_desc');
     }
 
+    /**
+     * @return list<CollabRequest>
+     */
     public function findApprovedFiltered(?string $location, string $sortKey): array
     {
         $qb = $this->createQueryBuilder('r')
@@ -52,6 +61,10 @@ class CollabRequestRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @param \App\Entity\Utilisateur $requester
+     * @return list<CollabRequest>
+     */
     public function findByRequester($requester): array
     {
         return $this->createQueryBuilder('r')
@@ -62,6 +75,9 @@ class CollabRequestRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<CollabRequest>
+     */
     public function findByStatus(string $status): array
     {
         return $this->createQueryBuilder('r')
@@ -72,11 +88,17 @@ class CollabRequestRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<CollabRequest>
+     */
     public function search(string $keyword): array
     {
         return $this->searchFiltered($keyword, null, 'date_desc');
     }
 
+    /**
+     * @return list<CollabRequest>
+     */
     public function searchFiltered(string $keyword, ?string $location, string $sortKey): array
     {
         $qb = $this->createQueryBuilder('r')
@@ -96,6 +118,10 @@ class CollabRequestRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @param \App\Entity\Utilisateur $requester
+     * @return list<CollabRequest>
+     */
     public function findByRequesterFiltered($requester, ?string $status, string $sortKey): array
     {
         return $this->findByRequesterFilteredQuery($requester, $status, $sortKey)->getResult();
@@ -137,6 +163,9 @@ class CollabRequestRepository extends ServiceEntityRepository
         return $qb->getQuery();
     }
 
+    /**
+     * @param \App\Entity\Utilisateur $requester
+     */
     public function findByRequesterFilteredQuery($requester, ?string $status, string $sortKey): \Doctrine\ORM\Query
     {
         $qb = $this->createQueryBuilder('r')

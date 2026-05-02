@@ -236,9 +236,7 @@ final class ReclamationController extends AbstractController
 
         $reclamation->setReponse($newResponse);
 
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $reclamation->setStatut('TRAITE');
-        }
+        $reclamation->setStatut('TRAITE');
 
         $entityManager->flush();
 

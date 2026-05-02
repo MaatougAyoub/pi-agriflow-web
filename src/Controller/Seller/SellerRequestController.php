@@ -31,6 +31,10 @@ final class SellerRequestController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         $user = $this->getSellerUser();
+        $ownerId = $user->getId();
+        if ($ownerId === null) {
+            throw $this->createAccessDeniedException('Connexion agriculteur requise.');
+        }
         $annonceId = $request->query->getInt('annonce');
         $selectedAnnonce = null;
 
@@ -45,7 +49,7 @@ final class SellerRequestController extends AbstractController
 
         $reservations = $paginator->paginate(
             $reservationRepository->createReceivedByOwnerIdQueryBuilder(
-                $user->getId(),
+                $ownerId,
                 $annonceId > 0 ? $annonceId : null
             ),
             $request->query->getInt('page', 1),
@@ -55,7 +59,7 @@ final class SellerRequestController extends AbstractController
         return $this->render('seller/request/index.html.twig', [
             'reservations' => $reservations,
             'selectedAnnonce' => $selectedAnnonce,
-            'annonces' => $annonceRepository->findByOwnerId($user->getId()),
+            'annonces' => $annonceRepository->findByOwnerId($ownerId),
         ]);
     }
 

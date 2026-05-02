@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Culture;
+use App\Entity\Utilisateur;
 use App\Repository\CultureRepository;
 use App\Repository\DiagnostiRepository;
 use App\Repository\ParcelleRepository;
@@ -21,16 +23,21 @@ class DashboardController extends AbstractController
     ): Response {
         $user     = $this->getUser();
         $isExpert = $this->isGranted('ROLE_EXPERT');
+        if (!$isExpert && !$user instanceof Utilisateur) {
+            return $this->redirectToRoute('app_login');
+        }
+        $userId = $user instanceof Utilisateur ? $user->getId() : null;
 
         // Cultures de l'utilisateur
         $cultures = $isExpert
             ? $cultureRepo->findAll()
-            : $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
+            : $cultureRepo->findBy(['proprietaire_id' => $userId]);
+        /** @var Culture[] $cultures */
 
         // Plans irrigation
         $plans = $isExpert
             ? $planRepo->findAll()
-            : $planRepo->findByProprietaire($user->getId());
+            : $planRepo->findByProprietaire($userId ?? 0);
 
         // Diagnostics
         $diagnostics = $isExpert
@@ -95,7 +102,7 @@ class DashboardController extends AbstractController
         ]);
     }
 
-    private function calculerBesoinEau($culture): float
+    private function calculerBesoinEau(Culture $culture): float
     {
         $facteurs = [
             'BLE' => 2.0, 'ORGE' => 2.0, 'FRAISE' => 2.0, 'AUTRE' => 2.0,

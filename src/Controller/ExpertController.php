@@ -158,7 +158,7 @@ class ExpertController extends AbstractController
         $semaineDebut  = (new \DateTime('monday this week'))
             ->modify(($semaineOffset >= 0 ? '+' : '') . $semaineOffset . ' weeks');
 
-        $jours = $jourRepo->findBy(['plan_id' => $id]);
+        $jours = $jourRepo->findBy(['plan' => $plan]);
         $jourData = [];
         foreach ($jours as $j) {
             $jourData[$j->getJour()] = $j;
@@ -204,10 +204,10 @@ class ExpertController extends AbstractController
         $semaineDebut = new \DateTime('monday this week');
 
         foreach ($joursKeys as $k) {
-            $jour = $jourRepo->findOneBy(['plan_id' => $id, 'jour' => $k]);
+            $jour = $jourRepo->findOneBy(['plan' => $plan, 'jour' => $k]);
             if (!$jour) {
                 $jour = new PlansIrrigationJour();
-                $jour->setPlanId($id);
+                $jour->setPlan($plan);
                 $jour->setJour($k);
                 $jour->setSemaineDebut($semaineDebut);
                 $em->persist($jour);
@@ -261,10 +261,10 @@ public function irrigationIA(
 
         $semaineDebut = new \DateTime('monday this week');
         foreach ($planIA as $key => $valeurs) {
-            $jour = $jourRepo->findOneBy(['plan_id' => $id, 'jour' => $key]);
+            $jour = $jourRepo->findOneBy(['plan' => $plan, 'jour' => $key]);
             if (!$jour) {
                 $jour = new PlansIrrigationJour();
-                $jour->setPlanId($id);
+                $jour->setPlan($plan);
                 $jour->setJour($key);
                 $jour->setSemaineDebut($semaineDebut);
                 $em->persist($jour);

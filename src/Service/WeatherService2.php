@@ -8,6 +8,9 @@ class WeatherService2
 {
     public function __construct(private HttpClientInterface $http) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getForecast(float $lat, float $lon): array
     {
         $response = $this->http->request('GET',

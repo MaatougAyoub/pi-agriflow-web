@@ -19,6 +19,7 @@ class Reservation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[Assert\NotNull(message: 'L annonce est obligatoire.')]

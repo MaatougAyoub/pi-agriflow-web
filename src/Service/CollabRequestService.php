@@ -6,7 +6,6 @@ namespace App\Service;
 
 use App\Entity\CollabRequest;
 use App\Entity\Utilisateur;
-use App\Repository\CollabRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -16,7 +15,6 @@ class CollabRequestService
 {
     public function __construct(
         private readonly EntityManagerInterface  $em,
-        private readonly CollabRequestRepository $repository,
         private readonly ContentModerationService $moderationService,
     ) {
     }

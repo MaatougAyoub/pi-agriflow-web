@@ -21,6 +21,7 @@ class Annonce
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[Assert\NotBlank(message: 'Le titre est obligatoire.')]

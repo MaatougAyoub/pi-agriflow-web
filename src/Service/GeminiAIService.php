@@ -228,7 +228,7 @@ class GeminiAIService
                     return null;
                 }
                 if (preg_match('/REJET\s*:?\s*(.*)$/iu', $response, $matches) === 1) {
-                    $reason = trim($matches[1] ?? '');
+                    $reason = trim($matches[1]);
                     return $reason !== '' ? $reason : 'Contenu non conforme à la politique de publication.';
                 }
                 return 'Contenu potentiellement non conforme détecté par la modération IA.';
@@ -391,6 +391,9 @@ class GeminiAIService
     {
         $cleanDesc = trim($description);
         $cleanDesc = preg_replace('/\s+/', ' ', $cleanDesc);
+        if (!is_string($cleanDesc)) {
+            $cleanDesc = '';
+        }
         $cleanDesc = mb_strtoupper(mb_substr($cleanDesc, 0, 1)) . mb_substr($cleanDesc, 1);
 
         if (!str_ends_with($cleanDesc, '.') && !str_ends_with($cleanDesc, '!') && !str_ends_with($cleanDesc, '?')) {
@@ -435,6 +438,9 @@ class GeminiAIService
         }
     }
 
+    /**
+     * @return list<string>
+     */
     private function extractKeywords(string $text): array
     {
         $stopWords = ['le', 'la', 'les', 'de', 'du', 'des', 'un', 'une', 'et', 'en', 'est', 'je', 'suis',
@@ -445,6 +451,9 @@ class GeminiAIService
         ];
 
         $words = preg_split('/[\s\p{P}]+/u', mb_strtolower(trim($text)));
+        if ($words === false) {
+            return [];
+        }
         $words = array_filter($words, fn(string $w) => mb_strlen($w) > 2 && !in_array($w, $stopWords, true));
 
         return array_values(array_unique($words));

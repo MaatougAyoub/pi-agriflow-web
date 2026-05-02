@@ -35,12 +35,16 @@ final class SellerAnnonceController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         $user = $this->getSellerUser();
+        $ownerId = $user->getId();
+        if ($ownerId === null) {
+            throw $this->createAccessDeniedException('Connexion agriculteur requise.');
+        }
 
         // owner: espace vendeur y7seb w ywarri ken data mta3 user connecte
-        $allAnnonces = $annonceRepository->findByOwnerId($user->getId());
-        $receivedReservations = $reservationRepository->findReceivedByOwnerId($user->getId());
+        $allAnnonces = $annonceRepository->findByOwnerId($ownerId);
+        $receivedReservations = $reservationRepository->findReceivedByOwnerId($ownerId);
         $annonces = $paginator->paginate(
-            $annonceRepository->createByOwnerIdQueryBuilder($user->getId()),
+            $annonceRepository->createByOwnerIdQueryBuilder($ownerId),
             $request->query->getInt('page', 1),
             8
         );

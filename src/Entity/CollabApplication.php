@@ -27,6 +27,7 @@ class CollabApplication
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: CollabRequest::class, inversedBy: 'applications')]
@@ -52,7 +53,7 @@ class CollabApplication
 
     #[ORM\Column(options: ['default' => 0])]
     #[Assert\PositiveOrZero(message: 'Les années d\'expérience ne peuvent pas être négatives.')]
-    private ?int $yearsOfExperience = 0;
+    private int $yearsOfExperience = 0;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'La motivation est obligatoire.')]
@@ -60,10 +61,10 @@ class CollabApplication
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
     #[Assert\PositiveOrZero(message: 'Le salaire attendu ne peut pas être négatif.')]
-    private ?float $expectedSalary = 0.00;
+    private ?string $expectedSalary = '0.00';
 
     #[ORM\Column(length: 50, options: ['default' => 'PENDING'])]
-    private ?string $status = 'PENDING';
+    private string $status = 'PENDING';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $appliedAt = null;
@@ -142,14 +143,14 @@ class CollabApplication
         return $this;
     }
 
-    public function getYearsOfExperience(): ?int
+    public function getYearsOfExperience(): int
     {
         return $this->yearsOfExperience;
     }
 
-    public function setYearsOfExperience(?int $yearsOfExperience): static
+    public function setYearsOfExperience(int $yearsOfExperience): static
     {
-        $this->yearsOfExperience = $yearsOfExperience ?? 0;
+        $this->yearsOfExperience = $yearsOfExperience;
 
         return $this;
     }
@@ -168,17 +169,17 @@ class CollabApplication
 
     public function getExpectedSalary(): ?float
     {
-        return $this->expectedSalary;
+        return $this->expectedSalary !== null ? (float) $this->expectedSalary : null;
     }
 
-    public function setExpectedSalary(float $expectedSalary): static
+    public function setExpectedSalary(float|string|null $expectedSalary): static
     {
-        $this->expectedSalary = $expectedSalary;
+        $this->expectedSalary = $expectedSalary !== null ? (string) $expectedSalary : null;
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }

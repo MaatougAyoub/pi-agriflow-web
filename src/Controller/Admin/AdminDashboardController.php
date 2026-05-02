@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Culture;
+use App\Entity\Parcelle;
 use App\Repository\AnnonceRepository;
 use App\Repository\CultureRepository;
 use App\Repository\ParcelleRepository;
@@ -189,10 +190,10 @@ final class AdminDashboardController extends AbstractController
         return $counts;
     }
 
-    /**
-     * @param array<int, object> $parcelles
-     * @return array<string, int>
-     */
+     /**
+      * @param Parcelle[] $parcelles
+      * @return array<string, int>
+      */
     private function countParcellesByTypeTerre(array $parcelles): array
     {
         $counts = array_fill_keys(self::PARCELLE_TYPE_TERRE_LABELS, 0);

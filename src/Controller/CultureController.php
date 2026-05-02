@@ -359,10 +359,11 @@ final class CultureController extends AbstractController
         }
 
         $utilisateur = $this->getAuthenticatedUser();
-        $culture = $this->findAccessibleCulture($id, $utilisateur->getId(), $cultureRepository);
+        $utilisateurId = $this->getAuthenticatedUserId();
+        $culture = $this->findAccessibleCulture($id, $utilisateurId, $cultureRepository);
 
         if ($this->isCsrfTokenValid('buy_culture_'.$culture->getId(), (string) $request->request->get('_token'))) {
-            if (!$culture->canBeBoughtBy($utilisateur->getId())) {
+            if (!$culture->canBeBoughtBy($utilisateurId)) {
                 $this->addFlash('warning', 'Cette culture n est plus disponible a l achat.');
             } else {
                 $culture
@@ -559,8 +560,7 @@ final class CultureController extends AbstractController
                     ->setProprietaireId($agriculteurId)
                     ->setProprietaire($entityManager->getReference(Utilisateur::class, $agriculteurId))
                     ->setEtat($culture->getId() ? $culture->getEtat() : Culture::ETAT_EN_COURS)
-                    ->setRecolteEstime((string) $yieldEstimatorService->estimate($culture->getTypeCulture(), (float) $culture->getSuperficie()))
-                    ->setDateCreation($culture->getDateCreation() ?? new \DateTime());
+                    ->setRecolteEstime($yieldEstimatorService->estimate($culture->getTypeCulture(), (float) $culture->getSuperficie()));
 
                 $entityManager->persist($culture);
                 $this->recordCultureHistory(
@@ -740,7 +740,6 @@ final class CultureController extends AbstractController
         $historyEntry = (new CultureHistory())
             ->setCulture($culture)
             ->setAction($action)
-            ->setPerformedAt(new \DateTime())
             ->setUtilisateur($utilisateur)
             ->setDetails($details);
 
@@ -797,7 +796,13 @@ final class CultureController extends AbstractController
 
     private function getAuthenticatedUserId(): int
     {
-        return $this->getAuthenticatedUser()->getId();
+        $userId = $this->getAuthenticatedUser()->getId();
+
+        if (null === $userId) {
+            throw $this->createAccessDeniedException('Utilisateur non connecte.');
+        }
+
+        return $userId;
     }
 
     /* private function buildPdfSignatureSource(?string $signaturePath): ?string
@@ -806,7 +811,13 @@ final class CultureController extends AbstractController
             return null;
         }
 
-        $publicPath = rtrim((string) $this->getParameter('kernel.project_dir'), '\\/').DIRECTORY_SEPARATOR.'public';
+        $projectDir = $this->getParameter('kernel.project_dir');
+
+        if (!is_string($projectDir) || '' === $projectDir) {
+            return null;
+        }
+
+        $publicPath = rtrim($projectDir, '\\/').DIRECTORY_SEPARATOR.'public';
         $relativePath = ltrim(trim($signaturePath), '\\/');
         $absolutePath = $publicPath.DIRECTORY_SEPARATOR.str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
 
@@ -831,7 +842,13 @@ final class CultureController extends AbstractController
             return 'file:///'.str_replace(DIRECTORY_SEPARATOR, '/', $normalizedPath);
         }
 
-        $publicPath = rtrim((string) $this->getParameter('kernel.project_dir'), '\\/').DIRECTORY_SEPARATOR.'public';
+        $projectDir = $this->getParameter('kernel.project_dir');
+
+        if (!is_string($projectDir) || '' === $projectDir) {
+            return null;
+        }
+
+        $publicPath = rtrim($projectDir, '\\/').DIRECTORY_SEPARATOR.'public';
         $relativePath = ltrim($signaturePath, '\\/');
         $absolutePath = $publicPath.DIRECTORY_SEPARATOR.str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
 
