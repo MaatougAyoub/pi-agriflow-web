@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Utilisateur;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Entity\Diagnosti;
@@ -27,7 +28,8 @@ class AgriculteurController extends AbstractController
     #[Route('/diagnostics', name: 'agriculteur_diagnostics')]
     public function diagnostics(DiagnostiRepository $repo): Response
     {
-        $diagnostics = $repo->findBy(['utilisateur' => $this->getUser()]);
+        $user = $this->getAuthenticatedUtilisateur();
+        $diagnostics = $repo->findBy(['utilisateur' => $user]);
         return $this->render('agriculteur/diagnostics.html.twig', [
             'diagnostics' => $diagnostics,
         ]);
@@ -40,13 +42,13 @@ class AgriculteurController extends AbstractController
         SluggerInterface $slugger,
         CultureRepository $cultureRepo,
     ): Response {
-        $user     = $this->getUser();
+        $user     = $this->getAuthenticatedUtilisateur();
         $cultures = $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
 
         if ($request->isMethod('POST')) {
             $diagnostic = new Diagnosti();
-            $diagnostic->setNomCulture($request->request->get('nomCulture'));
-            $diagnostic->setDescription($request->request->get('description'));
+            $diagnostic->setNomCulture((string) $request->request->get('nomCulture', ''));
+            $diagnostic->setDescription((string) $request->request->get('description', ''));
             $diagnostic->setStatut('en_attente');
             $diagnostic->setDateEnvoi(new \DateTime());
             $diagnostic->setUtilisateur($user);
@@ -61,7 +63,12 @@ class AgriculteurController extends AbstractController
                 $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
                 if (in_array(strtolower($extension), $allowedExtensions)) {
                     try {
-                        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/diagnostics';
+                        $projectDir = $this->getParameter('kernel.project_dir');
+                        if (!is_string($projectDir)) {
+                            throw new \RuntimeException('Chemin du projet invalide.');
+                        }
+
+                        $uploadDir = $projectDir . '/public/uploads/diagnostics';
                         if (!is_dir($uploadDir)) {
                             mkdir($uploadDir, 0777, true);
                         }
@@ -163,8 +170,9 @@ class AgriculteurController extends AbstractController
    #[Route('/diagnostics/{id}', name: 'agriculteur_diagnostic_detail')]
     public function diagnosticDetail(int $id, DiagnostiRepository $repo): Response
     {
+        $user = $this->getAuthenticatedUtilisateur();
         $diagnostic = $repo->find($id);
-        if (!$diagnostic || $diagnostic->getUtilisateur() !== $this->getUser()) {
+        if (!$diagnostic || $diagnostic->getUtilisateur() !== $user) {
             throw $this->createNotFoundException('Diagnostic introuvable.');
         }
         return $this->render('agriculteur/diagnostic_detail.html.twig', [
@@ -177,7 +185,7 @@ class AgriculteurController extends AbstractController
     #[Route('/irrigation', name: 'agriculteur_irrigation')]
     public function irrigation(PlansIrrigationRepository $planRepo): Response
     {
-        $plans = $planRepo->findByProprietaire($this->getUser()->getId());
+        $plans = $planRepo->findByProprietaire((int) $this->getAuthenticatedUtilisateur()->getId());
         return $this->render('agriculteur/irrigation.html.twig', [
             'plans' => $plans,
         ]);
@@ -190,7 +198,7 @@ class AgriculteurController extends AbstractController
         CultureRepository $cultureRepo,
         PlansIrrigationRepository $planRepo,
     ): Response {
-        $user     = $this->getUser();
+        $user     = $this->getAuthenticatedUtilisateur();
         $cultures = $cultureRepo->findBy(['proprietaire_id' => $user->getId()]);
 
         if ($request->isMethod('POST')) {
@@ -205,9 +213,10 @@ class AgriculteurController extends AbstractController
                 ->select('MAX(p.plan_id)')
                 ->getQuery()
                 ->getSingleScalarResult();
+            $nextId = (int) $lastId + 1;
 
             $plan = new PlansIrrigation();
-            $plan->setPlanId(($lastId ?: 0) + 1);
+            $plan->setPlanId($nextId);
             $plan->setCulture($culture);
             $plan->setNomCulture($culture->getNom());
             $plan->setVolumeEauPropose((float)$request->request->get('volume_eau', 0));
@@ -252,9 +261,10 @@ class AgriculteurController extends AbstractController
     #[Route('/diagnostics/{id}/ordonnance', name: 'agriculteur_diagnostic_pdf')]
     public function telechargerOrdonnance(int $id, DiagnostiRepository $repo): Response
     {
+        $user = $this->getAuthenticatedUtilisateur();
         $diagnostic = $repo->find($id);
 
-        if (!$diagnostic || $diagnostic->getUtilisateur() !== $this->getUser()) {
+        if (!$diagnostic || $diagnostic->getUtilisateur() !== $user) {
             throw $this->createNotFoundException('Diagnostic introuvable.');
         }
 
@@ -291,5 +301,16 @@ class AgriculteurController extends AbstractController
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ]
         );
+    }
+
+    private function getAuthenticatedUtilisateur(): Utilisateur
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Utilisateur non authentifié.');
+        }
+
+        return $user;
     }
 }

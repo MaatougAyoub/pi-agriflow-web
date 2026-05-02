@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -152,7 +153,7 @@ final class RegistrationController extends AbstractController
         }
 
         $errorResponse = null;
-        if ($request->isMethod('POST') && $errors !== []) {
+        if ($request->isMethod('POST')) {
             $errorResponse = new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -301,6 +302,9 @@ final class RegistrationController extends AbstractController
         }
 
         $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('Invalid project directory parameter.');
+        }
 
         return $projectDir . '/public/' . $directory;
     }
@@ -310,7 +314,7 @@ final class RegistrationController extends AbstractController
         return (bool) preg_match('/^[A-Za-z]:\\\\/', $path) || str_starts_with($path, '/');
     }
 
-    private function generateAndSendVerificationCode($session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
+    private function generateAndSendVerificationCode(SessionInterface $session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
     {
         $code = (string) random_int(100000, 999999);
         $session->set(self::SESSION_CODE, $code);
@@ -412,10 +416,6 @@ final class RegistrationController extends AbstractController
 
     private function containsArabicValue(string $normalizedOcrText, string $compactOcrText, string $expectedCompact): bool
     {
-        if ($expectedCompact === '') {
-            return false;
-        }
-
         if (str_contains($compactOcrText, $expectedCompact)) {
             return true;
         }
@@ -448,7 +448,7 @@ final class RegistrationController extends AbstractController
         $maxDistance = max(1, (int) floor($expectedLen * 0.34));
 
         foreach ($mergedCandidates as $candidate) {
-            if ($candidate === '' || strlen($candidate) < 2) {
+            if (strlen($candidate) < 2) {
                 continue;
             }
 

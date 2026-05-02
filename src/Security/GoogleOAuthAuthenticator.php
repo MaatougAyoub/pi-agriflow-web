@@ -33,7 +33,7 @@ final class GoogleOAuthAuthenticator extends OAuth2Authenticator
     ) {
     }
 
-    public function supports(Request $request): ?bool
+    public function supports(Request $request): bool
     {
         return 'app_connect_google_check' === $request->attributes->get('_route');
     }
@@ -48,7 +48,7 @@ final class GoogleOAuthAuthenticator extends OAuth2Authenticator
         );
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): Response
     {
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
@@ -57,7 +57,7 @@ final class GoogleOAuthAuthenticator extends OAuth2Authenticator
         return new RedirectResponse($this->urlGenerator->generate('app_post_login_redirect'));
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         return new RedirectResponse($this->urlGenerator->generate('app_login'));
     }

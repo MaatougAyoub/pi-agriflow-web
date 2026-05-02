@@ -16,6 +16,7 @@ class Reclamation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line Doctrine assigne l'identifiant lors de l'hydratation/persistance. */
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'reclamations')]

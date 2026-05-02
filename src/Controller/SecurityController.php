@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -291,7 +292,7 @@ final class SecurityController extends AbstractController
         return array_values(array_unique($roles));
     }
 
-    private function generateAndSendForgotPasswordCode($session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
+    private function generateAndSendForgotPasswordCode(SessionInterface $session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
     {
         $code = (string) random_int(100000, 999999);
         $session->set(self::SESSION_FORGOT_PASSWORD_CODE, $code);

@@ -158,15 +158,9 @@ final class TesseractOcrService implements OcrService
         $origW = imagesx($original);
         $origH = imagesy($original);
 
-        if ($origW <= 0 || $origH <= 0) {
-            imagedestroy($original);
-
-            return $inputPath;
-        }
-
         $targetW = max($origW, 1400);
         $scale = $targetW / $origW;
-        $targetH = (int) round($origH * $scale);
+        $targetH = max(1, (int) round($origH * $scale));
 
         $scaled = imagecreatetruecolor($targetW, $targetH);
         imagecopyresampled($scaled, $original, 0, 0, 0, 0, $targetW, $targetH, $origW, $origH);

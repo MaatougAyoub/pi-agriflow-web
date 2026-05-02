@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -292,7 +293,10 @@ final class ProfileEditController extends AbstractController
             return $directory;
         }
 
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('Invalid project directory parameter.');
+        }
 
         return $projectDir . '/public/' . $directory;
     }
@@ -302,7 +306,7 @@ final class ProfileEditController extends AbstractController
         return (bool) preg_match('/^[A-Za-z]:\\\\/', $path) || str_starts_with($path, '/');
     }
 
-    private function generateAndSendVerificationCode($session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
+    private function generateAndSendVerificationCode(SessionInterface $session, string $email, LoggerInterface $logger, BrevoEmailService $brevoEmailService, string $context): string
     {
         $code = (string) random_int(100000, 999999);
         $session->set(self::SESSION_CODE, $code);

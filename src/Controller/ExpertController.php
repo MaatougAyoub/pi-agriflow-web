@@ -114,8 +114,8 @@ class ExpertController extends AbstractController
     ): Response {
         $diagnostic = $repo->find($id);
         if ($diagnostic) {
-            $reponse = $request->request->get('reponse', '');
-            $produitTexte = $request->request->get('produit_texte', '');
+            $reponse = (string) $request->request->get('reponse', '');
+            $produitTexte = (string) $request->request->get('produit_texte', '');
             if ($produitTexte) {
                 $reponse .= "\n\n" . $produitTexte;
             }
@@ -301,10 +301,10 @@ public function irrigationIA(
     {
         if ($request->isMethod('POST')) {
             $produit = new ProduitsPhytosanitaire();
-            $produit->setNomProduit($request->request->get('nomProduit'));
-            $produit->setDosage($request->request->get('dosage'));
-            $produit->setFrequenceApplication($request->request->get('frequence'));
-            $produit->setRemarques($request->request->get('remarques'));
+            $produit->setNomProduit((string) $request->request->get('nomProduit', ''));
+            $produit->setDosage((string) $request->request->get('dosage', ''));
+            $produit->setFrequenceApplication((string) $request->request->get('frequence', ''));
+            $produit->setRemarques((string) $request->request->get('remarques', ''));
             $em->persist($produit);
             $em->flush();
             return $this->redirectToRoute('expert_produits');
@@ -316,7 +316,7 @@ public function irrigationIA(
         Request $request,
         ProduitPhytosanitaireAIService $aiService
     ): Response {
-        $nomProduit = trim($request->request->get('nomProduit', ''));
+        $nomProduit = trim((string) $request->request->get('nomProduit', ''));
 
         if (strlen($nomProduit) < 3) {
             return $this->json(['error' => 'Nom du produit trop court.'], 400);
