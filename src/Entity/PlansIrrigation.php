@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 class PlansIrrigation
 {
     #[ORM\Id]
-    // Retrait de GeneratedValue pour éviter l'erreur "No identity value was generated"
     #[ORM\Column(type: 'integer')]
     private ?int $plan_id = null;
 
@@ -45,6 +44,8 @@ class PlansIrrigation
     #[ORM\JoinColumn(name: "id_culture", referencedColumnName: "id")]
     private ?Culture $culture = null;
 
+    // ✅ CORRECTION 1 : types génériques ajoutés <int, PlansIrrigationJour>
+    /** @var Collection<int, PlansIrrigationJour> */
     #[ORM\OneToMany(mappedBy: "plan", targetEntity: PlansIrrigationJour::class)]
     private Collection $jours;
 
@@ -177,7 +178,7 @@ class PlansIrrigation
     {
         if (!$this->jours->contains($jour)) {
             $this->jours[] = $jour;
-            $jour->setPlan($this);
+            $jour->setPlan($this); // fonctionne après correction dans PlansIrrigationJour
         }
         return $this;
     }

@@ -59,6 +59,16 @@ class PlansIrrigationJour
         return $this;
     }
 
+    /**
+     * Convenience setter used by PlansIrrigation::addJour()
+     * Keeps the numeric foreign key in sync when a full entity is available.
+     */
+    public function setPlan(PlansIrrigation $plan): static
+    {
+        $this->plan_id = $plan->getPlanId();
+        return $this;
+    }
+
     public function getJour(): ?string
     {
         return $this->jour;

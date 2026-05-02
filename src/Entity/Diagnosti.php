@@ -6,7 +6,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
 use App\Repository\DiagnostiRepository;
 
 #[ORM\Entity(repositoryClass: DiagnostiRepository::class)]
@@ -114,6 +113,7 @@ class Diagnosti
         return $this;
     }
 
+    // ✅ Propriété typée \DateTimeInterface (plus flexible, correct pour Doctrine)
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $date_envoi = null;
 
@@ -128,6 +128,7 @@ class Diagnosti
         return $this;
     }
 
+    // ✅ Propriété typée \DateTimeInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $date_reponse = null;
 
@@ -142,6 +143,8 @@ class Diagnosti
         return $this;
     }
 
+    // ----- Alias camelCase (conventions Symfony) -----
+
     public function getIdDiagnostic(): ?int
     {
         return $this->id_diagnostic;
@@ -155,7 +158,6 @@ class Diagnosti
     public function setNomCulture(string $nom_culture): static
     {
         $this->nom_culture = $nom_culture;
-
         return $this;
     }
 
@@ -167,7 +169,6 @@ class Diagnosti
     public function setImagePath(?string $image_path): static
     {
         $this->image_path = $image_path;
-
         return $this;
     }
 
@@ -179,32 +180,30 @@ class Diagnosti
     public function setReponseExpert(?string $reponse_expert): static
     {
         $this->reponse_expert = $reponse_expert;
-
         return $this;
     }
 
-    public function getDateEnvoi(): ?\DateTime
+    // ✅ CORRECTION 3 : \DateTime → \DateTimeInterface pour correspondre à la propriété
+    public function getDateEnvoi(): ?\DateTimeInterface
     {
         return $this->date_envoi;
     }
 
-    public function setDateEnvoi(?\DateTime $date_envoi): static
+    public function setDateEnvoi(?\DateTimeInterface $date_envoi): static
     {
         $this->date_envoi = $date_envoi;
-
         return $this;
     }
 
-    public function getDateReponse(): ?\DateTime
+    // ✅ CORRECTION 4 : \DateTime → \DateTimeInterface pour correspondre à la propriété
+    public function getDateReponse(): ?\DateTimeInterface
     {
         return $this->date_reponse;
     }
 
-    public function setDateReponse(?\DateTime $date_reponse): static
+    public function setDateReponse(?\DateTimeInterface $date_reponse): static
     {
         $this->date_reponse = $date_reponse;
-
         return $this;
     }
-
 }
