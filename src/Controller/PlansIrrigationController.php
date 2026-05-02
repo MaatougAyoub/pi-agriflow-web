@@ -21,7 +21,7 @@ class PlansIrrigationController extends AbstractController
             $plans = $repo->findAll();
         } else {
             $user = $this->getUser();
-            $plans = $repo->findBy(['culture_id' => null]);
+            $plans = $repo->findBy(['id_culture' => null]);
             // On récupère tous les plans pour l'agriculteur connecté
             $plans = $repo->findAll(); // À adapter selon votre logique utilisateur
         }
@@ -42,7 +42,7 @@ class PlansIrrigationController extends AbstractController
         if (!$plan) {
             throw $this->createNotFoundException('Plan non trouvé');
         }
-        $jours = $jourRepo->findBy(['plan_id' => $id]);
+        $jours = $jourRepo->findBy(['plan' => $id]);
         $jourData = [];
         foreach ($jours as $j) {
             $jourData[$j->getJour()] = $j;
@@ -58,8 +58,10 @@ class PlansIrrigationController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             $plan = new PlansIrrigation();
-            $plan->setNomCulture((string) $request->request->get('nom_culture'));
-            $plan->setVolumeEauPropose((float) $request->request->get('volume_eau_propose'));
+            $nomCulture = $request->request->get('nom_culture');
+            $nomCulture = is_string($nomCulture) ? $nomCulture : null;
+            $plan->setNomCulture($nomCulture);
+            $plan->setVolumeEauPropose((float)$request->request->get('volume_eau_propose'));
             $plan->setStatut('en_attente');
             $plan->setDateDemande(new \DateTime());
             $em->persist($plan);

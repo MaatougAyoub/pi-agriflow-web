@@ -6,6 +6,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ProduitPhytosanitaireAIService
 {
+    /** @var array<string, array<string, string>> */
     private array $baseProduits;
 
     public function __construct(
@@ -114,6 +115,9 @@ class ProduitPhytosanitaireAIService
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function suggereProduit(string $nomProduit): array
     {
         // 1. Chercher dans la base locale (recherche insensible à la casse)
@@ -204,6 +208,9 @@ class ProduitPhytosanitaireAIService
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function appelApiGroq(string $nomProduit): array
     {
         $prompt = "Tu es un expert agronome spécialisé en produits phytosanitaires. "
@@ -248,9 +255,10 @@ class ProduitPhytosanitaireAIService
             throw new \RuntimeException('Réponse Groq invalide.');
         }
 
-        $text = trim($data['choices'][0]['message']['content']);
-        $text = preg_replace('/```json\s*/i', '', $text);
-        $text = preg_replace('/```\s*/i', '', $text);
+        $text = (string) $data['choices'][0]['message']['content'];
+        $text = trim($text);
+        $text = (string) preg_replace('/```json\s*/i', '', $text);
+        $text = (string) preg_replace('/```\s*/i', '', $text);
         $text = trim($text);
 
         if (preg_match('/\{[^{}]*\}/', $text, $matches)) {

@@ -3,10 +3,15 @@
 namespace App\Repository;
 
 use App\Entity\CollabApplication;
+use App\Entity\CollabRequest;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<CollabApplication>
+ */
 class CollabApplicationRepository extends ServiceEntityRepository
 {
     private const SORT_MY_APPLICATIONS = [
@@ -20,17 +25,23 @@ class CollabApplicationRepository extends ServiceEntityRepository
         parent::__construct($registry, CollabApplication::class);
     }
 
-    public function findByCandidate($candidate): array
+    /**
+     * @return list<CollabApplication>
+     */
+    public function findByCandidate(Utilisateur $candidate): array
     {
         return $this->findByCandidateFiltered($candidate, null, 'date_desc');
     }
 
-    public function findByCandidateFiltered($candidate, ?string $status, string $sortKey): array
+    /**
+     * @return list<CollabApplication>
+     */
+    public function findByCandidateFiltered(Utilisateur $candidate, ?string $status, string $sortKey): array
     {
         return $this->findByCandidateFilteredQuery($candidate, $status, $sortKey)->getResult();
     }
 
-    public function findByCandidateFilteredQuery($candidate, ?string $status, string $sortKey): \Doctrine\ORM\Query
+    public function findByCandidateFilteredQuery(Utilisateur $candidate, ?string $status, string $sortKey): \Doctrine\ORM\Query
     {
         $qb = $this->createQueryBuilder('a')
             ->where('a.candidate = :candidate')
@@ -47,7 +58,7 @@ class CollabApplicationRepository extends ServiceEntityRepository
         return $qb->getQuery();
     }
 
-    public function countApprovedByRequest($request): int
+    public function countApprovedByRequest(CollabRequest $request): int
     {
         return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
@@ -59,7 +70,10 @@ class CollabApplicationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function findByRequest($request): array
+    /**
+     * @return list<CollabApplication>
+     */
+    public function findByRequest(CollabRequest $request): array
     {
         return $this->createQueryBuilder('a')
             ->where('a.request = :request')
@@ -69,7 +83,7 @@ class CollabApplicationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countByRequest($request): int
+    public function countByRequest(CollabRequest $request): int
     {
         return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
@@ -79,7 +93,7 @@ class CollabApplicationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function hasApplied($candidate, $request): bool
+    public function hasApplied(Utilisateur $candidate, CollabRequest $request): bool
     {
         $count = $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')

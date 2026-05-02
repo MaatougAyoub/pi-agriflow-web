@@ -203,24 +203,24 @@ class Message
         return $this;
     }
 
-    public function getDateLecture(): ?\DateTime
+    public function getDateLecture(): ?\DateTimeInterface
     {
         return $this->date_lecture;
     }
 
-    public function setDateLecture(?\DateTime $date_lecture): static
+    public function setDateLecture(?\DateTimeInterface $date_lecture): static
     {
         $this->date_lecture = $date_lecture;
 
         return $this;
     }
 
-    public function getDateEnvoi(): ?\DateTime
+    public function getDateEnvoi(): ?\DateTimeInterface
     {
         return $this->date_envoi;
     }
 
-    public function setDateEnvoi(\DateTime $date_envoi): static
+    public function setDateEnvoi(\DateTimeInterface $date_envoi): static
     {
         $this->date_envoi = $date_envoi;
 

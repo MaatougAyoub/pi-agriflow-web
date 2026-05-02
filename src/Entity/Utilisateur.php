@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Diagnosti;
 use App\Entity\Reclamation;
 use App\Enum\Role;
 use App\Repository\UtilisateurRepository;
@@ -84,9 +85,16 @@ class Utilisateur
     #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Reclamation::class, orphanRemoval: true)]
     private Collection $reclamations;
 
+    /**
+     * @var Collection<int, Diagnosti>
+     */
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: Diagnosti::class)]
+    private Collection $diagnostis;
+
     public function __construct()
     {
         $this->reclamations = new ArrayCollection();
+        $this->diagnostis = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -370,6 +378,35 @@ class Utilisateur
         if ($this->reclamations->removeElement($reclamation)) {
             if ($reclamation->getUtilisateur() === $this) {
                 $reclamation->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Diagnosti>
+     */
+    public function getDiagnostis(): Collection
+    {
+        return $this->diagnostis;
+    }
+
+    public function addDiagnosti(Diagnosti $diagnosti): static
+    {
+        if (!$this->diagnostis->contains($diagnosti)) {
+            $this->diagnostis->add($diagnosti);
+            $diagnosti->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDiagnosti(Diagnosti $diagnosti): static
+    {
+        if ($this->diagnostis->removeElement($diagnosti)) {
+            if ($diagnosti->getUtilisateur() === $this) {
+                $diagnosti->setUtilisateur(null);
             }
         }
 

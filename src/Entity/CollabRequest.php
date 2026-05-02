@@ -29,6 +29,7 @@ class CollabRequest
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -44,10 +45,10 @@ class CollabRequest
     private ?string $location = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
-    private ?float $latitude = null;
+    private ?string $latitude = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
-    private ?float $longitude = null;
+    private ?string $longitude = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotNull(message: 'La date de début est obligatoire.')]
@@ -59,14 +60,14 @@ class CollabRequest
 
     #[ORM\Column(options: ['default' => 1])]
     #[Assert\Positive(message: 'Le nombre de personnes doit être au moins 1.')]
-    private ?int $neededPeople = 1;
+    private int $neededPeople = 1;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
     #[Assert\PositiveOrZero(message: 'Le salaire ne peut pas être négatif.')]
-    private ?float $salary = 0.00;
+    private ?string $salary = '0.00';
 
     #[ORM\Column(length: 50, options: ['default' => 'PENDING'])]
-    private ?string $status = 'PENDING';
+    private string $status = 'PENDING';
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'requester_id', referencedColumnName: 'id', nullable: false)]
@@ -135,24 +136,24 @@ class CollabRequest
 
     public function getLatitude(): ?float
     {
-        return $this->latitude;
+        return $this->latitude !== null ? (float) $this->latitude : null;
     }
 
-    public function setLatitude(?float $latitude): static
+    public function setLatitude(float|string|null $latitude): static
     {
-        $this->latitude = $latitude;
+        $this->latitude = $latitude !== null ? (string) $latitude : null;
 
         return $this;
     }
 
     public function getLongitude(): ?float
     {
-        return $this->longitude;
+        return $this->longitude !== null ? (float) $this->longitude : null;
     }
 
-    public function setLongitude(?float $longitude): static
+    public function setLongitude(float|string|null $longitude): static
     {
-        $this->longitude = $longitude;
+        $this->longitude = $longitude !== null ? (string) $longitude : null;
 
         return $this;
     }
@@ -181,7 +182,7 @@ class CollabRequest
         return $this;
     }
 
-    public function getNeededPeople(): ?int
+    public function getNeededPeople(): int
     {
         return $this->neededPeople;
     }
@@ -195,29 +196,29 @@ class CollabRequest
 
     public function getSalary(): ?float
     {
-        return $this->salary;
+        return $this->salary !== null ? (float) $this->salary : null;
     }
 
     public function getSalaryPerDay(): ?float
     {
-        return $this->salary;
+        return $this->salary !== null ? (float) $this->salary : null;
     }
 
-    public function setSalary(float $salary): static
+    public function setSalary(float|string|null $salary): static
     {
-        $this->salary = $salary;
+        $this->salary = $salary !== null ? (string) $salary : null;
 
         return $this;
     }
 
-    public function setSalaryPerDay(float $salaryPerDay): static
+    public function setSalaryPerDay(float|string|null $salaryPerDay): static
     {
-        $this->salary = $salaryPerDay;
+        $this->salary = $salaryPerDay !== null ? (string) $salaryPerDay : null;
 
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): string
     {
         return $this->status;
     }

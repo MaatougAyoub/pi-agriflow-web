@@ -13,10 +13,13 @@ class PlansIrrigationJour
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "IDENTITY")]   // ← Auto-incrément ajouté
     #[ORM\Column(type: 'integer')]
+    /** @phpstan-ignore-next-line */
     private ?int $id = null;
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $plan_id = null;
+
+    #[ORM\ManyToOne(targetEntity: PlansIrrigation::class, inversedBy: 'jours')]
+    #[ORM\JoinColumn(name: 'plan_id', referencedColumnName: 'plan_id', nullable: false)]
+    private ?PlansIrrigation $plan = null;
 
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $jour = null;
@@ -48,25 +51,20 @@ class PlansIrrigationJour
 
     // Pas de setId() car auto-généré
 
+    public function getPlan(): ?PlansIrrigation
+    {
+        return $this->plan;
+    }
+
+    public function setPlan(?PlansIrrigation $plan): static
+    {
+        $this->plan = $plan;
+        return $this;
+    }
+
     public function getPlanId(): ?int
     {
-        return $this->plan_id;
-    }
-
-    public function setPlanId(int $plan_id): static
-    {
-        $this->plan_id = $plan_id;
-        return $this;
-    }
-
-    /**
-     * Convenience setter used by PlansIrrigation::addJour()
-     * Keeps the numeric foreign key in sync when a full entity is available.
-     */
-    public function setPlan(PlansIrrigation $plan): static
-    {
-        $this->plan_id = $plan->getPlanId();
-        return $this;
+        return $this->plan?->getPlanId();
     }
 
     public function getJour(): ?string

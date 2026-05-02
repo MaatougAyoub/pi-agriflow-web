@@ -73,7 +73,7 @@ final class MarketplaceController extends AbstractController
             ],
             'stats' => $stats,
             'types' => AnnonceType::cases(),
-            'visuals' => $this->buildAnnonceVisuals(iterator_to_array($annonces)),
+            'visuals' => $this->buildAnnonceVisuals(array_values(iterator_to_array($annonces))),
         ]);
     }
 
@@ -87,25 +87,26 @@ final class MarketplaceController extends AbstractController
         SellerMarketplaceService $sellerMarketplaceService
     ): Response {
         $user = $this->getUser();
+        $viewer = $user instanceof Utilisateur ? $user : null;
         // role: houni nfarkou bin owner w viewer bech kol wahed ychouf el actions eli t5assou
-        $isAgriculteurViewer = $user instanceof Utilisateur && $this->isGranted('ROLE_AGRICULTEUR');
-        $isOwnerViewer = $sellerMarketplaceService->isAnnonceOwner(
-            $user instanceof Utilisateur ? $user : null,
-            $annonce
-        );
+        $isAgriculteurViewer = $viewer instanceof Utilisateur && $this->isGranted('ROLE_AGRICULTEUR');
+        $isOwnerViewer = $sellerMarketplaceService->isAnnonceOwner($viewer, $annonce);
         // reservation: canReserve t7eb annonce disponible w viewer agriculteur w moch owner
         $canReserve = $isAgriculteurViewer
             && !$isOwnerViewer
             && $annonce->getStatut() === AnnonceStatut::DISPONIBLE;
-        $similarAnnonces = $annonceRepository->findSimilarPublic($annonce, 4);
+        /** @var list<Annonce> $similarAnnonces */
+        $similarAnnonces = array_values($annonceRepository->findSimilarPublic($annonce, 4));
         $environmentInsights = $environmentInsightService->buildForAnnonce($annonce);
         $businessDiagnostic = $businessDiagnosticService->buildForAnnonce($annonce, $environmentInsights);
+        $reservationForm = null;
+        if ($canReserve) {
+            $reservationForm = $this->createReservationForm($annonce, $viewer)->createView();
+        }
 
         return $this->render('marketplace/show.html.twig', [
             'annonce' => $annonce,
-            'reservationForm' => $canReserve && $user instanceof Utilisateur
-                ? $this->createReservationForm($annonce, $user)->createView()
-                : null,
+            'reservationForm' => $reservationForm,
             'recentReservations' => $reservationRepository->findBy(
                 ['annonce' => $annonce],
                 ['createdAt' => 'DESC'],

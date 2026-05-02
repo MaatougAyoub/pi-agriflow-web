@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\CollabApplication;
 use App\Entity\CollabRequest;
+use App\Entity\Utilisateur;
 use App\Form\CollabApplicationType;
 use App\Repository\CollabApplicationRepository;
 use App\Repository\CollabRequestRepository;
@@ -29,16 +30,16 @@ class ApplyCollaborationController extends AbstractController
         EntityManagerInterface $em
     ): Response {
         $collabRequest = $reqRepo->find($id);
-        if ($collabRequest === null) {
+        if (!$collabRequest instanceof CollabRequest) {
             throw $this->createNotFoundException('Demande introuvable.');
         }
 
-        /** @var \App\Entity\Utilisateur $currentUser */
-        $currentUser = $this->getUser();
-        if ($currentUser === null) {
-            $this->addFlash('error', "Erreur d'authentification", 'Vous devez être connecté pour postuler à cette offre.');
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur) {
+            $this->addFlash('error', "Erreur d'authentification: vous devez etre connecte pour postuler a cette offre.");
             return $this->redirectToRoute('app_login');
         }
+        $currentUser = $user;
 
         // Vérifier si déjà postulé
         if ($appRepo->hasApplied($currentUser, $collabRequest)) {

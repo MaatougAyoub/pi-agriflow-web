@@ -84,6 +84,9 @@ class WeatherService
 
     /**
      * Retourne une évaluation des risques météo basés sur les prévisions.
+     *
+     * @param array<DailyForecast> $forecasts
+     * @return array<string>
      */
     public function getRiskAssessment(array $forecasts): array
     {

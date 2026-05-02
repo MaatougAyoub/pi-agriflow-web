@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\PlansIrrigation;
+use App\Entity\Utilisateur;
 use App\Repository\PlansIrrigationRepository;
 use App\Repository\PlansIrrigationJourRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -46,9 +48,20 @@ class CalendrierIrrigationController extends AbstractController
 
         // Récupérer les plans selon le rôle
         if ($this->isGranted('ROLE_EXPERT')) {
+            /** @var list<PlansIrrigation> $plans */
             $plans = $planRepo->findAll();
         } else {
-            $plans = $planRepo->findByProprietaire($user->getId());
+            if (!$user instanceof Utilisateur) {
+                return new JsonResponse([], Response::HTTP_UNAUTHORIZED);
+            }
+
+            $userId = $user->getId();
+            if ($userId === null) {
+                return new JsonResponse([], Response::HTTP_UNAUTHORIZED);
+            }
+
+            /** @var list<PlansIrrigation> $plans */
+            $plans = $planRepo->findByProprietaire($userId);
         }
 
         foreach ($plans as $plan) {
@@ -59,12 +72,7 @@ class CalendrierIrrigationController extends AbstractController
             $volumeEau = $plan->getVolumeEauPropose() ?? 0;
 
             // Récupérer l'identifiant du plan
-            $planId = null;
-            if (method_exists($plan, 'getPlanId')) {
-                $planId = $plan->getPlanId();
-            } elseif (method_exists($plan, 'getIdCulture')) {
-                $planId = $plan->getIdCulture();
-            }
+            $planId = $plan->getPlanId() ?? $plan->getIdCulture();
 
             // Événement principal : date de demande du plan
             $dateDemande = $plan->getDateDemande();
@@ -88,7 +96,7 @@ class CalendrierIrrigationController extends AbstractController
 
             // Événements journaliers (si le plan a des jours remplis)
             if ($planId) {
-                $jours = $jourRepo->findBy(['plan_id' => $planId]);
+                $jours = $jourRepo->findBy(['plan' => $planId]);
                 $joursMap = [
                     'LUN' => 'Monday', 'MAR' => 'Tuesday', 'MER' => 'Wednesday',
                     'JEU' => 'Thursday', 'VEN' => 'Friday', 'SAM' => 'Saturday', 'DIM' => 'Sunday',
@@ -106,12 +114,12 @@ class CalendrierIrrigationController extends AbstractController
                     // Calculer la date du jour dans la semaine courante
                     $semaineDebut = $jour->getSemaineDebut();
                     if ($semaineDebut && isset($joursMap[$jourKey])) {
-                        $dateJour = clone $semaineDebut;
+                        $dateJour = \DateTimeImmutable::createFromInterface($semaineDebut);
                         $jourAnglais = $joursMap[$jourKey];
 
                         // Trouver le bon jour de la semaine
                         while ($dateJour->format('l') !== $jourAnglais) {
-                            $dateJour->modify('+1 day');
+                            $dateJour = $dateJour->modify('+1 day');
                         }
 
                         $events[] = [

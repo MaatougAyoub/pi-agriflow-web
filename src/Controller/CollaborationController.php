@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\CollabApplication;
 use App\Entity\CollabRequest;
+use App\Entity\Utilisateur;
 use App\Form\CollabApplicationType;
 use App\Form\CollabRequestType;
 use App\Repository\CollabApplicationRepository;
@@ -73,8 +74,7 @@ class CollaborationController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, GeminiAIService $gemini): Response
     {
         $user = $this->getUser();
-        /** @var ?\App\Entity\Utilisateur $user */
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             $this->addFlash('warning', 'Vous devez être connecté pour créer une demande.');
             return $this->redirectToRoute('app_login');
         }
@@ -109,7 +109,10 @@ class CollaborationController extends AbstractController
                     $collabRequest->setUpdatedAt(new \DateTime());
 
                     // IA : Modération de contenu (Métier 3)
-                    $rejectionReason = $gemini->moderateContent($collabRequest->getTitle(), $collabRequest->getDescription());
+                    $rejectionReason = $gemini->moderateContent(
+                        (string) $collabRequest->getTitle(),
+                        (string) $collabRequest->getDescription()
+                    );
                     if ($rejectionReason) {
                         $moderationError = '🤖 IA Modération : Votre annonce a été rejetée. Motif : '.$rejectionReason;
                         $form->addError(new FormError($moderationError));
@@ -146,7 +149,7 @@ class CollaborationController extends AbstractController
     public function myRequests(Request $request, CollabRequestRepository $requestRepo, CollabApplicationRepository $appRepo, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -185,7 +188,7 @@ class CollaborationController extends AbstractController
     public function myApplications(Request $request, CollabApplicationRepository $repo, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('app_login');
         }
 
@@ -218,7 +221,7 @@ class CollaborationController extends AbstractController
     {
         $user = $this->getUser();
         $hasApplied = false;
-        if ($user) {
+        if ($user instanceof Utilisateur) {
             $hasApplied = $appRepo->hasApplied($user, $collabRequest);
         }
 
@@ -251,8 +254,7 @@ class CollaborationController extends AbstractController
     public function edit(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, GeminiAIService $gemini): Response
     {
         $user = $this->getUser();
-        /** @var ?\App\Entity\Utilisateur $user */
-        if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
+        if (!$user instanceof Utilisateur || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Vous ne pouvez modifier que vos propres demandes.');
             return $this->redirectToRoute('app_collab_index');
         }
@@ -279,7 +281,10 @@ class CollaborationController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $rejectionReason = $gemini->moderateContent($collabRequest->getTitle(), $collabRequest->getDescription());
+            $rejectionReason = $gemini->moderateContent(
+                (string) $collabRequest->getTitle(),
+                (string) $collabRequest->getDescription()
+            );
             if ($rejectionReason) {
                 $moderationError = '🤖 IA Modération : Votre annonce a été rejetée. Motif : '.$rejectionReason;
                 $form->addError(new FormError($moderationError));
@@ -316,13 +321,16 @@ class CollaborationController extends AbstractController
     public function delete(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, CollabApplicationRepository $appRepo): Response
     {
         $user = $this->getUser();
-        /** @var ?\App\Entity\Utilisateur $user */
-        if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
+        if (!$user instanceof Utilisateur || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Vous ne pouvez supprimer que vos propres demandes.');
             return $this->redirectToRoute('app_collab_index');
         }
 
-        if ($this->isCsrfTokenValid('delete' . $collabRequest->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('delete' . $collabRequest->getId(), $token)) {
             // Supprimer d'abord les candidatures associées
             $applications = $appRepo->findByRequest($collabRequest);
             foreach ($applications as $app) {
@@ -344,8 +352,7 @@ class CollaborationController extends AbstractController
     public function apply(CollabRequest $collabRequest, Request $request, EntityManagerInterface $em, CollabApplicationRepository $appRepo): Response
     {
         $user = $this->getUser();
-        /** @var ?\App\Entity\Utilisateur $user */
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             $this->addFlash('warning', 'Vous devez être connecté pour postuler.');
             return $this->redirectToRoute('app_login');
         }
@@ -419,8 +426,7 @@ class CollaborationController extends AbstractController
     ): Response
     {
         $user = $this->getUser();
-        /** @var ?\App\Entity\Utilisateur $user */
-        if (!$user || $collabRequest->getRequester()?->getId() !== $user->getId()) {
+        if (!$user instanceof Utilisateur || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Accès refusé.');
             return $this->redirectToRoute('app_collab_index');
         }
@@ -438,7 +444,7 @@ class CollaborationController extends AbstractController
             
             // On appelle l'IA (qui basculera en local automatiquement si besoin)
             $aiAnalyses[$application->getId()] = $gemini->analyzeCandidateFit(
-                $collabRequest->getDescription(),
+                (string) $collabRequest->getDescription(),
                 $application->getMotivation() ?? ''
             );
         }
@@ -461,15 +467,23 @@ class CollaborationController extends AbstractController
         EntityManagerInterface $em,
         CollabApplicationRepository $appRepo
     ): Response {
-        $user = $this->getUser();
         $collabRequest = $application->getRequest();
+        if (!$collabRequest instanceof CollabRequest) {
+            $this->addFlash('danger', 'Demande introuvable.');
+            return $this->redirectToRoute('app_collab_index');
+        }
 
-        if (!$user || $collabRequest->getRequester() !== $user) {
+        $user = $this->getUser();
+        if (!$user instanceof Utilisateur || $collabRequest->getRequester()?->getId() !== $user->getId()) {
             $this->addFlash('danger', 'Accès refusé.');
             return $this->redirectToRoute('app_collab_index');
         }
 
-        if ($this->isCsrfTokenValid('status' . $application->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('status' . $application->getId(), $token)) {
             if ($action === 'approve') {
                 // Métier 1 : Gestion des conflits (Ne pas dépasser le nombre de personnes nécessaires)
                 $approvedCount = $appRepo->countApprovedByRequest($collabRequest);
@@ -547,6 +561,9 @@ class CollaborationController extends AbstractController
     {
         $messages = [];
         foreach ($form->getErrors(true) as $error) {
+            if (!$error instanceof FormError) {
+                continue;
+            }
             $messages[] = $error->getMessage();
         }
         $messages = array_values(array_unique($messages));
@@ -556,18 +573,6 @@ class CollaborationController extends AbstractController
                 ? implode(' ', $messages)
                 : 'Le formulaire contient des erreurs. Vérifiez les champs affichés ci-dessous.'
         );
-    }
-
-    private function getFormErrors(FormInterface $form): array
-    {
-        $errors = [];
-        foreach ($form->getErrors(true) as $error) {
-            $errors[] = [
-                'message' => $error->getMessage(),
-                'field' => $error->getOrigin()?->getName() ?? 'unknown',
-            ];
-        }
-        return $errors;
     }
 
     private function detectBlockedContentReason(string $title, string $description): ?string

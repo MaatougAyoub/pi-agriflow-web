@@ -17,13 +17,16 @@ class CollabRequestListController extends AbstractController
     #[Route('', name: 'collab_request_list', methods: ['GET'])]
     public function index(Request $request, CollabRequestRepository $repo): Response
     {
-        $search = $request->query->get('search', '');
-        $status = $request->query->get('status', 'Tous');
+        $search = $request->query->get('search');
+        $search = is_string($search) ? $search : '';
+        $status = $request->query->get('status');
+        $status = (is_string($status) && $status !== '') ? $status : 'Tous';
         
         try {
-            if ($search || $status !== 'Tous') {
+            if ($search !== '' || $status !== 'Tous') {
                 $requests = $this->filterRequests($repo, $search, $status);
             } else {
+                /** @var list<CollabRequest> $requests */
                 $requests = $repo->findAll();
             }
             
@@ -53,7 +56,7 @@ class CollabRequestListController extends AbstractController
     {
         $request = $repo->find($id);
         if ($request === null) {
-            $this->addFlash('warning', 'Aucune sélection', 'Veuillez sélectionner une demande.');
+            $this->addFlash('warning', 'Aucune sélection. Veuillez sélectionner une demande.');
             return $this->redirectToRoute('collab_request_list');
         }
         
@@ -67,11 +70,15 @@ class CollabRequestListController extends AbstractController
     {
         $collabRequest = $repo->find($id);
         if ($collabRequest === null) {
-            $this->addFlash('warning', 'Aucune sélection', 'Veuillez sélectionner une demande.');
+            $this->addFlash('warning', 'Aucune sélection. Veuillez sélectionner une demande.');
             return $this->redirectToRoute('collab_request_list');
         }
         
-        if ($this->isCsrfTokenValid('approve_' . $id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('approve_' . $id, $token)) {
             try {
                 $collabRequest->setStatus('APPROVED');
                 $repo->save($collabRequest, true);
@@ -89,11 +96,15 @@ class CollabRequestListController extends AbstractController
     {
         $collabRequest = $repo->find($id);
         if ($collabRequest === null) {
-            $this->addFlash('warning', 'Aucune sélection', 'Veuillez sélectionner une demande.');
+            $this->addFlash('warning', 'Aucune sélection. Veuillez sélectionner une demande.');
             return $this->redirectToRoute('collab_request_list');
         }
         
-        if ($this->isCsrfTokenValid('reject_' . $id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('reject_' . $id, $token)) {
             try {
                 $collabRequest->setStatus('REJECTED');
                 $repo->save($collabRequest, true);
@@ -111,11 +122,15 @@ class CollabRequestListController extends AbstractController
     {
         $collabRequest = $repo->find($id);
         if ($collabRequest === null) {
-            $this->addFlash('warning', 'Aucune sélection', 'Veuillez sélectionner une demande à supprimer.');
+            $this->addFlash('warning', 'Aucune sélection. Veuillez sélectionner une demande à supprimer.');
             return $this->redirectToRoute('collab_request_list');
         }
         
-        if ($this->isCsrfTokenValid('delete_' . $id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('delete_' . $id, $token)) {
             try {
                 $repo->remove($collabRequest, true);
                 $this->addFlash('success', 'Demande supprimée avec succès !');
@@ -127,15 +142,22 @@ class CollabRequestListController extends AbstractController
         return $this->redirectToRoute('collab_request_list');
     }
     
+    /**
+     * @return list<CollabRequest>
+     */
     private function filterRequests(CollabRequestRepository $repo, string $keyword, string $status): array
     {
+        /** @var list<CollabRequest> $allRequests */
         $allRequests = $repo->findAll();
         $filteredRequests = [];
         
         foreach ($allRequests as $req) {
-            $matchesKeyword = empty($keyword) || 
-                (stripos($req->getTitle(), $keyword) !== false) ||
-                (stripos($req->getDescription(), $keyword) !== false);
+            $title = (string) $req->getTitle();
+            $description = (string) $req->getDescription();
+
+            $matchesKeyword = $keyword === '' || 
+                (stripos($title, $keyword) !== false) ||
+                (stripos($description, $keyword) !== false);
             
             $matchesStatus = $status === 'Tous' || $req->getStatus() === $status;
             

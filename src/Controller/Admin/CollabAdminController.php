@@ -27,8 +27,11 @@ final class CollabAdminController extends AbstractController
     public function requests(Request $request, CollabRequestRepository $repo): Response
     {
         $page      = max(1, (int) $request->query->get('page', 1));
-        $status    = $request->query->get('status', '');
-        $paginator = $repo->paginateAll($page, 15, $status ?: null);
+        $status    = $request->query->get('status');
+        if (!is_string($status) || $status === '') {
+            $status = null;
+        }
+        $paginator = $repo->paginateAll($page, 15, $status);
         $total     = count($paginator);
         $lastPage  = (int) ceil($total / 15);
 
@@ -75,12 +78,19 @@ final class CollabAdminController extends AbstractController
         CollabRequestService $service,
     ): Response {
         $collabRequest = $repo->find($id);
-        if ($collabRequest === null) {
+        if (!$collabRequest instanceof CollabRequest) {
             throw $this->createNotFoundException('Demande introuvable.');
         }
 
         $newStatus = $request->request->get('status', '');
-        if ($this->isCsrfTokenValid('req_status_'.$id, $request->request->get('_token'))) {
+        if (!is_string($newStatus)) {
+            $newStatus = '';
+        }
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('req_status_'.$id, $token)) {
             try {
                 $service->changeStatus($collabRequest, $newStatus);
                 $this->addFlash('success', 'Statut de la demande mis à jour.');
@@ -102,11 +112,15 @@ final class CollabAdminController extends AbstractController
         CollabRequestService $service,
     ): Response {
         $collabRequest = $repo->find($id);
-        if ($collabRequest === null) {
+        if (!$collabRequest instanceof CollabRequest) {
             throw $this->createNotFoundException('Demande introuvable.');
         }
 
-        if ($this->isCsrfTokenValid('admin_delete_req_'.$id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('admin_delete_req_'.$id, $token)) {
             $service->delete($collabRequest);
             $this->addFlash('success', 'Demande supprimée.');
         }
@@ -120,8 +134,11 @@ final class CollabAdminController extends AbstractController
     public function applications(Request $request, CollabApplicationRepository $repo): Response
     {
         $page      = max(1, (int) $request->query->get('page', 1));
-        $status    = $request->query->get('status', '');
-        $paginator = $repo->paginateAll($page, 15, $status ?: null);
+        $status    = $request->query->get('status');
+        if (!is_string($status) || $status === '') {
+            $status = null;
+        }
+        $paginator = $repo->paginateAll($page, 15, $status);
         $total     = count($paginator);
         $lastPage  = (int) ceil($total / 15);
 
@@ -145,16 +162,23 @@ final class CollabAdminController extends AbstractController
         CollabApplicationService $service,
     ): Response {
         $application = $repo->find($id);
-        if ($application === null) {
+        if (!$application instanceof CollabApplication) {
             throw $this->createNotFoundException('Candidature introuvable.');
         }
 
         $newStatus = $request->request->get('status', '');
+        if (!is_string($newStatus)) {
+            $newStatus = '';
+        }
 
         // Safe redirect: only accept an integer request ID to redirect back to its detail page.
         $redirectRequestId = (int) $request->request->get('redirect_request_id', 0);
 
-        if ($this->isCsrfTokenValid('app_status_'.$id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('app_status_'.$id, $token)) {
             try {
                 $service->updateStatus($application, $newStatus);
                 $this->addFlash('success', 'Statut de la candidature mis à jour.');
@@ -180,11 +204,15 @@ final class CollabAdminController extends AbstractController
         CollabApplicationService $service,
     ): Response {
         $application = $repo->find($id);
-        if ($application === null) {
+        if (!$application instanceof CollabApplication) {
             throw $this->createNotFoundException('Candidature introuvable.');
         }
 
-        if ($this->isCsrfTokenValid('admin_delete_app_'.$id, $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        if (!is_string($token)) {
+            $token = null;
+        }
+        if ($this->isCsrfTokenValid('admin_delete_app_'.$id, $token)) {
             $service->delete($application);
             $this->addFlash('success', 'Candidature supprimée.');
         }

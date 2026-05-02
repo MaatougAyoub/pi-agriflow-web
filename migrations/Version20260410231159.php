@@ -19,6 +19,11 @@ final class Version20260410231159 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $schemaManager = $this->connection->createSchemaManager();
+        if ($schemaManager->tablesExist(['collab_applications'])) {
+            return;
+        }
+
         // Drop existing table if it exists to recreate with correct constraints
         if ($schema->hasTable('collab_applications')) {
             $schema->dropTable('collab_applications');

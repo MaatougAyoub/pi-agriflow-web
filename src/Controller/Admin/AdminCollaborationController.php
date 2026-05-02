@@ -22,7 +22,8 @@ class AdminCollaborationController extends AbstractController
     {
         $filterStatus = $request->query->get('status', '');
         $sortField = $request->query->get('sort', 'createdAt');
-        $sortDir = $request->query->get('dir', 'DESC');
+        $sortDirParam = $request->query->get('dir', 'DESC');
+        $sortDir = is_string($sortDirParam) ? $sortDirParam : 'DESC';
         $search = $request->query->get('q', '');
 
         // Valider le tri
@@ -83,7 +84,10 @@ class AdminCollaborationController extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
-        if ($this->isCsrfTokenValid('admin_status' . $collabRequest->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+        $token = is_string($token) ? $token : null;
+
+        if ($this->isCsrfTokenValid('admin_status' . $collabRequest->getId(), $token)) {
             if ($action === 'approve') {
                 $collabRequest->setStatus('APPROVED');
                 $this->addFlash('success', 'Demande approuvée avec succès.');

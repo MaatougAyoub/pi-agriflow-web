@@ -19,6 +19,11 @@ final class Version20260410230742 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $schemaManager = $this->connection->createSchemaManager();
+        if ($schemaManager->tablesExist(['collab_requests'])) {
+            return;
+        }
+
         // Create collab_requests table
         $table = $schema->createTable('collab_requests');
         $table->addColumn('id', 'integer', ['autoincrement' => true]);

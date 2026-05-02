@@ -59,24 +59,48 @@ final class Version20260405000001 extends AbstractMigration
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci`');
 
-        $this->addSql('ALTER TABLE collab_requests
-            ADD CONSTRAINT FK_collab_req_requester
-            FOREIGN KEY (requester_id) REFERENCES utilisateurs (id) ON DELETE CASCADE');
+        // Keep migration compatible with databases that may already contain the tables
+        $schemaManager = $this->connection->createSchemaManager();
 
-        $this->addSql('ALTER TABLE collab_applications
+        $collabApplicationsExists = (int) $this->connection->fetchOne(
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'collab_applications'"
+        ) > 0;
+
+        $collabRequestsExists = (int) $this->connection->fetchOne(
+            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'collab_requests'"
+        ) > 0;
+
+        if (!$collabApplicationsExists || !$collabRequestsExists) {
+            // If either table is not present yet, just add the FK (fresh DB case)
+            $this->addSql('ALTER TABLE collab_applications
             ADD CONSTRAINT FK_collab_app_request
             FOREIGN KEY (request_id) REFERENCES collab_requests (id) ON DELETE CASCADE');
 
-        $this->addSql('ALTER TABLE collab_applications
-            ADD CONSTRAINT FK_collab_app_candidate
-            FOREIGN KEY (candidate_id) REFERENCES utilisateurs (id) ON DELETE CASCADE');
+            return;
+        }
+
+        $hasFk = false;
+        foreach ($schemaManager->listTableForeignKeys('collab_applications') as $foreignKey) {
+            if (['request_id'] === $foreignKey->getLocalColumns()) {
+                $hasFk = true;
+                break;
+            }
+        }
+
+        $orphanCount = (int) $this->connection->fetchOne(
+            'SELECT COUNT(*) FROM collab_applications a LEFT JOIN collab_requests r ON r.id = a.request_id WHERE r.id IS NULL'
+        );
+
+        if (!$hasFk && 0 === $orphanCount) {
+            $this->addSql('ALTER TABLE collab_applications
+            ADD CONSTRAINT FK_collab_app_request
+            FOREIGN KEY (request_id) REFERENCES collab_requests (id) ON DELETE CASCADE');
+        }
     }
 
     public function down(Schema $schema): void
     {
         $this->addSql('ALTER TABLE collab_applications DROP FOREIGN KEY FK_collab_app_request');
-        $this->addSql('ALTER TABLE collab_applications DROP FOREIGN KEY FK_collab_app_candidate');
-        $this->addSql('ALTER TABLE collab_requests DROP FOREIGN KEY FK_collab_req_requester');
         $this->addSql('DROP TABLE collab_applications');
         $this->addSql('DROP TABLE collab_requests');
     }

@@ -40,7 +40,12 @@ final class ReservationController extends AbstractController
         $user = $this->getUser();
 
         // security: route hedhi ma tnajjemch tet3ada ken b compte agriculteur s7i7
-        if (!$user instanceof Utilisateur || null === $user->getId()) {
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connexion agriculteur requise.');
+        }
+
+        $userId = $user->getId();
+        if ($userId === null) {
             throw $this->createAccessDeniedException('Connexion agriculteur requise.');
         }
 
@@ -57,7 +62,7 @@ final class ReservationController extends AbstractController
         $reservation = (new Reservation())
             ->setAnnonce($annonce)
             ->setStatut(ReservationStatut::EN_ATTENTE)
-            ->setClientId($user->getId());
+            ->setClientId($userId);
 
         if (!$annonce->isLocation()) {
             $today = new \DateTimeImmutable('today');
@@ -105,7 +110,8 @@ final class ReservationController extends AbstractController
 
         // validation: ken fama erreur nrendrou nafs page b status 422 bech feedback yban
         $this->addFlash('danger', 'Le formulaire de reservation contient des erreurs.');
-        $similarAnnonces = $annonceRepository->findSimilarPublic($annonce, 4);
+        /** @var list<Annonce> $similarAnnonces */
+        $similarAnnonces = array_values($annonceRepository->findSimilarPublic($annonce, 4));
 
         return $this->render('marketplace/show.html.twig', [
             'annonce' => $annonce,
@@ -136,14 +142,19 @@ final class ReservationController extends AbstractController
         $user = $this->getUser();
 
         // security: mes reservations marboutin b agriculteur connecte bark
-        if (!$user instanceof Utilisateur || null === $user->getId()) {
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Connexion agriculteur requise.');
+        }
+
+        $userId = $user->getId();
+        if ($userId === null) {
             throw $this->createAccessDeniedException('Connexion agriculteur requise.');
         }
 
         // reservation: hedhi liste demandes eli user ba3athhom comme client
         return $this->render('reservation/my_reservations.html.twig', [
             'reservations' => $paginator->paginate(
-                $reservationRepository->createByClientIdForMarketplaceQueryBuilder($user->getId()),
+                $reservationRepository->createByClientIdForMarketplaceQueryBuilder($userId),
                 $request->query->getInt('page', 1),
                 8
             ),
@@ -158,7 +169,12 @@ final class ReservationController extends AbstractController
     ): Response {
         $user = $this->getUser();
 
-        if (!$user instanceof Utilisateur || null === $user->getId() || $reservation->getClientId() !== $user->getId()) {
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a ce devis.');
+        }
+
+        $userId = $user->getId();
+        if ($userId === null || $reservation->getClientId() !== $userId) {
             throw $this->createAccessDeniedException('Vous ne pouvez pas acceder a ce devis.');
         }
 

@@ -20,7 +20,7 @@ class Reclamation
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'reclamations')]
-    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
     #[ORM\Column(length: 255)]

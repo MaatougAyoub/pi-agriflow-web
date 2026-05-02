@@ -186,11 +186,11 @@
       <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/service-contracts" />
       <path value="$PROJECT_DIR$/irrigation6/vendor/symfony/var-exporter" />
       <path value="$PROJECT_DIR$/irrigation6/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/phpstan/phpstan" />
       <path value="$PROJECT_DIR$/vendor/knplabs/knp-snappy-bundle" />
       <path value="$PROJECT_DIR$/vendor/knplabs/knp-snappy" />
       <path value="$PROJECT_DIR$/vendor/ahmed-bhs/doctrine-doctor" />
       <path value="$PROJECT_DIR$/vendor/phpmyadmin/sql-parser" />
-      <path value="$PROJECT_DIR$/vendor/phpstan/phpstan" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1">

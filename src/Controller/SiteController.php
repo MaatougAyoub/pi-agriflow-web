@@ -95,12 +95,16 @@ final class SiteController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function adminUsers(Request $request, UtilisateurRepository $utilisateurRepository, PaginatorInterface $paginator): Response
     {
+        $perPage = 10;
+
         $users = $paginator->paginate(
             $utilisateurRepository
                 ->createQueryBuilder('u')
-                ->orderBy('u.id', 'DESC'),
+                ->orderBy('u.id', 'DESC')
+                ->setMaxResults($perPage),
             $request->query->getInt('page', 1),
-            10
+            $perPage,
+            ['distinct' => false]
         );
 
         return $this->render('site/listeUtilisateurs.html.twig', [
@@ -219,7 +223,10 @@ final class SiteController extends AbstractController
         }
 
         $normalized = str_replace('\\', '/', ltrim($path, '/\\'));
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir) || $projectDir === '') {
+            return null;
+        }
         $candidate = $projectDir . '/public/' . $normalized;
 
         if (is_file($candidate)) {

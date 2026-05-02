@@ -247,7 +247,7 @@ class AgriculteurController extends AbstractController
             throw $this->createNotFoundException('Plan introuvable.');
         }
 
-        $jours    = $jourRepo->findBy(['plan_id' => $id]);
+        $jours    = $jourRepo->findBy(['plan' => $plan]);
         $jourData = [];
         foreach ($jours as $jour) {
             $jourData[$jour->getJour()] = $jour;
