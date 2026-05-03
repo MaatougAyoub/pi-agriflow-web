@@ -26,7 +26,7 @@ services:
     # add more service definitions when explicit configuration is needed
     App\Service\ProduitPhytosanitaireAIService:
         arguments:
-            $groqApiKey: '%env(GROQ_API_KEY)%'
+            $groqApiKey: '%env(GROQ_API_KEY1)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always replace previous ones
