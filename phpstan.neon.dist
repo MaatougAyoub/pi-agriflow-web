@@ -32,6 +32,8 @@ parameters:
         - tests/Service/ReservationPdfServiceTest.php
         - tests/Service/ReservationPricingServiceTest.php
         - tests/Service/SellerMarketplaceServiceTest.php
+        - tests/Entity/AnnonceEntityTest.php
+        - tests/Entity/ReservationEntityTest.php
         - tests/Command/MarketplaceGeocodeAnnoncesCommandTest.php
     symfony:
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml

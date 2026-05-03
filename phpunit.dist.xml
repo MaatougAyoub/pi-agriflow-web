@@ -29,6 +29,8 @@
             <file>tests/Service/ReservationPdfServiceTest.php</file>
             <file>tests/Service/ReservationPricingServiceTest.php</file>
             <file>tests/Service/SellerMarketplaceServiceTest.php</file>
+            <file>tests/Entity/AnnonceEntityTest.php</file>
+            <file>tests/Entity/ReservationEntityTest.php</file>
             <directory>tests/Command</directory>
         </testsuite>
     </testsuites>
