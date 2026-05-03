@@ -556,6 +556,10 @@ final class CultureController extends AbstractController
             }
 
             if ($form->isValid()) {
+                if ($selectedParcelle instanceof Parcelle) {
+                    $culture->setParcelle($selectedParcelle);
+                }
+
                 $culture
                     ->setProprietaireId($agriculteurId)
                     ->setProprietaire($entityManager->getReference(Utilisateur::class, $agriculteurId))

@@ -170,7 +170,7 @@ class Parcelle
     public function initializeDateCreation(): void
     {
         if (null === $this->date_creation) {
-            $this->date_creation = new \DateTimeImmutable();
+            $this->date_creation = new \DateTime();
         }
     }
 }

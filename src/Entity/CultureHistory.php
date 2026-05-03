@@ -146,7 +146,7 @@ class CultureHistory
     public function initializePerformedAt(): void
     {
         if (!isset($this->performedAt)) {
-            $this->performedAt = new \DateTimeImmutable();
+            $this->performedAt = new \DateTime();
         }
     }
 }

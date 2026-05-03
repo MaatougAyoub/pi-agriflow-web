@@ -257,6 +257,10 @@ class Culture
 
     public function setParcelleId(int $parcelle_id): static
     {
+        if (null !== $this->parcelle_id && $this->parcelle_id->getId() === $parcelle_id) {
+            return $this;
+        }
+
         $parcelle = new Parcelle();
         $parcelle->setId($parcelle_id);
         $this->parcelle_id = $parcelle;
@@ -466,7 +470,7 @@ class Culture
     public function initializeDateCreation(): void
     {
         if (null === $this->date_creation) {
-            $this->date_creation = new \DateTimeImmutable();
+            $this->date_creation = new \DateTime();
         }
     }
 }

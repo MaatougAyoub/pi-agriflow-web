@@ -16,7 +16,7 @@ class PlansIrrigation
     #[ORM\Column(type: 'integer')]
     private ?int $plan_id = null;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
+    #[ORM\Column(name: 'culture_id', type: 'integer', nullable: true)]
     private ?int $id_culture = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -41,7 +41,7 @@ class PlansIrrigation
     private ?string $donnees_meteo_json = null;
 
     #[ORM\ManyToOne(targetEntity: Culture::class)]
-    #[ORM\JoinColumn(name: "id_culture", referencedColumnName: "id")]
+    #[ORM\JoinColumn(name: "culture_id", referencedColumnName: "id")]
     private ?Culture $culture = null;
 
     // ✅ CORRECTION 1 : types génériques ajoutés <int, PlansIrrigationJour>

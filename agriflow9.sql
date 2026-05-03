@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 02, 2026 at 01:55 PM
+-- Generation Time: May 03, 2026 at 10:05 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -29,30 +29,20 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `annonces` (
   `id` int(11) NOT NULL,
-  `titre` varchar(255) NOT NULL,
-  `description` text DEFAULT NULL,
-  `type` enum('LOCATION','VENTE') NOT NULL,
-  `statut` enum('DISPONIBLE','RESERVEE','LOUEE','VENDUE','EXPIREE') DEFAULT 'DISPONIBLE',
+  `titre` varchar(150) NOT NULL,
+  `description` longtext NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `statut` varchar(20) NOT NULL,
   `prix` decimal(10,2) NOT NULL,
-  `unite_prix` varchar(20) DEFAULT 'jour',
-  `categorie` varchar(100) DEFAULT NULL,
-  `marque` varchar(100) DEFAULT NULL,
-  `modele` varchar(100) DEFAULT NULL,
-  `annee_fabrication` int(11) DEFAULT NULL,
-  `localisation` varchar(255) DEFAULT NULL,
-  `latitude` decimal(10,8) DEFAULT NULL,
-  `longitude` decimal(11,8) DEFAULT NULL,
+  `unite_prix` varchar(20) NOT NULL,
+  `categorie` varchar(120) NOT NULL,
+  `localisation` varchar(120) NOT NULL,
+  `latitude` double DEFAULT NULL,
+  `longitude` double DEFAULT NULL,
   `proprietaire_id` int(11) NOT NULL,
-  `date_debut_disponibilite` date DEFAULT NULL,
-  `date_fin_disponibilite` date DEFAULT NULL,
-  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  `date_modification` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `avec_operateur` tinyint(1) DEFAULT 0,
-  `assurance_incluse` tinyint(1) DEFAULT 0,
-  `caution` decimal(10,2) DEFAULT 0.00,
-  `conditions_location` text DEFAULT NULL,
-  `quantite_disponible` int(11) DEFAULT 0,
-  `unite_quantite` varchar(20) DEFAULT 'kg',
+  `date_creation` datetime NOT NULL,
+  `date_modification` datetime NOT NULL,
+  `quantite_disponible` int(11) NOT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   `localisation_normalisee` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -61,24 +51,24 @@ CREATE TABLE `annonces` (
 -- Dumping data for table `annonces`
 --
 
-INSERT INTO `annonces` (`id`, `titre`, `description`, `type`, `statut`, `prix`, `unite_prix`, `categorie`, `marque`, `modele`, `annee_fabrication`, `localisation`, `latitude`, `longitude`, `proprietaire_id`, `date_debut_disponibilite`, `date_fin_disponibilite`, `date_creation`, `date_modification`, `avec_operateur`, `assurance_incluse`, `caution`, `conditions_location`, `quantite_disponible`, `unite_quantite`, `image_url`, `localisation_normalisee`) VALUES
-(19, 'Tracteur John Deere 6120M', 'Tracteur puissant 120 CV, parfait pour les grandes exploitations. Entretien regulier, pneus neufs. Disponible avec ou sans operateur.', 'LOCATION', 'DISPONIBLE', 250.00, 'jour', 'Tracteur', NULL, NULL, NULL, 'Sousse', NULL, NULL, 39, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-03-02 08:51:35', 1, 0, 500.00, NULL, 0, 'piece', NULL, NULL),
-(20, 'Engrais NPK 15-15-15 Premium', 'Engrais equilibre haute qualite pour toutes cultures. Sacs de 50kg, livraison possible sur Sousse et environs.', 'VENTE', 'DISPONIBLE', 45.00, 'sac', 'Engrais', NULL, NULL, NULL, 'Sousse', NULL, NULL, 39, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-02-23 12:10:34', 0, 0, 0.00, NULL, 100, 'sac', NULL, NULL),
-(21, 'Systeme Irrigation Goutte a Goutte', 'Kit complet irrigation goutte a goutte pour 1 hectare. Tuyaux, goutteurs, filtre et programmateur inclus.', 'VENTE', 'DISPONIBLE', 1200.00, 'unite', 'Irrigation', NULL, NULL, NULL, 'Sousse', NULL, NULL, 39, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-02-23 12:10:34', 0, 0, 0.00, NULL, 5, 'unite', NULL, NULL),
-(22, 'Moissonneuse-Batteuse Claas Lexion', 'Moissonneuse-batteuse professionnelle, ideale pour ble et orge. Capacite tremie 9000L.', 'LOCATION', 'DISPONIBLE', 800.00, 'jour', 'Moissonneuse', NULL, NULL, NULL, 'Tunis', NULL, NULL, 70, '2026-03-01', '2026-09-30', '2026-02-23 12:10:34', '2026-03-02 08:51:51', 1, 0, 1000.00, NULL, 2, 'piece', NULL, NULL),
-(24, 'Pulverisateur Agricole 600L', 'Pulverisateur traine 600 litres avec rampe 12m. Parfait pour traitement phytosanitaire.', 'LOCATION', 'DISPONIBLE', 120.00, 'jour', 'Outil', NULL, NULL, NULL, 'Tunis', NULL, NULL, 70, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-03-02 08:52:17', 0, 0, 200.00, NULL, 1, 'piece', NULL, NULL),
-(25, 'Olives Chemlali Bio - Recolte 2025', 'Olives fraiches variete Chemlali, agriculture biologique. Ideales pour huile ou conserve.', 'VENTE', 'DISPONIBLE', 8.00, 'kg', 'Fruits', NULL, NULL, NULL, 'Sfax', NULL, NULL, 70, '2026-01-01', '2026-03-31', '2026-02-23 12:10:34', '2026-03-02 08:52:30', 0, 0, 0.00, NULL, 500, 'kg', NULL, NULL),
-(26, 'Charrue Reversible 3 Socs', 'Charrue reversible 3 socs pour labour profond. Compatible tracteurs 80-120 CV.', 'LOCATION', 'DISPONIBLE', 80.00, 'jour', 'Outil', NULL, NULL, NULL, 'Sfax', NULL, NULL, 70, '2026-01-01', '2026-12-31', '2026-02-23 12:10:34', '2026-03-02 08:52:46', 0, 0, 100.00, NULL, 1, 'piece', NULL, NULL),
-(27, 'Dattes Deglet Nour Premium', 'Dattes Deglet Nour premiere qualite, recolte manuelle. Calibre AAA, caisses de 5kg.', 'VENTE', 'DISPONIBLE', 25.00, 'kg', 'Fruits', NULL, NULL, NULL, 'Tozeur', NULL, NULL, 70, '2026-01-01', '2026-06-30', '2026-02-23 12:10:34', '2026-03-02 08:53:04', 0, 0, 0.00, NULL, 300, 'kg', NULL, NULL),
-(28, 'Trakteur', 'Titre de l\'annonce : Trakteur de qualité pour les agriculteurs tunisiens\n\nCatégorie : Trakteur\n\nDescription :\n\nVous cherchez un trakteur fiable et performant pour votre exploitation agricole ? Nous sommes ravis de vous présenter notre trakteur de qualité, conçu pour répondre aux besoins spécifiques des agriculteurs tunisiens.\n\nCe trakteur robuste et polyvalent est équipé de moteur puissant, permettant une efficacité maximale dans les travaux de labour, de moissonnage, de transport et d\'autres opérations agricoles. Son système de transmission et de direction est conçu pour garantir une stabilité et une facilité d\'utilisation, même en conditions difficiles.\n\nLes caractéristiques clés de notre trakteur :\n\n- Puissance motorisée : [puissance du moteur]\n- Capacité de déplacement : [capacité de déplacement]\n- Système de transmission : [système de transmission]\n- Système de direction : [système de direction]\n- Capacité de charge : [capacité de charge]\n\nNotre trakteur est équipé de toutes les fonctionnalités essentielles pour un rendement optimal, y compris :\n\n- Un système de freinage performant pour une sécurité maximale\n- Un système de ventilation pour une efficacité accrue\n- Un système de lubrification automatique pour une durée de vie prolongée\n\nEn choisissant notre trakteur, vous bénéficierez d\'une expérience agricole plus efficace, plus rentable et plus durable. N\'hésitez pas à nous contacter pour plus d\'informations ou pour prendre rendez-vous pour une visite.\n\nPrix : [prix du trakteur]\n\nEmplacement : [emplacement du trakteur]\n\nContact : [informations de contact]', 'LOCATION', 'DISPONIBLE', 450.00, 'jour', 'trakteur', NULL, NULL, 0, 'Tunis', NULL, NULL, 78, NULL, NULL, '2026-03-01 22:40:43', '2026-03-01 22:49:54', 0, 0, 0.00, NULL, 0, 'kg', NULL, NULL),
-(29, 'Tracteur', 'Titre de l\'annonce : Tracteur agricole de haute qualité\n\nCatégorie : Matériel agricole\n\nDescription détaillée :\n\n**Tracteur agricole de haute qualité**\n\nNous proposons un tracteur agricole robuste et performant pour répondre aux besoins des agriculteurs tunisiens. Ce tracteur est équipé de caractéristiques avancées pour améliorer la productivité et la rentabilité de vos opérations agricoles.\n\n**Caractéristiques clés :**\n\n- Puissance forte et fiable pour une utilisation intensive\n- Transmission hydraulique pour un fonctionnement précis et efficace\n- Système de sécurité avancé pour garantir votre sécurité et celle de vos équipages\n- Capacité d\'intégration de diverses machines agricoles pour une utilisation flexible\n- Conception robuste pour résister aux conditions climatiques difficiles\n\n**Avantages :**\n\n- Meilleure productivité et rentabilité\n- Moins de temps et d\'énergie consommés\n- Possibilité d\'utiliser diverses machines agricoles\n- Conception robuste pour une longue durée de vie\n\n**Prix compétitif**\n\nNous proposons ce tracteur agricole de haute qualité à un prix compétitif. N\'hésitez pas à nous contacter pour en savoir plus sur nos options de financement et de maintenance.\n\n**Contactez-nous**\n\nPour plus d\'informations ou pour obtenir une démonstration du tracteur, n\'hésitez pas à nous contacter à AgriFlow. Nous sommes à votre disposition pour répondre à vos questions et vous aider à trouver la solution qui convient le mieux à vos besoins.', 'LOCATION', 'DISPONIBLE', 150.00, 'jour', 'Tracteurs', NULL, NULL, 0, 'Tunis', NULL, NULL, 70, NULL, NULL, '2026-03-02 09:18:29', '2026-03-02 09:23:36', 0, 0, 0.00, NULL, 0, 'pièce', NULL, NULL),
-(31, 'Drone agricole', 'Drone agricole', 'LOCATION', 'DISPONIBLE', 1200.00, 'jour', 'Drones', NULL, NULL, 0, 'TUNISIE', NULL, NULL, 70, NULL, NULL, '2026-03-02 09:32:05', '2026-03-02 09:32:05', 0, 0, 0.00, NULL, 2, 'pièce', NULL, NULL),
-(32, 'Trax agriculteur', 'trax agriculteur', 'LOCATION', 'DISPONIBLE', 150.00, 'jour', 'trax', NULL, NULL, 0, 'kelibia', NULL, NULL, 39, NULL, NULL, '2026-03-02 09:38:58', '2026-03-02 09:40:49', 0, 0, 0.00, NULL, 0, 'pièce', NULL, NULL),
-(33, 'tractour', 'aaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbb', 'VENTE', 'VENDUE', 2000.00, 'jour', 'Matériel', NULL, NULL, NULL, 'nabeul', NULL, NULL, 90, NULL, NULL, '2026-04-05 22:29:53', '2026-04-05 22:32:26', 0, 0, 0.00, NULL, 0, 'kg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSW6fVE3nNZPVwM6DAa8upauWxYVUodv1JPhw&s', NULL),
-(34, 'Location de drone professionnel1', 'Drone équipé de caméra haute définition pour des prises de vues professionnelles. Utilisé pour des tournages aériens, inspection de bâtiments, etc.', 'LOCATION', 'LOUEE', 100.00, 'jour', 'Équipement photo et vidéo', NULL, NULL, NULL, 'NABEUL', 36.45128970, 10.73559150, 78, NULL, NULL, '2026-04-15 23:52:28', '2026-04-16 00:10:36', 0, 0, 0.00, NULL, 0, 'kg', 'https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/54A5/production/_87996612_87996608.jpg', 'Nabeul, Al Hadaek, Délégation Nabeul, Gouvernorat Nabeul, 8000, Tunisie'),
-(35, 'Location d\'une caméra photo professionnelle', 'Caméra photo professionnelle de haute qualité pour location. Équipement complet avec objectif et accessoires. Idéal pour les événements, les shootings et les reportages.', 'LOCATION', 'DISPONIBLE', 200.00, 'jour', 'Équipement photo et vidéo', NULL, NULL, NULL, 'TUNIS, TUNISIE', 33.84394080, 9.40013800, 78, NULL, NULL, '2026-04-16 00:03:00', '2026-04-16 00:03:00', 0, 0, 0.00, NULL, 10, 'kg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrlbiz5LcwN7UQAfHkir3k9Z085kQ67mEecw&s', 'Tunisie'),
-(36, 'Motoculteur à louer', 'Motoculteur polyvalent pour travaux de jardinage et d\'entretien de terrain. Propulsé par un moteur puissant et fiable.', 'LOCATION', 'DISPONIBLE', 5000.00, 'jour', 'Machines agricoles', NULL, NULL, NULL, 'NABEUL', 36.45128970, 10.73559150, 78, NULL, NULL, '2026-04-18 22:41:10', '2026-04-18 22:51:46', 0, 0, 0.00, NULL, 1, 'kg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5E9rY1jO8Wek3mICrmHLjWI8FMpu3_NNjoA&s', 'Nabeul, Al Hadaek, Délégation Nabeul, Gouvernorat Nabeul, 8000, Tunisie'),
-(37, 'Machine agricole à louer', 'Machine agricole robuste et fiable, idéale pour les travaux extérieurs. Elle est équipée de tous les accessoires nécessaires pour une utilisation optimale.', 'LOCATION', 'DISPONIBLE', 200.00, 'jour', 'Machines agricoles', NULL, NULL, NULL, 'Sousse', 35.82882840, 10.64052540, 70, NULL, NULL, '2026-04-20 10:59:14', '2026-04-20 10:59:14', 0, 0, 0.00, NULL, 1, 'kg', 'https://i.ytimg.com/vi/nnIiiQ0M7F8/sddefault.jpg', 'Sousse, Délégation Sousse Medina, Gouvernorat Sousse, Tunisie');
+INSERT INTO `annonces` (`id`, `titre`, `description`, `type`, `statut`, `prix`, `unite_prix`, `categorie`, `localisation`, `latitude`, `longitude`, `proprietaire_id`, `date_creation`, `date_modification`, `quantite_disponible`, `image_url`, `localisation_normalisee`) VALUES
+(19, 'Tracteur John Deere 6120M', 'Tracteur puissant 120 CV, parfait pour les grandes exploitations. Entretien regulier, pneus neufs. Disponible avec ou sans operateur.', 'LOCATION', 'DISPONIBLE', 250.00, 'jour', 'Tracteur', 'Sousse', NULL, NULL, 39, '2026-02-23 12:10:34', '2026-03-02 08:51:35', 0, NULL, NULL),
+(20, 'Engrais NPK 15-15-15 Premium', 'Engrais equilibre haute qualite pour toutes cultures. Sacs de 50kg, livraison possible sur Sousse et environs.', 'VENTE', 'DISPONIBLE', 45.00, 'sac', 'Engrais', 'Sousse', NULL, NULL, 39, '2026-02-23 12:10:34', '2026-02-23 12:10:34', 100, NULL, NULL),
+(21, 'Systeme Irrigation Goutte a Goutte', 'Kit complet irrigation goutte a goutte pour 1 hectare. Tuyaux, goutteurs, filtre et programmateur inclus.', 'VENTE', 'DISPONIBLE', 1200.00, 'unite', 'Irrigation', 'Sousse', NULL, NULL, 39, '2026-02-23 12:10:34', '2026-02-23 12:10:34', 5, NULL, NULL),
+(22, 'Moissonneuse-Batteuse Claas Lexion', 'Moissonneuse-batteuse professionnelle, ideale pour ble et orge. Capacite tremie 9000L.', 'LOCATION', 'DISPONIBLE', 800.00, 'jour', 'Moissonneuse', 'Tunis', NULL, NULL, 70, '2026-02-23 12:10:34', '2026-03-02 08:51:51', 2, NULL, NULL),
+(24, 'Pulverisateur Agricole 600L', 'Pulverisateur traine 600 litres avec rampe 12m. Parfait pour traitement phytosanitaire.', 'LOCATION', 'DISPONIBLE', 120.00, 'jour', 'Outil', 'Tunis', NULL, NULL, 70, '2026-02-23 12:10:34', '2026-03-02 08:52:17', 1, NULL, NULL),
+(25, 'Olives Chemlali Bio - Recolte 2025', 'Olives fraiches variete Chemlali, agriculture biologique. Ideales pour huile ou conserve.', 'VENTE', 'DISPONIBLE', 8.00, 'kg', 'Fruits', 'Sfax', NULL, NULL, 70, '2026-02-23 12:10:34', '2026-03-02 08:52:30', 500, NULL, NULL),
+(26, 'Charrue Reversible 3 Socs', 'Charrue reversible 3 socs pour labour profond. Compatible tracteurs 80-120 CV.', 'LOCATION', 'DISPONIBLE', 80.00, 'jour', 'Outil', 'Sfax', NULL, NULL, 70, '2026-02-23 12:10:34', '2026-03-02 08:52:46', 1, NULL, NULL),
+(27, 'Dattes Deglet Nour Premium', 'Dattes Deglet Nour premiere qualite, recolte manuelle. Calibre AAA, caisses de 5kg.', 'VENTE', 'DISPONIBLE', 25.00, 'kg', 'Fruits', 'Tozeur', NULL, NULL, 70, '2026-02-23 12:10:34', '2026-03-02 08:53:04', 300, NULL, NULL),
+(28, 'Trakteur', 'Titre de l\'annonce : Trakteur de qualité pour les agriculteurs tunisiens\n\nCatégorie : Trakteur\n\nDescription :\n\nVous cherchez un trakteur fiable et performant pour votre exploitation agricole ? Nous sommes ravis de vous présenter notre trakteur de qualité, conçu pour répondre aux besoins spécifiques des agriculteurs tunisiens.\n\nCe trakteur robuste et polyvalent est équipé de moteur puissant, permettant une efficacité maximale dans les travaux de labour, de moissonnage, de transport et d\'autres opérations agricoles. Son système de transmission et de direction est conçu pour garantir une stabilité et une facilité d\'utilisation, même en conditions difficiles.\n\nLes caractéristiques clés de notre trakteur :\n\n- Puissance motorisée : [puissance du moteur]\n- Capacité de déplacement : [capacité de déplacement]\n- Système de transmission : [système de transmission]\n- Système de direction : [système de direction]\n- Capacité de charge : [capacité de charge]\n\nNotre trakteur est équipé de toutes les fonctionnalités essentielles pour un rendement optimal, y compris :\n\n- Un système de freinage performant pour une sécurité maximale\n- Un système de ventilation pour une efficacité accrue\n- Un système de lubrification automatique pour une durée de vie prolongée\n\nEn choisissant notre trakteur, vous bénéficierez d\'une expérience agricole plus efficace, plus rentable et plus durable. N\'hésitez pas à nous contacter pour plus d\'informations ou pour prendre rendez-vous pour une visite.\n\nPrix : [prix du trakteur]\n\nEmplacement : [emplacement du trakteur]\n\nContact : [informations de contact]', 'LOCATION', 'DISPONIBLE', 450.00, 'jour', 'trakteur', 'Tunis', NULL, NULL, 78, '2026-03-01 22:40:43', '2026-03-01 22:49:54', 0, NULL, NULL),
+(29, 'Tracteur', 'Titre de l\'annonce : Tracteur agricole de haute qualité\n\nCatégorie : Matériel agricole\n\nDescription détaillée :\n\n**Tracteur agricole de haute qualité**\n\nNous proposons un tracteur agricole robuste et performant pour répondre aux besoins des agriculteurs tunisiens. Ce tracteur est équipé de caractéristiques avancées pour améliorer la productivité et la rentabilité de vos opérations agricoles.\n\n**Caractéristiques clés :**\n\n- Puissance forte et fiable pour une utilisation intensive\n- Transmission hydraulique pour un fonctionnement précis et efficace\n- Système de sécurité avancé pour garantir votre sécurité et celle de vos équipages\n- Capacité d\'intégration de diverses machines agricoles pour une utilisation flexible\n- Conception robuste pour résister aux conditions climatiques difficiles\n\n**Avantages :**\n\n- Meilleure productivité et rentabilité\n- Moins de temps et d\'énergie consommés\n- Possibilité d\'utiliser diverses machines agricoles\n- Conception robuste pour une longue durée de vie\n\n**Prix compétitif**\n\nNous proposons ce tracteur agricole de haute qualité à un prix compétitif. N\'hésitez pas à nous contacter pour en savoir plus sur nos options de financement et de maintenance.\n\n**Contactez-nous**\n\nPour plus d\'informations ou pour obtenir une démonstration du tracteur, n\'hésitez pas à nous contacter à AgriFlow. Nous sommes à votre disposition pour répondre à vos questions et vous aider à trouver la solution qui convient le mieux à vos besoins.', 'LOCATION', 'DISPONIBLE', 150.00, 'jour', 'Tracteurs', 'Tunis', NULL, NULL, 70, '2026-03-02 09:18:29', '2026-03-02 09:23:36', 0, NULL, NULL),
+(31, 'Drone agricole', 'Drone agricole', 'LOCATION', 'DISPONIBLE', 1200.00, 'jour', 'Drones', 'TUNISIE', NULL, NULL, 70, '2026-03-02 09:32:05', '2026-03-02 09:32:05', 2, NULL, NULL),
+(32, 'Trax agriculteur', 'trax agriculteur', 'LOCATION', 'DISPONIBLE', 150.00, 'jour', 'trax', 'kelibia', NULL, NULL, 39, '2026-03-02 09:38:58', '2026-03-02 09:40:49', 0, NULL, NULL),
+(33, 'tractour', 'aaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbb', 'VENTE', 'VENDUE', 2000.00, 'jour', 'Matériel', 'nabeul', NULL, NULL, 90, '2026-04-05 23:29:53', '2026-04-05 23:32:26', 0, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSW6fVE3nNZPVwM6DAa8upauWxYVUodv1JPhw&s', NULL),
+(34, 'Location de drone professionnel1', 'Drone équipé de caméra haute définition pour des prises de vues professionnelles. Utilisé pour des tournages aériens, inspection de bâtiments, etc.', 'LOCATION', 'LOUEE', 100.00, 'jour', 'Équipement photo et vidéo', 'NABEUL', 36.4512897, 10.7355915, 78, '2026-04-16 00:52:28', '2026-04-16 01:10:36', 0, 'https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/54A5/production/_87996612_87996608.jpg', 'Nabeul, Al Hadaek, Délégation Nabeul, Gouvernorat Nabeul, 8000, Tunisie'),
+(35, 'Location d\'une caméra photo professionnelle', 'Caméra photo professionnelle de haute qualité pour location. Équipement complet avec objectif et accessoires. Idéal pour les événements, les shootings et les reportages.', 'LOCATION', 'DISPONIBLE', 200.00, 'jour', 'Équipement photo et vidéo', 'TUNIS, TUNISIE', 33.8439408, 9.400138, 78, '2026-04-16 01:03:00', '2026-04-16 01:03:00', 10, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrlbiz5LcwN7UQAfHkir3k9Z085kQ67mEecw&s', 'Tunisie'),
+(36, 'Motoculteur à louer', 'Motoculteur polyvalent pour travaux de jardinage et d\'entretien de terrain. Propulsé par un moteur puissant et fiable.', 'LOCATION', 'DISPONIBLE', 5000.00, 'jour', 'Machines agricoles', 'NABEUL', 36.4512897, 10.7355915, 78, '2026-04-18 23:41:10', '2026-04-18 23:51:46', 1, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5E9rY1jO8Wek3mICrmHLjWI8FMpu3_NNjoA&s', 'Nabeul, Al Hadaek, Délégation Nabeul, Gouvernorat Nabeul, 8000, Tunisie'),
+(37, 'Machine agricole à louer', 'Machine agricole robuste et fiable, idéale pour les travaux extérieurs. Elle est équipée de tous les accessoires nécessaires pour une utilisation optimale.', 'LOCATION', 'DISPONIBLE', 200.00, 'jour', 'Machines agricoles', 'Sousse', 35.8288284, 10.6405254, 70, '2026-04-20 11:59:14', '2026-04-20 11:59:14', 1, 'https://i.ytimg.com/vi/nnIiiQ0M7F8/sddefault.jpg', 'Sousse, Délégation Sousse Medina, Gouvernorat Sousse, Tunisie');
 
 -- --------------------------------------------------------
 
@@ -120,15 +110,15 @@ INSERT INTO `annonce_photos` (`id`, `annonce_id`, `url_photo`, `ordre`) VALUES
 --
 
 CREATE TABLE `collab_applications` (
-  `id` bigint(20) NOT NULL,
-  `request_id` bigint(20) NOT NULL,
-  `candidate_id` bigint(20) NOT NULL DEFAULT 1,
+  `id` int(11) NOT NULL,
+  `request_id` int(11) NOT NULL,
+  `candidate_id` int(11) NOT NULL,
   `full_name` varchar(255) NOT NULL,
   `phone` varchar(20) NOT NULL,
   `email` varchar(100) NOT NULL,
   `years_of_experience` int(11) NOT NULL DEFAULT 0,
-  `motivation` text NOT NULL,
-  `expected_salary` decimal(10,2) DEFAULT 0.00,
+  `motivation` longtext NOT NULL,
+  `expected_salary` decimal(10,2) NOT NULL DEFAULT 0.00,
   `status` varchar(50) NOT NULL DEFAULT 'PENDING',
   `applied_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -167,10 +157,10 @@ INSERT INTO `collab_applications` (`id`, `request_id`, `candidate_id`, `full_nam
 --
 
 CREATE TABLE `collab_requests` (
-  `id` bigint(20) NOT NULL,
+  `id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `location` varchar(100) NOT NULL,
+  `description` longtext NOT NULL,
+  `location` varchar(255) NOT NULL,
   `latitude` decimal(10,7) DEFAULT NULL,
   `longitude` decimal(10,7) DEFAULT NULL,
   `start_date` date NOT NULL,
@@ -178,7 +168,7 @@ CREATE TABLE `collab_requests` (
   `needed_people` int(11) NOT NULL DEFAULT 1,
   `salary` decimal(10,2) NOT NULL DEFAULT 0.00,
   `status` varchar(50) NOT NULL DEFAULT 'PENDING',
-  `requester_id` bigint(20) NOT NULL DEFAULT 1,
+  `requester_id` int(11) NOT NULL,
   `publisher` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -235,7 +225,7 @@ CREATE TABLE `cultures` (
   `date_recolte` date DEFAULT NULL,
   `recolte_estime` decimal(10,2) DEFAULT NULL,
   `date_creation` datetime DEFAULT current_timestamp(),
-  `id_acheteur` int(11) DEFAULT NULL,
+  `acheteur_id` int(11) DEFAULT NULL,
   `date_vente` date DEFAULT NULL,
   `date_publication` date DEFAULT NULL,
   `prix_vente` double DEFAULT NULL
@@ -245,7 +235,7 @@ CREATE TABLE `cultures` (
 -- Dumping data for table `cultures`
 --
 
-INSERT INTO `cultures` (`id`, `parcelle_id`, `proprietaire_id`, `nom`, `type_culture`, `superficie`, `etat`, `date_recolte`, `recolte_estime`, `date_creation`, `id_acheteur`, `date_vente`, `date_publication`, `prix_vente`) VALUES
+INSERT INTO `cultures` (`id`, `parcelle_id`, `proprietaire_id`, `nom`, `type_culture`, `superficie`, `etat`, `date_recolte`, `recolte_estime`, `date_creation`, `acheteur_id`, `date_vente`, `date_publication`, `prix_vente`) VALUES
 (12, 16, 103, 'tmatem', 'LEGUMES', 20.00, 'EN_COURS', '2026-04-25', 25.00, '2026-04-17 01:29:04', NULL, NULL, NULL, NULL),
 (15, 17, 63, 'batata', 'POMME_DE_TERRE', 50.00, 'EN_COURS', '2026-05-02', 125.00, '2026-04-17 22:56:42', NULL, NULL, NULL, NULL),
 (16, 17, 63, 'batata', 'POMME_DE_TERRE', 50.00, 'EN_COURS', '2026-05-02', 125.00, '2026-04-17 22:57:01', NULL, NULL, NULL, NULL),
@@ -303,7 +293,7 @@ INSERT INTO `culture_history` (`id`, `culture_id`, `utilisateur_id`, `action`, `
 
 CREATE TABLE `diagnosti` (
   `id_diagnostic` int(11) NOT NULL,
-  `id_agriculteur` int(11) NOT NULL,
+  `agriculteur_id` int(11) NOT NULL,
   `nom_culture` varchar(100) NOT NULL,
   `image_path` varchar(255) DEFAULT NULL,
   `description` text NOT NULL,
@@ -317,7 +307,7 @@ CREATE TABLE `diagnosti` (
 -- Dumping data for table `diagnosti`
 --
 
-INSERT INTO `diagnosti` (`id_diagnostic`, `id_agriculteur`, `nom_culture`, `image_path`, `description`, `reponse_expert`, `statut`, `date_envoi`, `date_reponse`) VALUES
+INSERT INTO `diagnosti` (`id_diagnostic`, `agriculteur_id`, `nom_culture`, `image_path`, `description`, `reponse_expert`, `statut`, `date_envoi`, `date_reponse`) VALUES
 (27, 76, 'Besbes', 'C:\\Users\\Crash\\Desktop\\fenouil.png', 'Objet : Réclamation concernant la qualité des plants de fenouil\n\nÀ l\'attention de l\'expert agricole,\n\nJe vous écris pour signaler un problème concernant mes plants de fenouil. Comme vous pouvez le voir sur la photo ci-jointe, les plants de fenouil présentent des feuilles jaunâtres et des tiges faibles.\n\nMalgré un arrosage régulier et une exposition suffisante à la lumière solaire, les plants ne semblent pas se développer normalement. Les feuilles sont également moins nombreuses et moins denses que celles que l\'on peut trouver sur des plants sains.\n\nJe crains que cela puisse être dû à une maladie ou à une carence nutritionnelle. Je vous serais reconnaissant si vous pouviez m\'aider à identifier la cause de ce problème et à trouver une solution pour y remédier.\n\nJe joins à ce message une photo des plants affectés. Je vous remercie d\'avance pour votre attention à cette affaire et je suis impatient de vous entendre.\n\nCordialement,\n[Votre nom]', '\n--- PRODUIT RECOMMANDÉ ---\nNom : Oidium-Fix\nDosage : 1.8 L / hectare\nFréquence : 2 fois par mois\nNote : Ne pas dépasser la dose recommandée. Bien nettoyer le pulvérisateur après usage.\n---------------------------\n', 'Valide', '2026-03-01 22:26:03', NULL),
 (34, 78, 'Fraise1', 'C:\\Users\\Crash\\Desktop\\fraise malade.jpg', 'Objet : Demande de réclamation agricole - Fruits endommagés\n\nCher expert agricole,\n\nJe vous écris pour signaler un problème observé sur une culture de fraises dans notre exploitation. Nous avons récemment remarqué que certaines de nos fraises présentaient des dommages importants, comme vous pouvez le voir sur la photo ci-jointe.\n\nLe problème observé est une attaque probable de pourriture, qui semble provenir de Botrytis Cinerea. En effet, on observe des tâches brunes sur les fruits, qui s\'accompagnent d\'un pourrissement rapide. \n\nNous avons déjà mis en place des mesures de prévention, comme la limitation de l\'irrigation, l\'amélioration de la ventilation, et l\'élimination des fruits et feuilles contaminés. Cependant, le problème persiste et nous avons besoin de votre expertise afin d\'identifier la cause exacte de ce problème et de trouver une solution efficace.\n\nPourriez-vous vous déplacer dans notre exploitation afin d\'évaluer la situation et de nous proposer des solutions adaptées ?\n\nJe vous remercie de votre attention à cette affaire et je me tiens à votre disposition pour tout renseignement complémentaire.\n\nCordialement,\n[Votre nom]', '\n--- PRODUIT RECOMMANDÉ ---\nNom : Scab-Control\nDosage : 2 L / hectare\nFréquence : 1 fois tous les 7 jours\nNote : Appliquer avant l’apparition des symptômes. Porter des équipements de protection. Éviter les jours de pluie.\n---------------------------\n', 'Valide', '2026-03-02 11:00:59', NULL),
 (36, 78, 'fa9ous', 'fa9ous-69e00cc5b4ff5.png', 'Objet : Réclamation pour courgettes non conformes\r\n\r\nMadame, Monsieur,\r\n\r\nJe vous écris pour signaler un problème concernant une livraison récente de courgettes. En inspectant la marchandise, j\'ai remarqué que certaines courgettes présentent des altérations, des déformations et des tâches. De plus, certaines d\'entres elles sont trop longues. \r\n\r\nJe joins à ce message une photo des courgettes concernées. \r\n\r\nJe vous remercie de votre attention à cette affaire.\r\n\r\nCordialement,\r\n[Votre nom]', '\n--- PRODUIT RECOMMANDÉ ---\nNom : Bio-Protect\nDosage : 4 L / hectare\nFréquence : 1 fois tous les 15 jours\nNote : Produit biologique sans danger pour l’environnement. Bien agiter avant utilisation. Stocker à l’abri de la chaleur.\n---------------------------\n\n\n\n--- PRODUIT RECOMMANDÉ ---\nNom : Bio-Protect\nDosage : 4 L / hectare\nFréquence : 1 fois tous les 15 jours\nNote : Produit biologique sans danger pour l’environnement. Bien agiter avant utilisation. Stocker à l’abri de la chaleur.\n---------------------------\n', 'traite', '2026-04-16 00:10:13', '2026-04-16 00:12:28'),
@@ -361,9 +351,23 @@ CREATE TABLE `doctrine_migration_versions` (
 
 INSERT INTO `doctrine_migration_versions` (`version`, `executed_at`, `execution_time`) VALUES
 ('DoctrineMigrations\\Version20260403201434', '2026-04-05 15:58:06', 68),
+('DoctrineMigrations\\Version20260405000001', '2026-05-02 14:09:50', 3),
 ('DoctrineMigrations\\Version20260405173500', '2026-04-05 22:31:12', 115),
 ('DoctrineMigrations\\Version20260409093000', '2026-04-09 15:51:24', 58),
-('DoctrineMigrations\\Version20260409113000', '2026-04-17 22:55:14', 109);
+('DoctrineMigrations\\Version20260409113000', '2026-04-17 22:55:14', 109),
+('DoctrineMigrations\\Version20260410092336', '2026-05-03 21:41:41', 60),
+('DoctrineMigrations\\Version20260410092505', '2026-05-03 21:41:41', 8),
+('DoctrineMigrations\\Version20260410132618', '2026-05-03 21:51:54', 126),
+('DoctrineMigrations\\Version20260410222129', '2026-05-03 21:56:43', 92),
+('DoctrineMigrations\\Version20260410230212', '2026-05-03 21:57:31', 19),
+('DoctrineMigrations\\Version20260410230742', '2026-05-03 21:57:31', 1),
+('DoctrineMigrations\\Version20260410231159', '2026-05-03 21:57:31', 1),
+('DoctrineMigrations\\Version20260501000000', '2026-05-03 21:57:31', 45),
+('DoctrineMigrations\\Version20260501001000', '2026-05-03 21:57:31', 38),
+('DoctrineMigrations\\Version20260501002000', '2026-05-03 21:57:31', 12),
+('DoctrineMigrations\\Version20260502115305', '2026-05-03 22:02:07', 88),
+('DoctrineMigrations\\Version20260502120108', '2026-05-03 22:02:07', 72),
+('DoctrineMigrations\\Version20260502120938', '2026-05-03 22:02:07', 86);
 
 -- --------------------------------------------------------
 
@@ -434,7 +438,7 @@ INSERT INTO `parcelle` (`id`, `agriculteur_id`, `nom`, `superficie`, `type_terre
 
 CREATE TABLE `plans_irrigation` (
   `plan_id` int(11) NOT NULL,
-  `id_culture` int(11) DEFAULT NULL,
+  `culture_id` int(11) DEFAULT NULL,
   `nom_culture` varchar(100) DEFAULT NULL,
   `date_demande` datetime DEFAULT current_timestamp(),
   `statut` varchar(50) DEFAULT 'en_attente',
@@ -448,7 +452,7 @@ CREATE TABLE `plans_irrigation` (
 -- Dumping data for table `plans_irrigation`
 --
 
-INSERT INTO `plans_irrigation` (`plan_id`, `id_culture`, `nom_culture`, `date_demande`, `statut`, `volume_eau_propose`, `temp_irrigation`, `temp`, `donnees_meteo_json`) VALUES
+INSERT INTO `plans_irrigation` (`plan_id`, `culture_id`, `nom_culture`, `date_demande`, `statut`, `volume_eau_propose`, `temp_irrigation`, `temp`, `donnees_meteo_json`) VALUES
 (4, 1, NULL, '2026-02-15 19:13:35', 'brouillon', 35, '00:00:00', '2026-02-15 19:13:35', NULL),
 (5, 3, NULL, '2026-02-15 19:13:48', 'brouillon', 50, '00:00:00', '2026-02-15 19:13:48', NULL),
 (7, 9, 'pomme de terre', '2026-02-15 22:33:20', 'soumis', 1303.07, NULL, NULL, NULL),
@@ -708,7 +712,9 @@ INSERT INTO `reclamations` (`id`, `utilisateur_id`, `categorie`, `titre`, `descr
 (29, 101, 'TECHNIQUE', 'technical problems', 'Titre de reclamation : Problèmes techniques\n\nDescription de la reclamation :\n\nJe me permets de vous signaler des problèmes techniques rencontrés lors de l\'utilisation de votre plateforme agricole. Je suis abonné depuis quelques mois et j\'ai remarqué que le système de gestion des données a commencé à présenter des erreurs répétitives. En effet, lors de la saisie de mes données de production, le système se bloque régulièrement et me demande de réinitialiser la session. De plus, je n\'ai pas la possibilité de consulter mes données de production précédentes, ce qui me rend difficile la prise de décision pour mes futures cultures.\n\nJe vous remercie de votre attention à ce problème et je vous serais reconnaissant de me fournir une solution pour résoudre ces problèmes techniques.', '2026-04-14 15:10:36', 'EN_ATTENTE', NULL),
 (30, 78, 'DELIVERY', 'Problème paiment', 'Objet : Problème de paiement sur ma commande n°XXXXX\n\nJe me permets de vous signaler un problème de paiement sur ma commande n°XXXXX datant du 10 mars 2024. J\'ai effectué une commande de 500 euros pour l\'achat de semences et d\'équipements agricoles. Cependant, malgré les paiements réguliers, je n\'ai pas reçu de confirmation de réception de ma commande et les produits n\'ont pas été livrés.\n\nJe vous demande de m\'indiquer la raison de ce retard et de me fournir une estimation de la date de livraison. Je serais également reconnaissant si vous pouviez me rembourser les frais de commande, soit 20 euros, étant donné que la commande n\'a pas été livrée.\n\nJe vous remercie de votre promptitude et de votre attention à ce problème. Je suis à votre disposition pour tout complément d\'information.\n\nCordialement,\n[Votre nom]', '2026-04-16 01:05:10', 'TRAITE', 'maatoug ayoub (ADMIN) : io'),
 (31, 78, 'DELIVERY', 'Retard', 'Objet : Retard dans la livraison de produits agricoles\n\nJe me permets de vous contacter pour exprimer ma déception concernant le retard subi dans la livraison de mes produits agricoles commandés sur votre plateforme. Le 10 février dernier, j\'ai passé commande pour un lot de semences de maïs et de fèves, avec une date de livraison prévue pour le 25 février. Malheureusement, après avoir vérifié mon compte, j\'ai constaté que la livraison n\'a pas été effectuée à la date prévue.\n\nJe suis préoccupé par ce retard, car cela affecte ma planification agricole et risque de compromettre la qualité de mes récoltes. Je vous demande de prendre les mesures nécessaires pour résoudre cette situation et me livrer les produits commandés dans les plus brefs délais. Je serais reconnaissant de recevoir une réponse et une explication quant aux causes de ce retard.\n\nJe vous remercie de votre attention à cette affaire et je reste à votre disposition pour tout complément d\'information.', '2026-04-19 13:33:04', 'TRAITE', 'maatoug ayoub (ADMIN) : je vais vérifier yesyesyes\nmaatoug ayoub (ADMIN) : oui'),
-(34, 106, 'PAIMENT', 'problème de paiment', 'Objet : Problème de paiement sur ma plateforme agricole\n\nJe me permets de vous signaler un problème de paiement sur ma plateforme agricole. Le 10 mars dernier, j\'ai effectué une commande de semences de maïs pour un montant de 500 euros. Cependant, lors de la réception de ma commande, j\'ai constaté que le montant n\'avait pas été débité de ma carte bancaire.\n\nJe me suis connecté à mon compte pour vérifier les détails de ma commande et j\'ai constaté que le statut était indiqué comme \"en attente de paiement\". Malgré mes tentatives de réinitialisation du paiement, le problème persiste. J\'ai besoin de votre aide pour résoudre ce problème et pour que le paiement soit effectué.\n\nJe vous remercie d\'avance pour votre attention à ce problème et pour les efforts que vous déploierez pour résoudre cette situation. Je suis à votre disposition pour tout complément d\'information nécessaire.', '2026-04-20 11:32:51', 'TRAITE', 'maatoug ayoub (ADMIN) : on a corrigé le problème');
+(34, 106, 'PAIMENT', 'problème de paiment', 'Objet : Problème de paiement sur ma plateforme agricole\n\nJe me permets de vous signaler un problème de paiement sur ma plateforme agricole. Le 10 mars dernier, j\'ai effectué une commande de semences de maïs pour un montant de 500 euros. Cependant, lors de la réception de ma commande, j\'ai constaté que le montant n\'avait pas été débité de ma carte bancaire.\n\nJe me suis connecté à mon compte pour vérifier les détails de ma commande et j\'ai constaté que le statut était indiqué comme \"en attente de paiement\". Malgré mes tentatives de réinitialisation du paiement, le problème persiste. J\'ai besoin de votre aide pour résoudre ce problème et pour que le paiement soit effectué.\n\nJe vous remercie d\'avance pour votre attention à ce problème et pour les efforts que vous déploierez pour résoudre cette situation. Je suis à votre disposition pour tout complément d\'information nécessaire.', '2026-04-20 11:32:51', 'TRAITE', 'maatoug ayoub (ADMIN) : on a corrigé le problème'),
+(35, 78, 'TECHNIQUE', 'test réclamation', '**Titre de la réclamation : Test réclamation**\n\n**Description de la réclamation :**\n\nJe me permets de vous signaler quelques problèmes rencontrés sur votre plateforme agricole. Le 15 mars dernier, j\'ai créé un compte pour acheter des semences de maïs. J\'ai effectué un paiement de 500 euros, mais je n\'ai pas reçu les semences malgré plusieurs rappels. J\'ai essayé de contacter votre service client par téléphone, mais je n\'ai pas obtenu de réponse.\n\nJe me suis également rendu compte que le système de paiement n\'a pas fonctionné correctement, car j\'ai dû réessayer plusieurs fois avant de réussir à effectuer le paiement. Je pense que cela est dû à une erreur technique.\n\nJe vous demande de me contacter pour résoudre ce problème et me fournir les semences que j\'ai payées. Je suis prêt à fournir tout document nécessaire pour résoudre cette affaire.\n\nMerci de votre attention à ce problème.', '2026-05-03 01:12:38', 'EN_ATTENTE', NULL),
+(36, 107, 'AUTRE', 'bONJOUR', 'Bonjour,\n\nJe souhaiterais exprimer ma satisfaction ou ma déception concernant mon expérience avec votre plateforme agricole. Voici les détails de ma reclamation :\n\nJ\'ai souscrit à votre service le [date] pour l\'utilisation d\'une parcelle de [surface] située à [adresse]. J\'avais espéré une augmentation de la production de [culture] de 20% grâce à l\'utilisation de votre système de gestion de l\'eau et de la fertilisation. Cependant, après [temps] d\'utilisation, j\'ai constaté que la production n\'a augmenté que de 10%.\n\nJe pense que cela est dû à la mauvaise adaptation du système à la topographie de ma parcelle. J\'aurais aimé que votre équipe m\'ait aidé à configurer le système pour optimiser les résultats.\n\nJe vous remercie de prendre en compte mes remarques et de m\'indiquer les étapes à suivre pour résoudre ce problème.\n\nCordialement,\n[Votre nom]', '2026-05-03 21:14:04', 'EN_ATTENTE', NULL);
 
 -- --------------------------------------------------------
 
@@ -723,22 +729,11 @@ CREATE TABLE `reservations` (
   `proprietaire_id` int(11) NOT NULL,
   `date_debut` date NOT NULL,
   `date_fin` date NOT NULL,
-  `quantite` int(11) DEFAULT 1,
+  `quantite` int(11) NOT NULL,
   `prix_total` decimal(10,2) NOT NULL,
-  `caution` decimal(10,2) DEFAULT 0.00,
-  `statut` enum('EN_ATTENTE','ACCEPTEE','REFUSEE','EN_COURS','TERMINEE','ANNULEE') DEFAULT 'EN_ATTENTE',
-  `message_demande` text DEFAULT NULL,
-  `reponse_proprietaire` text DEFAULT NULL,
-  `date_demande` timestamp NOT NULL DEFAULT current_timestamp(),
-  `date_reponse` timestamp NULL DEFAULT NULL,
-  `date_creation` timestamp NOT NULL DEFAULT current_timestamp(),
-  `contrat_url` varchar(500) DEFAULT NULL,
-  `contrat_signe` tinyint(1) DEFAULT 0,
-  `date_signature_contrat` timestamp NULL DEFAULT NULL,
-  `paiement_effectue` tinyint(1) DEFAULT 0,
-  `date_paiement` timestamp NULL DEFAULT NULL,
-  `mode_paiement` varchar(50) DEFAULT NULL,
-  `commission` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `statut` varchar(20) NOT NULL,
+  `date_creation` datetime NOT NULL,
+  `commission` decimal(10,2) NOT NULL,
   `message` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -746,23 +741,23 @@ CREATE TABLE `reservations` (
 -- Dumping data for table `reservations`
 --
 
-INSERT INTO `reservations` (`id`, `annonce_id`, `demandeur_id`, `proprietaire_id`, `date_debut`, `date_fin`, `quantite`, `prix_total`, `caution`, `statut`, `message_demande`, `reponse_proprietaire`, `date_demande`, `date_reponse`, `date_creation`, `contrat_url`, `contrat_signe`, `date_signature_contrat`, `paiement_effectue`, `date_paiement`, `mode_paiement`, `commission`, `message`) VALUES
-(2, 4, 36, 39, '2026-02-15', '2026-02-16', 1, 275.00, 0.00, 'REFUSEE', 'hey', 'noob', '2026-02-15 22:52:58', '2026-02-15 23:04:37', '2026-02-15 22:52:58', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(3, 1, 39, 36, '2026-02-15', '2026-02-16', 1, 550.00, 1000.00, 'EN_ATTENTE', 'salut', NULL, '2026-02-15 23:06:47', NULL, '2026-02-15 23:06:47', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(4, 4, 41, 39, '2026-02-15', '2026-02-16', 1, 275.00, 0.00, 'EN_ATTENTE', 'interessé', NULL, '2026-02-15 23:15:01', NULL, '2026-02-15 23:15:01', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(5, 1, 39, 36, '2026-02-16', '2026-02-17', 1, 550.00, 1000.00, 'EN_ATTENTE', 'salut', NULL, '2026-02-16 00:06:34', NULL, '2026-02-16 00:06:34', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(6, 2, 39, 36, '2026-02-16', '2026-02-17', 1, 1760.00, 3000.00, 'EN_ATTENTE', 'aaaaaaaa', NULL, '2026-02-16 00:11:01', NULL, '2026-02-16 00:11:01', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(7, 19, 74, 39, '2026-02-25', '2026-02-26', 1, 550.00, 500.00, 'EN_ATTENTE', 'aaaaaaaa', NULL, '2026-02-25 15:55:14', NULL, '2026-02-25 15:55:14', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(8, 19, 74, 39, '2026-02-25', '2026-02-26', 1, 550.00, 500.00, 'ACCEPTEE', 'aaaaaaa', 'Demande acceptée. Bienvenue !', '2026-02-25 15:56:46', '2026-02-25 15:57:30', '2026-02-25 15:56:46', NULL, 0, NULL, 1, '2026-02-25 15:58:14', 'Carte bancaire (Stripe)', 0.00, NULL),
-(9, 27, 63, 44, '2026-03-01', '2026-03-02', 1, 27.50, 0.00, 'EN_ATTENTE', 'aaaaaaaaa', NULL, '2026-03-01 14:33:01', NULL, '2026-03-01 14:33:01', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(10, 28, 70, 78, '2026-03-01', '2026-03-03', 1, 1485.00, 0.00, 'ACCEPTEE', 'Salut', 'Demande acceptée. Bienvenue !', '2026-03-01 22:48:06', '2026-03-01 22:49:54', '2026-03-01 22:48:06', NULL, 0, NULL, 1, '2026-03-01 22:53:33', 'Carte bancaire (Stripe)', 0.00, NULL),
-(11, 29, 39, 70, '2026-03-02', '2026-03-04', 3, 495.00, 0.00, 'ACCEPTEE', 'je suis interessé', 'Demande acceptée. Bienvenue !', '2026-03-02 09:21:07', '2026-03-02 09:23:36', '2026-03-02 09:21:07', NULL, 0, NULL, 1, '2026-03-02 09:25:53', 'Carte bancaire (Stripe)', 0.00, NULL),
-(15, 32, 70, 39, '2026-03-02', '2026-03-15', 2, 2310.00, 0.00, 'EN_ATTENTE', '', NULL, '2026-03-02 09:39:31', NULL, '2026-03-02 09:39:31', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(16, 32, 63, 39, '2026-03-02', '2026-03-05', 2, 660.00, 0.00, 'ACCEPTEE', '', 'Demande acceptée. Bienvenue !', '2026-03-02 09:40:13', '2026-03-02 09:40:49', '2026-03-02 09:40:13', NULL, 0, NULL, 0, NULL, NULL, 0.00, NULL),
-(17, 33, 63, 90, '2026-04-06', '2026-04-10', 1, 2100.00, 0.00, 'ACCEPTEE', NULL, NULL, '2026-04-05 21:31:43', NULL, '2026-04-05 22:31:43', NULL, 0, NULL, 0, NULL, NULL, 100.00, 'yes'),
-(18, 34, 63, 78, '2026-04-17', '2026-04-25', 1, 945.00, 0.00, 'ACCEPTEE', NULL, NULL, '2026-04-15 22:55:55', NULL, '2026-04-15 23:55:55', NULL, 0, NULL, 0, NULL, NULL, 45.00, 'YES'),
-(19, 34, 103, 78, '2026-04-18', '2026-04-19', 1, 210.00, 0.00, 'ACCEPTEE', NULL, NULL, '2026-04-15 23:09:13', NULL, '2026-04-16 00:09:13', NULL, 0, NULL, 0, NULL, NULL, 10.00, 'bonjour'),
-(20, 36, 103, 78, '2026-04-19', '2026-04-22', 2, 21000.00, 0.00, 'ACCEPTEE', NULL, NULL, '2026-04-18 21:50:28', NULL, '2026-04-18 22:50:28', NULL, 0, NULL, 0, NULL, NULL, 1000.00, 'hello');
+INSERT INTO `reservations` (`id`, `annonce_id`, `demandeur_id`, `proprietaire_id`, `date_debut`, `date_fin`, `quantite`, `prix_total`, `statut`, `date_creation`, `commission`, `message`) VALUES
+(2, 4, 36, 39, '2026-02-15', '2026-02-16', 1, 275.00, 'REFUSEE', '2026-02-15 22:52:58', 0.00, NULL),
+(3, 1, 39, 36, '2026-02-15', '2026-02-16', 1, 550.00, 'EN_ATTENTE', '2026-02-15 23:06:47', 0.00, NULL),
+(4, 4, 41, 39, '2026-02-15', '2026-02-16', 1, 275.00, 'EN_ATTENTE', '2026-02-15 23:15:01', 0.00, NULL),
+(5, 1, 39, 36, '2026-02-16', '2026-02-17', 1, 550.00, 'EN_ATTENTE', '2026-02-16 00:06:34', 0.00, NULL),
+(6, 2, 39, 36, '2026-02-16', '2026-02-17', 1, 1760.00, 'EN_ATTENTE', '2026-02-16 00:11:01', 0.00, NULL),
+(7, 19, 74, 39, '2026-02-25', '2026-02-26', 1, 550.00, 'EN_ATTENTE', '2026-02-25 15:55:14', 0.00, NULL),
+(8, 19, 74, 39, '2026-02-25', '2026-02-26', 1, 550.00, 'ACCEPTEE', '2026-02-25 15:56:46', 0.00, NULL),
+(9, 27, 63, 44, '2026-03-01', '2026-03-02', 1, 27.50, 'EN_ATTENTE', '2026-03-01 14:33:01', 0.00, NULL),
+(10, 28, 70, 78, '2026-03-01', '2026-03-03', 1, 1485.00, 'ACCEPTEE', '2026-03-01 22:48:06', 0.00, NULL),
+(11, 29, 39, 70, '2026-03-02', '2026-03-04', 3, 495.00, 'ACCEPTEE', '2026-03-02 09:21:07', 0.00, NULL),
+(15, 32, 70, 39, '2026-03-02', '2026-03-15', 2, 2310.00, 'EN_ATTENTE', '2026-03-02 09:39:31', 0.00, NULL),
+(16, 32, 63, 39, '2026-03-02', '2026-03-05', 2, 660.00, 'ACCEPTEE', '2026-03-02 09:40:13', 0.00, NULL),
+(17, 33, 63, 90, '2026-04-06', '2026-04-10', 1, 2100.00, 'ACCEPTEE', '2026-04-05 23:31:43', 100.00, 'yes'),
+(18, 34, 63, 78, '2026-04-17', '2026-04-25', 1, 945.00, 'ACCEPTEE', '2026-04-16 00:55:55', 45.00, 'YES'),
+(19, 34, 103, 78, '2026-04-18', '2026-04-19', 1, 210.00, 'ACCEPTEE', '2026-04-16 01:09:13', 10.00, 'bonjour'),
+(20, 36, 103, 78, '2026-04-19', '2026-04-22', 2, 21000.00, 'ACCEPTEE', '2026-04-18 23:50:28', 1000.00, 'hello');
 
 -- --------------------------------------------------------
 
@@ -807,7 +802,7 @@ INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `cin`, `email`, `motDePasse`,
 (96, 'Maatoug2', 'Ayoub2', 11228877, 'ayoub@agriflow.tn', '$2y$13$NuFK3exSUXbWRSrYQOq1cO9B7TkOIq0e9AKB7oE7az0vF8gPey8kK', 'AGRICULTEUR', '2026-04-06', 'C:\\xampp\\htdocs\\signatures\\signature_ayoub33_69e4d30f3b0645.62557185.png', NULL, 'C:\\xampp\\htdocs\\cartes\\11228877_69e4d30f3b6505.72172199.png', 'Ariana', '', NULL, 'APPROVED', NULL, 1, 'أيوب', 'معتوق'),
 (103, 'MAATOUG4', 'ADAM4', 12032004, 'adammaatoug7@gmail.com', '$2y$13$ByD1cox0Ci9FdsrdyytWW.kssSZo6ceSHMrsl9o3Tj5FKHs0xC9IO', 'AGRICULTEUR', '2026-04-14', 'C:\\xampp\\htdocs\\signatures\\signature_adam_69de5983a8c201.87226069.webp', NULL, 'C:\\xampp\\htdocs\\cartes\\carte_pro_adem_69de5983a97ab7.64472303.png', 'rue ali douagi', '', NULL, 'APPROVED', NULL, 1, 'آدم', 'معتوق'),
 (104, 'BAJI', 'BADIS', 77885522, 'badis@agriflow.tn', '$2y$13$p4WBNdszZvVeVpn7KR9oCuK61q/Yk87sDeOs3zxwyGIbjaxkGQhMm', 'AGRICULTEUR', '2026-04-19', 'C:\\xampp\\htdocs\\signatures\\signature_badis_69e4eacc8a3c06.87053903.png', NULL, 'C:\\xampp\\htdocs\\cartes\\77885522_69e4eacc8a76e5.97711975.png', 'El Menzah', '', NULL, 'APPROVED', NULL, 1, 'باجي', 'باديس'),
-(106, 'MAATOUG3', 'AYOUB3', 11223344, 'ayoub.maatoug@ipeib.ucar.tn', '$2y$13$PgQwmMccnZfI30FrGI7ddOJ2gKj.Q.0WDzTp4C4EzkpQh1qA9G.gy', 'AGRICULTEUR', '2026-04-20', 'C:\\xampp\\htdocs\\signatures\\signature_ayoub_69e5f1c6b8db83.76054936.png', NULL, 'C:\\xampp\\htdocs\\cartes\\Carte_pro__ayoub__69e5f1c6b93e63.85071429.png', 'Ariana Soghra', '', NULL, 'APPROVED', NULL, 1, 'أيوب', 'معتوق');
+(107, 'MAATOUG4', 'AYOUB4', 11223344, 'ayoub.maatoug@ipeib.ucar.tn', '$2y$13$Odm2TSAa9XCEBRXwmKyw0uWfbMfM.kX0iESJnU.nD4ct2Q1k1dZQm', 'AGRICULTEUR', '2026-05-03', 'C:\\xampp\\htdocs\\signatures\\signature_ayoub_69f7ac2e6371c7.49383304.png', NULL, 'C:\\xampp\\htdocs\\cartes\\Carte_pro__ayoub__69f7ac2e63ca41.78282558.png', 'IPEIB', '', NULL, 'APPROVED', NULL, 1, 'أيوب', 'معتوق');
 
 --
 -- Indexes for dumped tables
@@ -817,12 +812,7 @@ INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `cin`, `email`, `motDePasse`,
 -- Indexes for table `annonces`
 --
 ALTER TABLE `annonces`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_type` (`type`),
-  ADD KEY `idx_statut` (`statut`),
-  ADD KEY `idx_categorie` (`categorie`),
-  ADD KEY `idx_prix` (`prix`),
-  ADD KEY `idx_proprietaire` (`proprietaire_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `annonce_photos`
@@ -836,18 +826,15 @@ ALTER TABLE `annonce_photos`
 --
 ALTER TABLE `collab_applications`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_application` (`request_id`,`candidate_id`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_candidate` (`candidate_id`);
+  ADD KEY `IDX_4F684F86427EB8A5` (`request_id`),
+  ADD KEY `IDX_4F684F8691BD8781` (`candidate_id`);
 
 --
 -- Indexes for table `collab_requests`
 --
 ALTER TABLE `collab_requests`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_location` (`location`),
-  ADD KEY `idx_dates` (`start_date`,`end_date`);
+  ADD KEY `IDX_10CC4FA4ED442CF4` (`requester_id`);
 
 --
 -- Indexes for table `culture`
@@ -860,7 +847,7 @@ ALTER TABLE `culture`
 --
 ALTER TABLE `cultures`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_cultures_acheteur` (`id_acheteur`);
+  ADD KEY `fk_cultures_acheteur` (`acheteur_id`);
 
 --
 -- Indexes for table `culture_history`
@@ -875,7 +862,7 @@ ALTER TABLE `culture_history`
 --
 ALTER TABLE `diagnosti`
   ADD PRIMARY KEY (`id_diagnostic`),
-  ADD KEY `diag` (`id_agriculteur`);
+  ADD KEY `diag` (`agriculteur_id`);
 
 --
 -- Indexes for table `diagnostic`
@@ -912,7 +899,7 @@ ALTER TABLE `parcelle`
 --
 ALTER TABLE `plans_irrigation`
   ADD PRIMARY KEY (`plan_id`),
-  ADD KEY `id_culture` (`id_culture`);
+  ADD KEY `id_culture` (`culture_id`);
 
 --
 -- Indexes for table `plans_irrigation_jour`
@@ -959,10 +946,6 @@ ALTER TABLE `reclamations`
 --
 ALTER TABLE `reservations`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_reservation_annonce` (`annonce_id`),
-  ADD KEY `idx_statut` (`statut`),
-  ADD KEY `idx_demandeur` (`demandeur_id`),
-  ADD KEY `idx_proprietaire` (`proprietaire_id`),
   ADD KEY `IDX_4DA2398805AB2F` (`annonce_id`);
 
 --
@@ -993,13 +976,13 @@ ALTER TABLE `annonce_photos`
 -- AUTO_INCREMENT for table `collab_applications`
 --
 ALTER TABLE `collab_applications`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- AUTO_INCREMENT for table `collab_requests`
 --
 ALTER TABLE `collab_requests`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `culture`
@@ -1083,7 +1066,7 @@ ALTER TABLE `produit_phytosanitaire`
 -- AUTO_INCREMENT for table `reclamations`
 --
 ALTER TABLE `reclamations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `reservations`
@@ -1095,7 +1078,7 @@ ALTER TABLE `reservations`
 -- AUTO_INCREMENT for table `utilisateurs`
 --
 ALTER TABLE `utilisateurs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=108;
 
 --
 -- Constraints for dumped tables
@@ -1105,7 +1088,7 @@ ALTER TABLE `utilisateurs`
 -- Constraints for table `cultures`
 --
 ALTER TABLE `cultures`
-  ADD CONSTRAINT `fk_cultures_acheteur` FOREIGN KEY (`id_acheteur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk_cultures_acheteur` FOREIGN KEY (`acheteur_id`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `culture_history`
@@ -1118,7 +1101,7 @@ ALTER TABLE `culture_history`
 -- Constraints for table `diagnosti`
 --
 ALTER TABLE `diagnosti`
-  ADD CONSTRAINT `diag` FOREIGN KEY (`id_agriculteur`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `diag` FOREIGN KEY (`agriculteur_id`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `plan_irrigation`

@@ -87,7 +87,8 @@ final class ParcelleController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $parcelle->setAgriculteurId($this->getAuthenticatedUserId());
+            $agriculteur = $entityManager->getReference(Utilisateur::class, $this->getAuthenticatedUserId());
+            $parcelle->setAgriculteur($agriculteur);
 
             $entityManager->persist($parcelle);
             $entityManager->flush();

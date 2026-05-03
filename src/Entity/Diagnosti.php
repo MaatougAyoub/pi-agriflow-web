@@ -29,7 +29,7 @@ class Diagnosti
     }
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'diagnostis')]
-    #[ORM\JoinColumn(name: 'id_agriculteur', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'agriculteur_id', referencedColumnName: 'id')]
     private ?Utilisateur $utilisateur = null;
 
     public function getUtilisateur(): ?Utilisateur
