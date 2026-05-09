@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\PlansIrrigation;
+use App\Entity\PlansIrrigationJour;
 use App\Entity\Utilisateur;
 use App\Repository\PlansIrrigationRepository;
 use App\Repository\PlansIrrigationJourRepository;
@@ -96,14 +97,14 @@ class CalendrierIrrigationController extends AbstractController
 
             // Événements journaliers (si le plan a des jours remplis)
             if ($planId) {
-                $jours = $jourRepo->findBy(['plan' => $planId]);
+                $jours = $jourRepo->findBy(['plan' => $plan]);
                 $joursMap = [
                     'LUN' => 'Monday', 'MAR' => 'Tuesday', 'MER' => 'Wednesday',
                     'JEU' => 'Thursday', 'VEN' => 'Friday', 'SAM' => 'Saturday', 'DIM' => 'Sunday',
                 ];
 
                 foreach ($jours as $jour) {
-                    $jourKey = $jour->getJour();
+                    $jourKey = PlansIrrigationJour::normalizeJourKey($jour->getJour());
                     $eauMm = $jour->getEauMm() ?? 0;
                     $tempsMin = $jour->getTempsMin() ?? 0;
 
@@ -113,7 +114,7 @@ class CalendrierIrrigationController extends AbstractController
 
                     // Calculer la date du jour dans la semaine courante
                     $semaineDebut = $jour->getSemaineDebut();
-                    if ($semaineDebut && isset($joursMap[$jourKey])) {
+                    if ($semaineDebut && $jourKey && isset($joursMap[$jourKey])) {
                         $dateJour = \DateTimeImmutable::createFromInterface($semaineDebut);
                         $jourAnglais = $joursMap[$jourKey];
 

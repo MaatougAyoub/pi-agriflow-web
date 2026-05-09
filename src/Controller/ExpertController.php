@@ -161,7 +161,10 @@ class ExpertController extends AbstractController
         $jours = $jourRepo->findBy(['plan' => $plan]);
         $jourData = [];
         foreach ($jours as $j) {
-            $jourData[$j->getJour()] = $j;
+            $jourKey = $j->getJourKey();
+            if ($jourKey !== null) {
+                $jourData[$jourKey] = $j;
+            }
         }
 
         // Récupérer les infos de besoin de la culture
@@ -204,7 +207,13 @@ class ExpertController extends AbstractController
         $semaineDebut = new \DateTime('monday this week');
 
         foreach ($joursKeys as $k) {
-            $jour = $jourRepo->findOneBy(['plan' => $plan, 'jour' => $k]);
+            $jour = null;
+            foreach (PlansIrrigationJour::getAliasesForCanonical($k) as $alias) {
+                $jour = $jourRepo->findOneBy(['plan' => $plan, 'jour' => $alias]);
+                if ($jour) {
+                    break;
+                }
+            }
             if (!$jour) {
                 $jour = new PlansIrrigationJour();
                 $jour->setPlan($plan);
@@ -261,7 +270,13 @@ public function irrigationIA(
 
         $semaineDebut = new \DateTime('monday this week');
         foreach ($planIA as $key => $valeurs) {
-            $jour = $jourRepo->findOneBy(['plan' => $plan, 'jour' => $key]);
+            $jour = null;
+            foreach (PlansIrrigationJour::getAliasesForCanonical($key) as $alias) {
+                $jour = $jourRepo->findOneBy(['plan' => $plan, 'jour' => $alias]);
+                if ($jour) {
+                    break;
+                }
+            }
             if (!$jour) {
                 $jour = new PlansIrrigationJour();
                 $jour->setPlan($plan);

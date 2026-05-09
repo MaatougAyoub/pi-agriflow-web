@@ -41,6 +41,33 @@ class PlansIrrigationJour
 
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $pluie = null;
+    
+        private const JOUR_KEY_MAP = [
+            'MON' => 'LUN',
+            'TUE' => 'MAR',
+            'WED' => 'MER',
+            'THU' => 'JEU',
+            'FRI' => 'VEN',
+            'SAT' => 'SAM',
+            'SUN' => 'DIM',
+            'LUN' => 'LUN',
+            'MAR' => 'MAR',
+            'MER' => 'MER',
+            'JEU' => 'JEU',
+            'VEN' => 'VEN',
+            'SAM' => 'SAM',
+            'DIM' => 'DIM',
+        ];
+    
+        private const JOUR_ALIASES = [
+            'LUN' => ['LUN', 'MON'],
+            'MAR' => ['MAR', 'TUE'],
+            'MER' => ['MER', 'WED'],
+            'JEU' => ['JEU', 'THU'],
+            'VEN' => ['VEN', 'FRI'],
+            'SAM' => ['SAM', 'SAT'],
+            'DIM' => ['DIM', 'SUN'],
+        ];
 
     // --- Getters / Setters (versions camelCase utilisées dans le contrôleur) ---
 
@@ -71,6 +98,30 @@ class PlansIrrigationJour
     {
         return $this->jour;
     }
+    
+        public function getJourKey(): ?string
+        {
+            return self::normalizeJourKey($this->jour);
+        }
+    
+        public static function normalizeJourKey(?string $jour): ?string
+        {
+            if ($jour === null) {
+                return null;
+            }
+        
+            $key = strtoupper(trim($jour));
+            return self::JOUR_KEY_MAP[$key] ?? $key;
+        }
+    
+        /**
+         * @return string[]
+         */
+        public static function getAliasesForCanonical(string $canonical): array
+        {
+            $key = strtoupper(trim($canonical));
+            return self::JOUR_ALIASES[$key] ?? [$key];
+        }
 
     public function setJour(string $jour): static
     {

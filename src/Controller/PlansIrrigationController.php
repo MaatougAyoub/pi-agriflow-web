@@ -42,10 +42,13 @@ class PlansIrrigationController extends AbstractController
         if (!$plan) {
             throw $this->createNotFoundException('Plan non trouvé');
         }
-        $jours = $jourRepo->findBy(['plan' => $id]);
+        $jours = $jourRepo->findBy(['plan' => $plan]);
         $jourData = [];
         foreach ($jours as $j) {
-            $jourData[$j->getJour()] = $j;
+            $jourKey = $j->getJourKey();
+            if ($jourKey !== null) {
+                $jourData[$jourKey] = $j;
+            }
         }
         return $this->render('plan_irrigation/detail.html.twig', [
             'plan'     => $plan,

@@ -250,7 +250,10 @@ class AgriculteurController extends AbstractController
         $jours    = $jourRepo->findBy(['plan' => $plan]);
         $jourData = [];
         foreach ($jours as $jour) {
-            $jourData[$jour->getJour()] = $jour;
+            $jourKey = $jour->getJourKey();
+            if ($jourKey !== null) {
+                $jourData[$jourKey] = $jour;
+            }
         }
 
         return $this->render('agriculteur/irrigation_detail.html.twig', [
