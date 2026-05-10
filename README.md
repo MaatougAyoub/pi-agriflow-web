@@ -10,7 +10,7 @@ AgriFlow is a Symfony web application designed to digitize and optimize agricult
 
 ## Live Demo
 
-Project website available at:
+Project website available at: https://maatougayoub.github.io/Esprit-PIWeb-3A14-2025-2026-AgriFlow/
 
 
 ---
